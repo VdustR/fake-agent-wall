@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/VdustR/fake-agent-wall/compare/v0.2.1...v0.2.2) (2026-08-11)
+
+
+### Documentation
+
+* drop machine-specific paths from a public repo ([f4f2ed9](https://github.com/VdustR/fake-agent-wall/commit/f4f2ed99261828336fb563969bfbc6a4da07fcee))
+* recapture the screenshot after the rename ([c6a59b1](https://github.com/VdustR/fake-agent-wall/commit/c6a59b153b4af81dcf9349924807b2063414c937))
+
 ## [0.2.1](https://github.com/VdustR/fake-agent-wall/compare/v0.2.0...v0.2.1) (2026-08-11)
 
 
