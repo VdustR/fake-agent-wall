@@ -54,6 +54,9 @@ nsis:
 
 linux:
   icon: build/icon.png
+  # fpm requires a Debian maintainer, and it will not fall back to an author
+  # without an email address.
+  maintainer: ViPro <vdustr@gmail.com>
   category: Graphics
   synopsis: A fake wall of Claude Code terminals for video props
   target:
