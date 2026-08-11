@@ -53,7 +53,7 @@ visibly loop within a recording-length window.
 
 ## Evidence on Hand
 
-- Claude Code binary at `/Users/v/.local/share/claude/versions/2.1.212`.
+- Claude Code binary at `~/.local/share/claude/versions/<version>`.
   243 spinner verbs extracted from it verbatim (`.verbs.txt`), plus real UI
   strings (`ctrl+o to expand`, `esc to interrupt`, accept-edits mode line).
 - No real agent telemetry exists and none will. Nothing on this surface may be

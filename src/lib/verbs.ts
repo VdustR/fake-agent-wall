@@ -1,5 +1,5 @@
 // Spinner verbs extracted verbatim from the Claude Code 2.1.212 binary.
-// Source: /Users/v/.local/share/claude/versions/2.1.212 (strings scan).
+// Source: ~/.local/share/claude/versions/<version> (strings scan).
 export const SPINNER_VERBS: readonly string[] = [
   'Accomplishing',
   'Actioning',
