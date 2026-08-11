@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/VdustR/fake-agent-wall/compare/v0.2.2...v0.2.3) (2026-08-11)
+
+
+### Bug Fixes
+
+* clarify the menu bar icon and playback state ([#6](https://github.com/VdustR/fake-agent-wall/issues/6)) ([d5be6b9](https://github.com/VdustR/fake-agent-wall/commit/d5be6b9ef57b08c820a8cb0cb4115537cc9d7dca))
+
 ## [0.2.2](https://github.com/VdustR/fake-agent-wall/compare/v0.2.1...v0.2.2) (2026-08-11)
 
 
