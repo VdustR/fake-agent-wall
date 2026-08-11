@@ -12,8 +12,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "app": "pnpm build && electron .",
     "app:dev": "SWARMDECK_DEV_URL=http://localhost:5273 electron .",
-    "app:pack": "pnpm build && electron-builder --mac --dir",
-    "app:dmg": "pnpm build && electron-builder --mac",
+    "app:pack": "pnpm build && electron-builder --mac --dir --publish never",
+    "app:dmg": "pnpm build && electron-builder --mac --publish never",
     "app:windowed": "SWARMDECK_WINDOWED=1 SWARMDECK_DEV_URL=http://localhost:5273 electron ."
   },
   "devDependencies": {
@@ -29,5 +29,18 @@
     "vite": "^8.2.1"
   },
   "main": "desktop/main.js",
-  "description": "A fake master-control video wall of Claude Code agent sessions."
+  "description": "A fake master-control video wall of Claude Code agent sessions.",
+  "author": {
+    "name": "ViPro",
+    "url": "https://github.com/VdustR"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VdustR/fake-agent-wall.git"
+  },
+  "homepage": "https://vdustr.dev/fake-agent-wall/",
+  "bugs": {
+    "url": "https://github.com/VdustR/fake-agent-wall/issues"
+  }
 }
