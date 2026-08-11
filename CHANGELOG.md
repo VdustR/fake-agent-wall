@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/VdustR/fake-agent-wall/compare/v0.2.0...v0.2.1) (2026-08-11)
+
+
+### Bug Fixes
+
+* give the deb build a maintainer so the Linux job completes ([17beaa6](https://github.com/VdustR/fake-agent-wall/commit/17beaa6cc09d8c5cd78e6bd0e17469186a4e8be3))
+
 ## [0.2.0](https://github.com/VdustR/fake-agent-wall/compare/v0.1.1...v0.2.0) (2026-08-11)
 
 
