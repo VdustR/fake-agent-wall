@@ -8,7 +8,7 @@ It exists to be filmed. Put it on a laptop, run it full screen, and it looks
 like a room full of machines doing serious work behind whatever you are actually
 recording.
 
-[Open the web version](https://vdustr.github.io/fake-agent-wall/) ·
+[Open the web version](https://vdustr.dev/fake-agent-wall/) ·
 [Download the macOS app](https://github.com/VdustR/fake-agent-wall/releases/latest)
 
 ![The wall: a program monitor on the left, a 3x3 grid of agent sessions on the right, a bus meter bridge below and a scrolling log along the bottom](docs/wall.png)
