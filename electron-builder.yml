@@ -1,6 +1,6 @@
-appId: dev.vdustr.swarmdeck
-productName: Swarmdeck
-copyright: Swarmdeck
+appId: dev.vdustr.fake-agent-wall
+productName: Fake Agent Wall
+copyright: Fake Agent Wall
 
 directories:
   output: release
@@ -11,27 +11,53 @@ files:
   - desktop/**
   - package.json
 
+# Re-signs the macOS bundle ad-hoc. Without this the app inherits Electron's
+# linker signature, which repacking invalidates, and macOS calls it damaged.
+afterPack: desktop/after-pack.cjs
+
 mac:
   category: public.app-category.entertainment
   icon: build/icon.icns
   target:
     - target: dmg
-      arch: [arm64]
-    - target: dir
-      arch: [arm64]
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
   darkModeSupport: true
-  # Unsigned local build. Without a Developer ID there is nothing to notarise,
-  # and hardened runtime would only add a signature Gatekeeper still rejects.
+  # No Developer ID exists for this project, so electron-builder must not try to
+  # find one. desktop/after-pack.cjs does the ad-hoc signing instead.
   identity: null
   hardenedRuntime: false
   gatekeeperAssess: false
   extendInfo:
-    # The wall drives the display, so it must not be woken as a background agent.
     LSUIElement: false
     NSHighResolutionCapable: true
 
 dmg:
-  title: Swarmdeck
+  title: ${productName}
   window:
     width: 520
     height: 340
+
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+
+linux:
+  icon: build/icon.png
+  category: Graphics
+  synopsis: A fake wall of Claude Code terminals for video props
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]

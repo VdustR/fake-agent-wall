@@ -23,7 +23,7 @@
   right status carrying counts and a clock.
 -->
 <header class="status">
-  <span class="session">[swarmdeck]</span>
+  <span class="session">[fake-agent-wall]</span>
 
   <div class="windows">
     {#each swarm.agents as a, i (a.slot)}

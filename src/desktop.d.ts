@@ -8,7 +8,7 @@ export interface HintPayload {
 declare global {
   interface Window {
     /** Present only inside the Electron shell; undefined in a plain browser. */
-    swarmdeck?: {
+    agentWall?: {
       isDesktop: true
       onHint(callback: (payload: HintPayload) => void): () => void
     }

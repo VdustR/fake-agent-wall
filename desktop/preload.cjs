@@ -2,7 +2,7 @@
 // is "type": "module", so the .cjs extension is what keeps this loadable.
 const { contextBridge, ipcRenderer } = require('electron')
 
-contextBridge.exposeInMainWorld('swarmdeck', {
+contextBridge.exposeInMainWorld('agentWall', {
   isDesktop: true,
   /**
    * The main process owns the exit gesture and tells the page when to surface

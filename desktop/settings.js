@@ -37,7 +37,7 @@ export function setSettings(patch) {
   try {
     writeFileSync(FILE(), `${JSON.stringify(cache, null, 2)}\n`)
   } catch (err) {
-    console.error('[swarmdeck] could not persist settings:', err)
+    console.error('[fake-agent-wall] could not persist settings:', err)
   }
   return cache
 }

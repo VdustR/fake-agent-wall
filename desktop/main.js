@@ -14,18 +14,19 @@ import { dirname, join } from 'node:path'
 import { getSettings, setSettings } from './settings.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
-const DEV_URL = process.env.SWARMDECK_DEV_URL
+const DEV_URL = process.env.AGENT_WALL_DEV_URL
 /**
  * Opens the wall in an ordinary window instead of taking the screen. A kiosk
  * window that swallows every key is close to undebuggable, and nobody should
  * have to hand over their display to check a layout change.
  */
-const WINDOWED = process.env.SWARMDECK_WINDOWED === '1'
+const WINDOWED = process.env.AGENT_WALL_WINDOWED === '1'
 /** Two presses inside this window exit. Longer feels unresponsive; shorter misfires. */
 const DOUBLE_TAP_MS = 1500
 /** A single physical press can reach us twice (window hook + global shortcut). */
 const DEDUPE_MS = 120
 const IDLE_POLL_MS = 2000
+const IS_MAC = process.platform === 'darwin'
 
 let wall = null
 let tray = null
@@ -72,9 +73,11 @@ function openWall() {
   })
 
   if (!WINDOWED) {
-    // Simple fullscreen rather than native: no Space transition, no animation on
-    // show or hide, and no Esc-to-exit binding of its own to fight with ours.
-    wall.setSimpleFullScreen(true)
+    // On macOS, simple fullscreen rather than native: no Space transition, no
+    // animation on show or hide, and no Esc-to-exit binding of its own to fight
+    // with ours. Other platforms have no such distinction.
+    if (IS_MAC) wall.setSimpleFullScreen(true)
+    else wall.setFullScreen(true)
     wall.setAlwaysOnTop(true, 'screen-saver')
     wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
     swallowInput(wall.webContents)
@@ -107,7 +110,7 @@ function closeWall() {
   const w = wall
   wall = null
   globalShortcut.unregister('Escape')
-  if (!WINDOWED) w.setSimpleFullScreen(false)
+  if (!WINDOWED && IS_MAC) w.setSimpleFullScreen(false)
   w.destroy()
   applyPowerBlocker()
   refreshTray()
@@ -175,8 +178,11 @@ function startIdleWatch() {
 /* --------------------------------------------------------------------- tray */
 
 function trayIcon() {
+  // A template image adopts the macOS menu bar's own colour in light and dark.
+  // Elsewhere a template renders as a black-on-black smudge, so those platforms
+  // get the coloured icon instead.
+  if (!IS_MAC) return nativeImage.createFromPath(join(HERE, 'assets', 'tray.png'))
   const img = nativeImage.createFromPath(join(HERE, 'assets', 'trayTemplate.png'))
-  // A template image adopts the menu bar's own colour in light and dark.
   img.setTemplateImage(true)
   return img
 }
@@ -184,7 +190,7 @@ function trayIcon() {
 function refreshTray() {
   if (!tray) return
   const s = getSettings()
-  tray.setToolTip(wall ? 'Swarmdeck — playing (double-tap esc to stop)' : 'Swarmdeck — click to play')
+  tray.setToolTip(wall ? 'Fake Agent Wall — playing (double-tap esc to stop)' : 'Fake Agent Wall — click to play')
 
   const minuteChoice = (m) => ({
     label: `${m} min`,
@@ -228,11 +234,16 @@ function refreshTray() {
         label: 'Open at login',
         type: 'checkbox',
         checked: s.launchAtLogin,
+        visible: process.platform !== 'linux',
         click: () => update({ launchAtLogin: !s.launchAtLogin }),
       },
       { type: 'separator' },
       { label: `Version ${app.getVersion()}`, enabled: false },
-      { label: 'Quit Swarmdeck', accelerator: 'Command+Q', click: () => app.quit() },
+      {
+        label: 'Quit Fake Agent Wall',
+        accelerator: IS_MAC ? 'Command+Q' : 'Ctrl+Q',
+        click: () => app.quit(),
+      },
     ]),
   )
 }
@@ -250,11 +261,13 @@ function update(patch) {
  * logged and shrugged off rather than allowed to break startup.
  */
 function syncLoginItem(openAtLogin) {
+  // Electron does not implement login items on Linux.
+  if (process.platform === 'linux') return
   try {
     if (app.getLoginItemSettings().openAtLogin === openAtLogin) return
     app.setLoginItemSettings({ openAtLogin })
   } catch (err) {
-    console.error('[swarmdeck] could not change the login item:', err)
+    console.error('[fake-agent-wall] could not change the login item:', err)
   }
 }
 
@@ -271,8 +284,14 @@ if (!app.requestSingleInstanceLock()) {
     tray = new Tray(trayIcon())
     // Left click plays immediately; the menu is on right click. This is the
     // "one click" path, and it is why no context menu is bound to plain click.
-    tray.on('click', () => (wall ? closeWall() : openWall()))
-    tray.on('right-click', () => tray.popUpContextMenu())
+    if (IS_MAC) {
+      tray.on('click', () => (wall ? closeWall() : openWall()))
+      tray.on('right-click', () => tray.popUpContextMenu())
+    } else {
+      // Windows and Linux expect a left click to open the menu, so the one-click
+      // path there is launching the app itself.
+      tray.on('click', () => tray.popUpContextMenu())
+    }
     refreshTray()
 
     const s = getSettings()

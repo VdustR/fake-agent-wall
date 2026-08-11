@@ -35,7 +35,7 @@
   }
 
   onMount(() => {
-    const off = window.swarmdeck?.onHint((p) => {
+    const off = window.agentWall?.onHint((p) => {
       within = p.withinMs
       surface(p.armed)
     })

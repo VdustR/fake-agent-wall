@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import ExitHint from './components/ExitHint.svelte'
   import Pgm from './components/Pgm.svelte'
-  import Rail from './components/Rail.svelte'
+  import StatusLine from './components/StatusLine.svelte'
   import Telemetry from './components/Telemetry.svelte'
   import Ticker from './components/Ticker.svelte'
   import Tile from './components/Tile.svelte'
@@ -18,12 +18,12 @@
   const beat = $derived(swarm.uptimeMs)
   // The desktop shell hides the pointer and owns the exit gesture; in a plain
   // browser tab neither applies and the page behaves like an ordinary page.
-  const desktop = typeof window !== 'undefined' && window.swarmdeck?.isDesktop === true
+  const desktop = typeof window !== 'undefined' && window.agentWall?.isDesktop === true
   const onAir = $derived(swarm.agents[swarm.pgm] ?? swarm.agents[0]!)
 </script>
 
 <main class="deck" class:desktop>
-  <Rail {swarm} />
+  <StatusLine {swarm} />
 
   <div class="wall">
     <div class="col">

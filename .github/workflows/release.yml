@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   # Keeps a release PR open against main. Merging it tags the version and cuts
-  # the GitHub Release; only then does the mac build run.
+  # the GitHub Release; only then do the platform builds run.
   please:
     runs-on: ubuntu-latest
     outputs:
@@ -27,13 +27,24 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  macos:
+  build:
     needs: please
     if: needs.please.outputs.released == 'true'
-    # Apple silicon runner: the app ships arm64 only.
-    runs-on: macos-14
     permissions:
       contents: write
+    strategy:
+      # One platform failing must not withhold the others from the release.
+      fail-fast: false
+      matrix:
+        include:
+          # Apple silicon runner; it cross-builds the Intel target too.
+          - os: macos-14
+            platform: --mac
+          - os: windows-latest
+            platform: --win
+          - os: ubuntu-latest
+            platform: --linux
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
 
@@ -46,15 +57,26 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Unsigned on purpose: there is no Developer ID for this project, and an
-      # ad-hoc signature is one Gatekeeper rejects just the same. The README
-      # carries the install steps that go with an unsigned build.
-      - name: Build macOS app
-        run: pnpm app:dmg
+      - run: pnpm build
+
+      # Unsigned everywhere. On macOS, desktop/after-pack.cjs re-signs the bundle
+      # ad-hoc so the signature at least matches its contents; without that macOS
+      # calls the app damaged and offers no override.
+      - name: Package
+        run: pnpm exec electron-builder ${{ matrix.platform }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Attach the disk image to the release
+      - name: Attach the artifacts to the release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ needs.please.outputs.tag }}" release/*.dmg --clobber
+        run: |
+          shopt -s nullglob
+          files=(release/*.dmg release/*.zip release/*.exe release/*.AppImage release/*.deb)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no distributables were produced" >&2
+            exit 1
+          fi
+          printf 'uploading %s\n' "${files[@]}"
+          gh release upload "${{ needs.please.outputs.tag }}" "${files[@]}" --clobber
