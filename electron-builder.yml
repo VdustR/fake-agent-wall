@@ -1,0 +1,37 @@
+appId: dev.vdustr.swarmdeck
+productName: Swarmdeck
+copyright: Swarmdeck
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**
+  - desktop/**
+  - package.json
+
+mac:
+  category: public.app-category.entertainment
+  icon: build/icon.icns
+  target:
+    - target: dmg
+      arch: [arm64]
+    - target: dir
+      arch: [arm64]
+  darkModeSupport: true
+  # Unsigned local build. Without a Developer ID there is nothing to notarise,
+  # and hardened runtime would only add a signature Gatekeeper still rejects.
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  extendInfo:
+    # The wall drives the display, so it must not be woken as a background agent.
+    LSUIElement: false
+    NSHighResolutionCapable: true
+
+dmg:
+  title: Swarmdeck
+  window:
+    width: 520
+    height: 340

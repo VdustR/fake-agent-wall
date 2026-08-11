@@ -1,0 +1,32 @@
+{
+  "name": "swarmdeck",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "oxlint .",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "app": "pnpm build && electron .",
+    "app:dev": "SWARMDECK_DEV_URL=http://localhost:5273 electron .",
+    "app:pack": "pnpm build && electron-builder --mac --dir",
+    "app:dmg": "pnpm build && electron-builder --mac",
+    "app:windowed": "SWARMDECK_WINDOWED=1 SWARMDECK_DEV_URL=http://localhost:5273 electron ."
+  },
+  "devDependencies": {
+    "@fontsource/iosevka": "^5.3.0",
+    "@fontsource/martian-mono": "^5.3.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3",
+    "oxlint": "^1.77.0",
+    "svelte": "^5.56.8",
+    "svelte-check": "^4.7.5",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.1"
+  },
+  "main": "desktop/main.js",
+  "description": "A fake master-control video wall of Claude Code agent sessions."
+}

@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-11T00:00:00Z",
+  "title": "Design System: Swarmdeck",
+  "extensions": {
+    "colorMeta": {
+      "live": {
+        "role": "primary",
+        "displayName": "Program Red",
+        "canonical": "#ff2b18",
+        "tonalRamp": ["#2b0500", "#4d0a01", "#750f03", "#a01606", "#cc1e0b", "#ff2b18", "#ff6650", "#ffa294", "#ffd6cf"]
+      },
+      "coral": {
+        "role": "primary",
+        "displayName": "Claude Coral",
+        "canonical": "#d97757",
+        "tonalRamp": ["#2a1109", "#4a1e11", "#6d2e1c", "#914128", "#b65a3c", "#d97757", "#e79a80", "#f1bfad", "#f9e0d6"]
+      },
+      "cue": {
+        "role": "secondary",
+        "displayName": "Cue Green",
+        "canonical": "#17d76a",
+        "tonalRamp": ["#03210f", "#053a1c", "#07562b", "#09743b", "#0e9a4e", "#17d76a", "#4fe490", "#8aefb9", "#c6f8dc"]
+      },
+      "amber": {
+        "role": "secondary",
+        "displayName": "Readout Amber",
+        "canonical": "#ffb02e",
+        "tonalRamp": ["#2b1c00", "#4a3100", "#6d4800", "#916100", "#c08200", "#ffb02e", "#ffc663", "#ffdb9a", "#ffefd2"]
+      },
+      "hold": {
+        "role": "secondary",
+        "displayName": "Hold Amber",
+        "canonical": "#ffab00",
+        "tonalRamp": ["#2a1c00", "#483000", "#6a4600", "#8d5e00", "#bb7c00", "#ffab00", "#ffc44d", "#ffda8c", "#ffeecb"]
+      },
+      "done": {
+        "role": "tertiary",
+        "displayName": "Idle Blue",
+        "canonical": "#2f81f7",
+        "tonalRamp": ["#04121f", "#082138", "#0d3355", "#124675", "#1a5fa5", "#2f81f7", "#6da5fa", "#a3c7fc", "#d6e5fe"]
+      },
+      "add": {
+        "role": "tertiary",
+        "displayName": "Diff Green",
+        "canonical": "#56d364",
+        "tonalRamp": ["#07200c", "#0c3815", "#12521f", "#186e2a", "#2f9640", "#56d364", "#82e28c", "#aeeeb4", "#dbf8de"]
+      },
+      "del": {
+        "role": "tertiary",
+        "displayName": "Diff Red",
+        "canonical": "#f8756c",
+        "tonalRamp": ["#2b0b09", "#491511", "#6b201b", "#8f2d26", "#bd453c", "#f8756c", "#fa9a93", "#fcbfba", "#fee2e0"]
+      },
+      "ink-000": {
+        "role": "neutral",
+        "displayName": "Plate Black",
+        "canonical": "#08090a",
+        "tonalRamp": ["#08090a", "#0d0f11", "#131619", "#1a1e23", "#22272e", "#333b45", "#59626d", "#8d959f", "#c9d1d9"]
+      },
+      "txt": {
+        "role": "neutral",
+        "displayName": "Terminal Ink",
+        "canonical": "#c9d1d9",
+        "tonalRamp": ["#14181c", "#1e2429", "#2c343b", "#3d464f", "#5a646f", "#7d8792", "#98a3af", "#c9d1d9", "#e8eef4"]
+      },
+      "txt-fnt": {
+        "role": "neutral",
+        "displayName": "Faint Ink",
+        "canonical": "#7d8792",
+        "tonalRamp": ["#14181c", "#1e2429", "#2c343b", "#3d464f", "#5a646f", "#7d8792", "#98a3af", "#c9d1d9", "#e8eef4"]
+      },
+      "umd": {
+        "role": "neutral",
+        "displayName": "UMD Grey",
+        "canonical": "#b6c0cb",
+        "tonalRamp": ["#12171b", "#1c2228", "#2a323a", "#3c4650", "#5b6570", "#7f8994", "#9daab6", "#b6c0cb", "#e5eaef"]
+      },
+      "txt-hi": {
+        "role": "neutral",
+        "displayName": "Emphasis White",
+        "canonical": "#e8eef4",
+        "tonalRamp": ["#151a1f", "#20272d", "#2f3841", "#414c57", "#5e6a76", "#8994a0", "#b3bcc6", "#e8eef4", "#f7fafc"]
+      },
+      "led-off": {
+        "role": "neutral",
+        "displayName": "Unlit Segment",
+        "canonical": "#39434f",
+        "tonalRamp": ["#0d1114", "#161b21", "#22292f", "#2d353e", "#39434f", "#4d5966", "#6b7885", "#96a2ad", "#c8d0d8"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Timecode", "purpose": "The centred SMPTE timecode in the rail. The only glowing type on the surface." },
+      "headline": { "displayName": "Bus Readout", "purpose": "The amber numeric readout closing each swarm-bus channel. Small, because the bar carries the magnitude and the numeral only confirms it." },
+      "title": { "displayName": "Wordmark", "purpose": "The Swarmdeck wordmark in the rail. Nothing else uses this step." },
+      "body": { "displayName": "Transcript", "purpose": "Source-tile transcript body. Iosevka 400, ligatures disabled, with GutterMark patching U+23BF ahead of it in the stack." },
+      "body-pgm": { "displayName": "Program Transcript", "purpose": "The larger transcript step used only inside the program monitor; the size difference is what makes PGM read as primary." },
+      "label": { "displayName": "UMD Label", "purpose": "Every piece of chrome — label strips, count pills, plates, badges, graticule numerals. Exposed as the .umd-type utility." }
+    },
+    "fontPatches": [
+      {
+        "name": "GutterMark",
+        "unicodeRange": "U+23BF",
+        "src": "local('Apple Symbols'), local('Segoe UI Symbol'), local('DejaVu Sans Mono')",
+        "purpose": "Single-codepoint repair for ⎿, the result gutter Claude Code prints and no local monospace carries. Sits first in --f-term; every other codepoint falls through to Iosevka. A character repair, not a third type register."
+      }
+    ],
+    "shadows": [
+      { "name": "lamp-program", "value": "0 0 0 1px color-mix(in oklab, #ff2b18 30%, transparent), 0 0 40px color-mix(in oklab, #ff2b18 16%, transparent)", "purpose": "The program monitor's permanent on-air lamp." },
+      { "name": "recess-monitor", "value": "inset 0 0 0 1px rgb(0 0 0 / 100%), inset 0 3px 9px rgba(0, 0, 0, 0.75)", "purpose": "The program monitor's screen sitting below its rack plate. The single sanctioned depth event on the surface." },
+      { "name": "lamp-air", "value": "0 0 0 1px color-mix(in oklab, #ff2b18 45%, transparent), 0 0 22px color-mix(in oklab, #ff2b18 26%, transparent)", "purpose": "The source tile currently on the program bus." },
+      { "name": "bloom-working", "value": "inset 0 0 22px color-mix(in oklab, #ff2b18 8%, transparent)", "purpose": "Inset heat on a source that is streaming output. Inset, so it reads as heat rather than lift." },
+      { "name": "lamp-hold", "value": "0 0 16px color-mix(in oklab, #ffab00 20%, transparent)", "purpose": "A source blocked on an operator permission prompt." },
+      { "name": "lamp-preview", "value": "0 0 0 1px color-mix(in oklab, #17d76a 55%, transparent), 0 0 20px color-mix(in oklab, #17d76a 28%, transparent)", "purpose": "The source cued for the next cut, during the 900ms cue lead." },
+      { "name": "lamp-record", "value": "0 0 10px #ff2b18", "purpose": "The rail's record dot, on its bright half-cycle only." },
+      { "name": "well-instrument", "value": "inset 0 0 0 1px var(--line)", "purpose": "PPM tracks and context-bridge tracks. A printed frame, not depth." },
+      { "name": "bloom-timecode", "value": "text-shadow: 0 0 18px color-mix(in oklab, #ffb02e 34%, transparent)", "purpose": "The display timecode. The only glowing type on the surface." }
+    ],
+    "motion": [
+      { "name": "tally-swap", "value": "border-color 120ms linear, box-shadow 160ms linear", "purpose": "Tally lamp state change. Linear and fast: a switch, not a dissolve." },
+      { "name": "cue-blink", "value": "300ms steps(1) infinite", "purpose": "The preview tally blink. Stepped, never eased — a cue lamp is on or off." },
+      { "name": "meter-segment", "value": "background 90ms linear", "purpose": "LED ladder segments crossing. Fast enough to look electrical, slow enough not to strobe." },
+      { "name": "meter-fill", "value": "transform 300ms linear", "purpose": "Context-remaining tracks. scaleY rather than height so nine simultaneous meters stay off the layout path." },
+      { "name": "peak-hold-tile", "value": "catch instantly, decay over ~2600ms", "purpose": "Per-source level peak cap on the tile and PGM ladders." },
+      { "name": "peak-hold-bus", "value": "catch instantly, decay over ~4000ms", "purpose": "Swarm-bus peak caps on tokens/min and tool calls/min." },
+      { "name": "ticker-step", "value": "260ms cubic-bezier(0.22, 0.7, 0.3, 1)", "purpose": "The swarm log's one-cell advance on every arrival. The only expressive easing curve in the build." },
+      { "name": "cut-flash", "value": "190ms state-driven decay, no transition, mix-blend-mode: screen", "purpose": "The vision-mixer flash on a cut. Driven by a counter, not a CSS transition." },
+      { "name": "cue-lead", "value": "900ms between preview and cut", "purpose": "The window in which the preview tally, the PREVIEW badge and the green CUE SRC plate are all showing." },
+      { "name": "clock-toggles", "value": "cursor 530ms, spinner glyph 110ms, record lamp 620ms", "purpose": "Hard modulo toggles off the frame clock. No fade curve exists on any of them." },
+      { "name": "calm-line-floor", "value": "520ms minimum per committed line", "purpose": "Reduced-motion pacing: lines land whole at a reading pace instead of typing. Without the floor, fewer whole lines would be more motion, not less." }
+    ],
+    "breakpoints": [
+      { "name": "wall-stack", "value": "1080px" },
+      { "name": "strip-trim", "value": "900px" },
+      { "name": "rail-trim", "value": "860px" },
+      { "name": "narrow", "value": "720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Source Tile (tally states)",
+      "kind": "card",
+      "refersTo": "source-tile",
+      "description": "One of nine multiviewer sources. Its border is the tally lamp; the state resolves from a single data-tally attribute.",
+      "html": "<div style=\"display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:560px\"><article class=\"ds-tile\" data-tally=\"air\"><div class=\"ds-tile-feed\"><span class=\"ds-tally-badge ds-tally-badge--air\">PGM</span>⏺ Read(src/lib/db/query/policy.ts)</div><footer class=\"ds-umd\"><span class=\"ds-umd-src\">06</span><span class=\"ds-umd-name\">TRIAGE-06</span><span class=\"ds-umd-state ds-umd-state--air\">ON AIR</span></footer></article><article class=\"ds-tile\" data-tally=\"hold\"><div class=\"ds-tile-feed\">❯ 1. Yes</div><footer class=\"ds-umd\"><span class=\"ds-umd-src\">03</span><span class=\"ds-umd-name\">REDUCE-03</span><span class=\"ds-umd-state ds-umd-state--hold\">HOLD</span></footer></article><article class=\"ds-tile\" data-tally=\"run\"><div class=\"ds-tile-feed\">⏺ Bash(pnpm oxlint)</div><footer class=\"ds-umd\"><span class=\"ds-umd-src\">01</span><span class=\"ds-umd-name\">MIGRATE-01</span><span class=\"ds-umd-state ds-umd-state--run\">LIVE</span></footer></article><article class=\"ds-tile ds-tile--cued\"><div class=\"ds-tile-feed\"><span class=\"ds-tally-badge ds-tally-badge--pvw\">PREVIEW</span>⏺ Grep(pattern: \"renderDiff\")</div><footer class=\"ds-umd\"><span class=\"ds-umd-src\">08</span><span class=\"ds-umd-name\">AUDIT-08</span><span class=\"ds-umd-state\">THINK</span></footer></article></div>",
+      "css": ".ds-tile { position:relative; display:flex; flex-direction:column; background:var(--ink-000,#08090a); border:1.5px solid var(--line-hi,#333b45); border-radius:2px; overflow:hidden; transition:border-color 120ms linear, box-shadow 160ms linear; } .ds-tile-feed { position:relative; min-height:56px; padding:8px 9px; background:var(--ink-050,#0d0f11); color:var(--txt-hi,#e8eef4); font-family:'GutterMark','Iosevka',ui-monospace,'SF Mono',Menlo,monospace; font-size:11px; line-height:1.44; padding-left:calc(9px + 3ch); text-indent:-3ch; } .ds-tile[data-tally='air'] { border-color:var(--live,#ff2b18); box-shadow:0 0 0 1px color-mix(in oklab, var(--live,#ff2b18) 45%, transparent), 0 0 22px color-mix(in oklab, var(--live,#ff2b18) 26%, transparent); } .ds-tile[data-tally='run'] { border-color:color-mix(in oklab, var(--live,#ff2b18) 72%, var(--ink-200,#22272e)); box-shadow:inset 0 0 22px color-mix(in oklab, var(--live,#ff2b18) 8%, transparent); } .ds-tile[data-tally='hold'] { border-color:var(--hold,#ffab00); box-shadow:0 0 16px color-mix(in oklab, var(--hold,#ffab00) 20%, transparent); } .ds-tile--cued { border-color:var(--cue,#17d76a); box-shadow:0 0 0 1px color-mix(in oklab, var(--cue,#17d76a) 55%, transparent), 0 0 20px color-mix(in oklab, var(--cue,#17d76a) 28%, transparent); animation:ds-cuepulse 300ms steps(1) infinite; } @keyframes ds-cuepulse { 0%,49% { border-color:var(--cue,#17d76a); } 50%,100% { border-color:color-mix(in oklab, var(--cue,#17d76a) 40%, var(--ink-200,#22272e)); } } .ds-tally-badge { position:absolute; top:0; right:0; padding:3px 5px 3px 6px; font-family:'Martian Mono',ui-monospace,monospace; font-size:7.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; line-height:1; color:var(--on-live,#fff); text-indent:0; } .ds-tally-badge--air { background:var(--live,#ff2b18); } .ds-tally-badge--pvw { background:var(--cue,#17d76a); color:var(--on-cue,#04170c); } .ds-umd { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:7px; height:20px; padding-right:6px; background:var(--ink-150,#1a1e23); border-top:1px solid var(--line,#1e2329); color:var(--umd,#b6c0cb); font-family:'Martian Mono',ui-monospace,monospace; font-size:7.5px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; line-height:1; } .ds-umd-src { align-self:stretch; display:grid; place-items:center; padding:0 6px; background:var(--ink-200,#22272e); color:var(--txt-hi,#e8eef4); font-weight:700; letter-spacing:.04em; font-variant-numeric:tabular-nums; } .ds-umd-name { color:var(--txt-hi,#e8eef4); font-weight:700; white-space:nowrap; } .ds-umd-state { font-weight:700; letter-spacing:.12em; } .ds-umd-state--air, .ds-umd-state--run { color:var(--live,#ff2b18); } .ds-umd-state--hold { color:var(--hold,#ffab00); }"
+    },
+    {
+      "name": "Transcript Line Kinds",
+      "kind": "custom",
+      "refersTo": "terminal-field",
+      "description": "The global .ln vocabulary. Styled globally rather than scoped because the kind arrives as a runtime value; every line carries a 3ch hanging indent, and ⎿ resolves through the GutterMark patch.",
+      "html": "<div class=\"ds-term\"><div class=\"ds-ln ds-ln--tool\"><b class=\"ds-bul\">⏺</b> Read(packages/runtime/src/stream/resume.ts)</div><div class=\"ds-ln ds-ln--gut\">  ⎿  Read 374 lines</div><div class=\"ds-ln ds-ln--ctx\">  271       const parsed = Schema.parse(await json(body))</div><div class=\"ds-ln ds-ln--add\">  272 +     // TODO: bound this</div><div class=\"ds-ln ds-ln--del\">  274 -     if (seen.has(id)) return</div><div class=\"ds-ln ds-ln--text\">The backoff math is duplicated in three places. I will lift it into one module.</div><div class=\"ds-ln ds-ln--todo-open\">  ☐ Wire the policy into the queue worker</div><div class=\"ds-ln ds-ln--todo-done\">  ☒ Extract the retry policy into its own module</div><div class=\"ds-ln ds-ln--rule\"></div><div class=\"ds-ln ds-ln--spin\">✻ Grooving… <span class=\"ds-meta\">(114s · ↑ 7.6 tokens · esc to interrupt)</span><i class=\"ds-cur\"></i></div><div class=\"ds-bar\"><span class=\"ds-mode\">⏵⏵ accept edits on</span><span class=\"ds-left\">haiku-4.5 · 81% context left</span></div></div>",
+      "css": ".ds-term { background:var(--ink-050,#0d0f11); padding:8px 10px 0; font-family:'GutterMark','Iosevka',ui-monospace,'SF Mono',Menlo,monospace; font-size:12px; line-height:1.44; font-variant-ligatures:none; max-width:600px; } .ds-ln { white-space:pre-wrap; overflow-wrap:break-word; color:var(--txt,#c9d1d9); padding-left:3ch; text-indent:-3ch; } .ds-bul { color:var(--coral,#d97757); font-weight:400; } .ds-ln--tool { color:var(--txt-hi,#e8eef4); } .ds-ln--gut { color:var(--txt-dim,#98a3af); } .ds-ln--ctx { color:var(--txt-fnt,#7d8792); } .ds-ln--add { color:var(--add,#56d364); background:rgba(46,160,67,.15); } .ds-ln--del { color:var(--del,#f8756c); background:rgba(248,81,73,.13); } .ds-ln--text { color:var(--txt-hi,#e8eef4); } .ds-ln--todo-open { color:var(--txt-dim,#98a3af); } .ds-ln--todo-done { color:var(--txt-fnt,#7d8792); } .ds-ln--rule { height:0; margin:.6em 0; border-top:1px dashed var(--line-hi,#333b45); overflow:hidden; } .ds-ln--spin { color:var(--coral,#d97757); margin-top:.25em; } .ds-ln--spin .ds-meta { color:var(--txt-fnt,#7d8792); } .ds-cur { display:inline-block; width:.62em; height:1em; margin-left:.5px; vertical-align:text-bottom; background:var(--coral,#d97757); animation:ds-blink 1060ms steps(1) infinite; } @keyframes ds-blink { 0%,49% { background:var(--coral,#d97757); } 50%,100% { background:transparent; } } @media (prefers-reduced-motion: reduce) { .ds-cur { animation:none; } } .ds-bar { display:flex; justify-content:space-between; gap:1ch; margin:8px -10px 0; padding:.35em .75em .45em; border-top:1px solid var(--line,#1e2329); background:var(--ink-000,#08090a); font-size:.92em; white-space:nowrap; } .ds-mode { color:color-mix(in oklab, var(--add,#56d364) 62%, var(--txt-fnt,#7d8792)); } .ds-left { color:var(--txt-fnt,#7d8792); }"
+    },
+    {
+      "name": "Permission Prompt",
+      "kind": "custom",
+      "refersTo": "permission-prompt",
+      "description": "The only framed object inside a transcript, and the only 4px corner on the surface. Its presence puts the source into the hold tally.",
+      "html": "<div class=\"ds-ask\"><div class=\"ds-ask-t\">Bash command</div><div class=\"ds-ask-b\">pnpm vitest run --coverage packages/runtime</div><div class=\"ds-ask-b ds-ask-b--sub\">Measure coverage on the runtime</div><div class=\"ds-ask-q\">Do you want to proceed?</div><div class=\"ds-ask-o ds-ask-o--sel\">❯ 1. Yes</div><div class=\"ds-ask-o\">  2. Yes, and don't ask again for pnpm commands</div><div class=\"ds-ask-o\">  3. No, and tell Claude what to do differently (esc)</div></div>",
+      "css": ".ds-ask { max-width:520px; border:1px solid var(--coral,#d97757); border-radius:4px; padding:.5em .7em; background:color-mix(in oklab, var(--coral,#d97757) 8%, var(--ink-050,#0d0f11)); font-family:'GutterMark','Iosevka',ui-monospace,'SF Mono',Menlo,monospace; font-size:12px; line-height:1.44; } .ds-ask-t { color:var(--coral,#d97757); } .ds-ask-b { color:var(--txt,#c9d1d9); padding-left:1.5ch; margin-top:.3em; white-space:pre-wrap; } .ds-ask-b--sub { color:var(--txt-fnt,#7d8792); margin-top:.1em; } .ds-ask-q { color:var(--txt-hi,#e8eef4); margin-top:.55em; } .ds-ask-o { color:var(--txt-dim,#98a3af); white-space:pre-wrap; } .ds-ask-o--sel { color:var(--coral,#d97757); }"
+    },
+    {
+      "name": "LED Meter with Peak Hold",
+      "kind": "custom",
+      "refersTo": "source-tile",
+      "description": "Segmented ladder. Unlit segments stay visible; the top two burn hot; an optional amber cap segment holds the peak above the current reading.",
+      "html": "<div style=\"display:grid;gap:10px;max-width:300px\"><div class=\"ds-meter\" style=\"--n:16\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i></i><i class=\"cap\"></i><i></i><i class=\"hot\"></i><i class=\"hot\"></i></div><div class=\"ds-meter\" data-tone=\"amber\" style=\"--n:9\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i></i><i class=\"cap\"></i><i></i><i class=\"hot\"></i><i class=\"hot\"></i></div></div>",
+      "css": ".ds-meter { display:grid; grid-template-columns:repeat(var(--n),1fr); gap:1px; height:9px; align-items:stretch; } .ds-meter i { background:var(--led-off,#39434f); transition:background 90ms linear; } .ds-meter i.on { background:var(--live,#ff2b18); } .ds-meter[data-tone='amber'] i.on { background:var(--amber,#ffb02e); } .ds-meter[data-tone='cue'] i.on { background:var(--cue,#17d76a); } .ds-meter[data-tone='coral'] i.on { background:var(--coral,#d97757); } .ds-meter i.on.hot { background:var(--led-hot,#ff7a5c); } .ds-meter[data-tone='cue'] i.on.hot { background:var(--amber,#ffb02e); } .ds-meter i.cap { background:var(--amber,#ffb02e); }"
+    },
+    {
+      "name": "Swarm Bus Meter Bridge",
+      "kind": "card",
+      "refersTo": "telemetry-panel",
+      "description": "Three PPM channels against fixed printed full-scale references, sharing one graticule. Scale colours live on the track; the fill is clipped back to the reading.",
+      "html": "<section class=\"ds-tel\"><header class=\"ds-tel-bar\"><span class=\"ds-tel-who\">swarm bus</span><span class=\"ds-tel-unit\">ppm · % of scale</span></header><div class=\"ds-bus\"><div class=\"ds-ch\"><span class=\"ds-ch-lb\">tokens / min</span><span class=\"ds-ppm\"><i class=\"ds-fill\" style=\"--v:.63\"></i><i class=\"ds-cap\" style=\"--p:.71\"></i><i class=\"ds-ref\" style=\"--r:70%\"></i></span><span class=\"ds-ch-read\">38.0k</span></div><div class=\"ds-ch\"><span class=\"ds-ch-lb\">tool calls / min</span><span class=\"ds-ppm\"><i class=\"ds-fill\" style=\"--v:.19\"></i><i class=\"ds-cap\" style=\"--p:.34\"></i><i class=\"ds-ref\" style=\"--r:70%\"></i></span><span class=\"ds-ch-read\">56</span></div><div class=\"ds-ch\"><span class=\"ds-ch-lb\">sources live</span><span class=\"ds-ppm\"><i class=\"ds-fill ds-fill--flat\" style=\"--v:.89\"></i><i class=\"ds-ref\" style=\"--r:70%\"></i></span><span class=\"ds-ch-read\">8/9</span></div><div class=\"ds-grat\"><span></span><span class=\"ds-scale\"><b style=\"--t:0%\"><em>0</em></b><b style=\"--t:20%\"><em>20</em></b><b style=\"--t:40%\"><em>40</em></b><b style=\"--t:60%\"><em>60</em></b><b style=\"--t:80%\"><em>80</em></b><b style=\"--t:100%\"><em>100</em></b></span><span></span></div></div></section>",
+      "css": ".ds-tel { max-width:560px; background:var(--ink-100,#131619); border:1px solid var(--line-hi,#333b45); border-radius:2px; overflow:hidden; font-family:'Martian Mono',ui-monospace,monospace; font-size:8px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; line-height:1; } .ds-tel-bar { display:flex; justify-content:space-between; padding:5px 12px 6px; background:var(--ink-150,#1a1e23); border-bottom:1px solid var(--line,#1e2329); } .ds-tel-who { color:var(--umd,#b6c0cb); font-weight:700; } .ds-tel-unit { color:var(--txt-fnt,#7d8792); } .ds-bus { padding:8px 12px 7px; } .ds-ch, .ds-grat { display:grid; grid-template-columns:96px minmax(0,1fr) 60px; align-items:center; gap:10px; } .ds-ch + .ds-ch { margin-top:5px; } .ds-ch-lb { color:var(--txt-fnt,#7d8792); } .ds-ch-read { font-weight:700; font-size:14px; line-height:1; color:var(--amber,#ffb02e); text-align:right; font-variant-numeric:tabular-nums; } .ds-ppm { position:relative; display:block; height:13px; background:var(--ink-050,#0d0f11); box-shadow:inset 0 0 0 1px var(--line,#1e2329); background-image:repeating-linear-gradient(90deg, transparent 0 calc(5% - 1px), var(--ink-100,#131619) calc(5% - 1px) 5%); } .ds-fill { position:absolute; inset:1px; background:linear-gradient(90deg, var(--cue,#17d76a) 0 62%, var(--amber,#ffb02e) 62% 84%, var(--live,#ff2b18) 84%); clip-path:inset(0 calc(100% - var(--v) * 100%) 0 0); } .ds-fill--flat { background:var(--cue,#17d76a); } .ds-cap { position:absolute; top:1px; bottom:1px; left:calc(var(--p) * 100%); width:2px; background:var(--amber,#ffb02e); } .ds-ref { position:absolute; top:-2px; bottom:-2px; left:var(--r); width:1px; background:var(--umd,#b6c0cb); opacity:.75; } .ds-grat { margin-top:4px; } .ds-scale { position:relative; display:block; height:12px; } .ds-scale b { position:absolute; left:var(--t); top:0; width:1px; height:3px; background:var(--line-hi,#333b45); } .ds-scale em { position:absolute; top:4px; left:0; transform:translateX(-50%); font-style:normal; color:var(--txt-fnt,#7d8792); font-variant-numeric:tabular-nums; }"
+    },
+    {
+      "name": "Rail Count Pills",
+      "kind": "chip",
+      "refersTo": "count-pill",
+      "description": "The tally census in the rail: one pill per status, each bordered and tinted by its own lamp colour. 1px radius is an optical correction, not a rounded chip.",
+      "html": "<div class=\"ds-stats\"><span class=\"ds-rec\"><i></i>rec</span><span class=\"ds-pill ds-pill--run\"><b>5</b>live</span><span class=\"ds-pill ds-pill--cue\"><b>2</b>think</span><span class=\"ds-pill ds-pill--hold\"><b>1</b>hold</span><span class=\"ds-pill ds-pill--idle\"><b>1</b>idle</span><span class=\"ds-tok\"><b>59.1k</b>tokens</span></div>",
+      "css": ".ds-stats { display:flex; align-items:center; gap:12px; padding:10px 14px; background:linear-gradient(180deg,var(--ink-150,#1a1e23),var(--ink-100,#131619)); border-bottom:1px solid var(--line-hi,#333b45); color:var(--txt-dim,#98a3af); font-family:'Martian Mono',ui-monospace,monospace; font-size:8.5px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; line-height:1; white-space:nowrap; } .ds-stats b { color:var(--txt-hi,#e8eef4); font-weight:700; padding-right:4px; font-variant-numeric:tabular-nums; } .ds-rec { display:inline-flex; align-items:center; gap:5px; color:var(--live,#ff2b18); font-weight:700; } .ds-rec i { width:8px; height:8px; border-radius:50%; background:var(--live,#ff2b18); box-shadow:0 0 10px var(--live,#ff2b18); animation:ds-rec 1240ms steps(1) infinite; } @keyframes ds-rec { 0%,49% { background:var(--live,#ff2b18); box-shadow:0 0 10px var(--live,#ff2b18); } 50%,100% { background:color-mix(in oklab, var(--live,#ff2b18) 25%, var(--ink-200,#22272e)); box-shadow:none; } } @media (prefers-reduced-motion: reduce) { .ds-rec i { animation:none; } } .ds-pill { display:inline-flex; align-items:center; padding:3px 6px; border:1px solid var(--line-hi,#333b45); border-radius:1px; background:var(--ink-050,#0d0f11); } .ds-pill--run { border-color:color-mix(in oklab, var(--live,#ff2b18) 55%, var(--ink-200,#22272e)); color:var(--live,#ff2b18); } .ds-pill--cue { border-color:color-mix(in oklab, var(--live,#ff2b18) 42%, var(--ink-200,#22272e)); color:color-mix(in oklab, var(--live,#ff2b18) 68%, var(--umd,#b6c0cb)); } .ds-pill--hold { border-color:color-mix(in oklab, var(--hold,#ffab00) 50%, var(--ink-200,#22272e)); color:var(--hold,#ffab00); } .ds-pill--idle { border-color:color-mix(in oklab, var(--done,#2f81f7) 45%, var(--ink-200,#22272e)); color:var(--done,#2f81f7); } .ds-tok { color:var(--txt-fnt,#7d8792); }"
+    },
+    {
+      "name": "Timecode Display",
+      "kind": "custom",
+      "refersTo": "rail",
+      "description": "The rail's centred SMPTE timecode with its half-size frame counter. The only glowing type on the surface.",
+      "html": "<div class=\"ds-clock\"><span class=\"ds-tc\">00:58:09</span><span class=\"ds-ff\">:23</span><span class=\"ds-fps\">25 fps</span></div>",
+      "css": ".ds-clock { display:flex; align-items:baseline; gap:8px; padding:12px 16px; background:linear-gradient(180deg,var(--ink-150,#1a1e23),var(--ink-100,#131619)); font-family:'Martian Mono',ui-monospace,monospace; font-weight:700; color:var(--amber,#ffb02e); white-space:nowrap; font-variant-numeric:tabular-nums; } .ds-tc { font-size:32px; letter-spacing:.02em; line-height:1; text-shadow:0 0 18px color-mix(in oklab, var(--amber,#ffb02e) 34%, transparent); } .ds-ff { font-size:17px; line-height:1; color:color-mix(in oklab, var(--amber,#ffb02e) 58%, var(--ink-200,#22272e)); } .ds-fps { align-self:center; padding-left:4px; font-size:8.5px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--txt-dim,#98a3af); }"
+    },
+    {
+      "name": "Program Monitor Header with Cut Clock",
+      "kind": "custom",
+      "refersTo": "pgm-monitor",
+      "description": "The PGM header bar closing with the cut clock: a graphite NEXT CUT countdown at rest, replaced in place by a solid green CUE SRC plate during the 900ms preview lead. The screen below is the surface's one recess.",
+      "html": "<section class=\"ds-pgm\"><header class=\"ds-pgm-head\"><span class=\"ds-pgm-tag\">pgm</span><span class=\"ds-pgm-src\">src 06</span><span class=\"ds-pgm-who\">TRIAGE-06</span><span class=\"ds-pgm-task\">cut cold-start below the streaming budget</span><span class=\"ds-pgm-model\">HAIKU-4.5</span><span class=\"ds-next\">next cut 10.5</span></header><div class=\"ds-pgm-screen\"><span class=\"ds-safe\"></span></div><footer class=\"ds-pgm-umd\"><span class=\"ds-k\">repo</span><span class=\"ds-v\">QUARRY-ETL</span><span class=\"ds-k\">branch</span><span class=\"ds-v ds-v--br\">FIX/WEBHOOK-REPL…</span><span class=\"ds-k\">t+</span><span class=\"ds-v\">04:11</span></footer></section><section class=\"ds-pgm\" style=\"margin-top:10px\"><header class=\"ds-pgm-head\"><span class=\"ds-pgm-tag\">pgm</span><span class=\"ds-pgm-src\">src 06</span><span class=\"ds-pgm-who\">TRIAGE-06</span><span class=\"ds-pgm-task\">cut cold-start below the streaming budget</span><span class=\"ds-pgm-model\">HAIKU-4.5</span><span class=\"ds-next ds-next--cueing\">cue src 04</span></header></section>",
+      "css": ".ds-pgm { display:flex; flex-direction:column; max-width:560px; background:var(--ink-000,#08090a); border:2px solid var(--live,#ff2b18); border-radius:2px; box-shadow:0 0 0 1px color-mix(in oklab, var(--live,#ff2b18) 30%, transparent), 0 0 40px color-mix(in oklab, var(--live,#ff2b18) 16%, transparent); overflow:hidden; font-family:'Martian Mono',ui-monospace,monospace; font-size:8px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; line-height:1; } .ds-pgm-head { display:flex; align-items:center; gap:10px; height:26px; padding-right:10px; background:var(--ink-150,#1a1e23); border-bottom:1px solid var(--line-hi,#333b45); white-space:nowrap; overflow:hidden; } .ds-pgm-tag { align-self:stretch; display:grid; place-items:center; padding:0 10px; background:var(--live,#ff2b18); color:var(--on-live,#fff); font-weight:700; letter-spacing:.18em; } .ds-pgm-src { color:var(--umd,#b6c0cb); font-weight:700; font-variant-numeric:tabular-nums; } .ds-pgm-who { color:var(--txt-hi,#e8eef4); font-weight:700; } .ds-pgm-task { flex:1; color:var(--txt-dim,#98a3af); text-transform:none; letter-spacing:.04em; overflow:hidden; text-overflow:ellipsis; } .ds-pgm-model { color:var(--coral,#d97757); font-weight:700; } .ds-next { align-self:stretch; display:grid; place-items:center; padding:0 8px; margin-left:2px; background:var(--ink-200,#22272e); color:var(--umd,#b6c0cb); font-weight:700; font-variant-numeric:tabular-nums; } .ds-next--cueing { background:var(--cue,#17d76a); color:var(--on-cue,#04170c); } .ds-pgm-screen { position:relative; height:96px; background:var(--ink-050,#0d0f11); box-shadow:inset 0 0 0 1px rgb(0 0 0 / 100%), inset 0 3px 9px rgba(0,0,0,.75); } .ds-safe { position:absolute; inset:10px; pointer-events:none; opacity:.55; background:linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 0 0/12px 1px no-repeat, linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 0 0/1px 12px no-repeat, linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 100% 0/12px 1px no-repeat, linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 100% 0/1px 12px no-repeat, linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 0 100%/12px 1px no-repeat, linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 0 100%/1px 12px no-repeat, linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 100% 100%/12px 1px no-repeat, linear-gradient(var(--line-hi,#333b45),var(--line-hi,#333b45)) 100% 100%/1px 12px no-repeat; } .ds-pgm-umd { display:flex; align-items:center; gap:6px; height:24px; padding:0 10px; background:var(--ink-150,#1a1e23); border-top:1px solid var(--line-hi,#333b45); white-space:nowrap; overflow:hidden; } .ds-k { flex:none; color:var(--txt-fnt,#7d8792); } .ds-v { flex:none; max-width:22ch; overflow:hidden; text-overflow:ellipsis; color:var(--txt-hi,#e8eef4); font-weight:700; padding-right:8px; } .ds-v--br { color:var(--cue,#17d76a); }"
+    },
+    {
+      "name": "Ticker Crawl",
+      "kind": "nav",
+      "refersTo": "ticker",
+      "description": "The bottom swarm log. A solid coral tag, then ten fixed-width event cells that step exactly one cell width on every arrival, masked into the right edge.",
+      "html": "<footer class=\"ds-ticker\"><span class=\"ds-ticker-tag\">swarm log</span><div class=\"ds-crawl\"><div class=\"ds-cells\"><span class=\"ds-ev\"><em>05</em><b>10s</b><span class=\"ds-ev-repo\">harbor-ingest</span><span class=\"ds-ev-txt\">Update(packages/core/src/queue/digest.ts)</span></span><span class=\"ds-ev\"><em>09</em><b>10s</b><span class=\"ds-ev-repo\">harbor-ingest</span><span class=\"ds-ev-txt\">Bash(pnpm build --filter kestrel-runtime)</span></span><span class=\"ds-ev\"><em>04</em><b>09s</b><span class=\"ds-ev-repo\">sable-scheduler</span><span class=\"ds-ev-txt\">Read(src/server/session/client.ts)</span></span></div></div></footer>",
+      "css": ".ds-ticker { --cw:300px; display:flex; align-items:stretch; height:34px; background:var(--ink-100,#131619); border-top:1px solid var(--line-hi,#333b45); overflow:hidden; } .ds-ticker-tag { flex:none; display:grid; place-items:center; padding:0 12px; background:var(--coral,#d97757); color:var(--on-coral,#1a0d08); font-family:'Martian Mono',ui-monospace,monospace; font-size:8px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; line-height:1; } .ds-crawl { flex:1; min-width:0; overflow:hidden; mask-image:linear-gradient(90deg,rgb(0 0 0 / 100%) 78%,rgb(0 0 0 / 0%) 99%); } .ds-cells { display:grid; grid-auto-flow:column; grid-auto-columns:var(--cw); height:100%; width:max-content; animation:ds-step 260ms cubic-bezier(.22,.7,.3,1); } @keyframes ds-step { from { transform:translateX(calc(var(--cw) * -1)); } to { transform:none; } } @media (prefers-reduced-motion: reduce) { .ds-cells { animation:none; } } .ds-ev { display:flex; align-items:baseline; gap:7px; padding:0 13px; border-right:1px solid var(--line,#1e2329); font-family:'GutterMark','Iosevka',ui-monospace,'SF Mono',Menlo,monospace; font-size:11px; line-height:1; align-self:center; white-space:nowrap; overflow:hidden; } .ds-ev b { flex:none; color:var(--txt-fnt,#7d8792); font-weight:400; font-variant-numeric:tabular-nums; } .ds-ev em { flex:none; font-style:normal; color:var(--on-cue,#04170c); background:var(--umd,#b6c0cb); padding:2px 4px; font-weight:700; font-size:.88em; font-variant-numeric:tabular-nums; } .ds-ev-repo { flex:none; color:var(--cue,#17d76a); } .ds-ev-txt { color:var(--txt,#c9d1d9); overflow:hidden; text-overflow:ellipsis; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Master Control Room",
+    "overview": "Swarmdeck is a rack-mounted broadcast multiviewer that happens to be showing agent sessions instead of camera feeds. The governing idea is that many things working at once is a broadcast problem, not a dashboard problem: a multiviewer already solves \"which of these nine is on air, which is queued, which needs me\" with tally lamps, UMD label strips and a program monitor, and this build adopts that object wholesale rather than inventing a stats header. The surface is graphite, not black; hairlines are silkscreened at exactly 1px; nothing floats.\n\nDensity is the message. Every panel is clipped, never scrolled, and every panel is full at all times — a near-empty terminal on this wall would read as \"nothing is happening\", which is the one thing the surface must never say. The chrome is deliberately thin and small (labels bottom out at 6.5px) so that the transcripts underneath keep the majority of the pixels. Read at a glance the wall answers \"nine sessions, all working, one on air\"; read up close it answers with real Claude Code transcript grammar — ⏺ tool bullets, ⎿ result gutters, right-aligned diff line numbers, todo checklists, permission prompts, the accept-edits mode line.\n\nTwo constraints shape the palette beyond taste. The surface exists to be filmed, so the ink ramp is graded for contrast that survives codec compression — the detail layer is the first thing a codec eats. And every readout is measured against a printed fixed scale rather than an auto-fitted one, because a bar that rescales itself measures nothing. The world explicitly refuses three defaults: glow-on-black neon, glassmorphism, and rounded cards. Colour is a signalling system with a fixed meaning, not decoration; where the build wants emphasis it changes hue, never weight.",
+    "keyCharacteristics": [
+      "Graphite tonal layering (five ink steps) instead of shadow-based elevation, with exactly one recess on the whole surface.",
+      "Hard 1px hairlines; corners at 2px or 0.",
+      "Tally lamps as the primary status channel: red program bus, green preview bus, amber operator-blocked, blue idle.",
+      "Two type families with strictly separated jobs: Martian Mono for chrome, Iosevka for transcript body.",
+      "Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders, amber SMPTE timecode.",
+      "Motion is broadcast motion: hard cuts and instant state changes; easing exists only for meters and the ticker step."
+    ],
+    "rules": [
+      { "name": "The Program-Bus Rule", "body": "Red is not an error colour on this wall. Red means the source is doing work, and its intensity encodes how much: full + glow = on air, 72% mix = streaming, 40% mix = thinking. Nothing on this surface may use red to mean failure except a diff deletion, which is transcript grammar rather than chrome.", "section": "colors" },
+      { "name": "The Preview-Only Tally Rule", "body": "Green is never a tally state a source can reach on its own — it appears on a source only when the mixer has queued it for the next cut. (Divergence from the stated world, which reserved green \"exclusively\" for the preview bus: the build gives cue green two further jobs outside the tally system — Git identity for branch and repo names, and the in-range band of every meter. That is the actual system; what holds without exception is the tally prohibition.)", "section": "colors" },
+      { "name": "The Two-Ambers Rule", "body": "Readout amber (#ffb02e) is for numbers and marks you read; hold amber (#ffab00) is for a source that needs you. They are close enough to look like a mistake and are not — do not collapse them, and do not use readout amber as a lamp.", "section": "colors" },
+      { "name": "The One-White Rule", "body": "There is one emphasis white (--txt-hi) and one ink per lamp colour. Near-white variation reads as drift, never as hierarchy; if a value needs to be brighter than --txt, it goes to --txt-hi, not to a new hex.", "section": "colors" },
+      { "name": "The One-Signal Rule", "body": "A panel shows exactly one signal colour at a time. Tally state, badge, meter tone and UMD state word all resolve from the same status value, so a source can never be two things at once.", "section": "colors" },
+      { "name": "The Two-Register Rule", "body": "Martian Mono is the chrome register and Iosevka is the body register, and no string crosses. If it is uppercase and tracked it is chrome; if it is a transcript it is Iosevka. There is no third face and no display serif.", "section": "typography" },
+      { "name": "The Glyph-Patch Exception", "body": "A @font-face scoped by unicode-range to a single codepoint is a character repair, not a type register, and is the only sanctioned way to add a family to the stack. It must borrow local() faces, cover exactly the codepoints the body face lacks, and add no weight, no download, and no styling of its own. Reading GutterMark as licence for a third family is the misreading this rule exists to prevent.", "section": "typography" },
+      { "name": "The One-Weight Rule", "body": "Iosevka ships at weight 400 only — roughly 1 MB per weight — so the transcript has no bold. Emphasis inside a panel is always a colour change. Martian Mono carries 400/500/700 because 7px chrome needs weight contrast to survive.", "section": "typography" },
+      { "name": "The Hanging-Gutter Rule", "body": "Every transcript line carries padding-left: 3ch; text-indent: -3ch, so a soft-wrapped line stays under its own gutter instead of resetting to column zero. This is what makes a clipped 9px terminal still parse as a terminal.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Any number that changes on screen wears .tnum. Timecodes, cut countdowns, token counts, tool counts, source numbers, context percentages. A digit that shifts width on camera reads as a glitch.", "section": "typography" },
+      { "name": "The No-Scroll Rule", "body": "Nothing on this surface scrolls, at any width. Panels clip; transcripts are bottom-anchored so the newest line is always the last visible one. A scrollbar would break the object.", "section": "layout" },
+      { "name": "The Subtraction Rule", "body": "At a narrower viewport, remove labels — never shrink the wall, never reduce the source count, never let a panel collapse below readable transcript size. The source number, name, meter and tally state are the four labels that survive every breakpoint.", "section": "layout" },
+      { "name": "The Lamp-Not-Lift Rule", "body": "No outward shadow on this wall is a lift. Every one is tinted by the state it announces, and no neutral or black outward shadow exists anywhere in the build. Depth is spent once, inward, on the program monitor's recess — that is the single sanctioned exception, and it earns it by being the one object that is physically a screen in a plate. If any other surface needs to separate from its neighbour, change its ink step or draw a hairline.", "section": "elevation" },
+      { "name": "The Hairline Rule", "body": "Structural edges are #333b45, internal dividers are #1e2329, and both are exactly 1px. No 2px dividers, no gradients-as-borders, no soft separators.", "section": "elevation" },
+      { "name": "The Two-Pixel Rule", "body": "Corners are 2px or 0. The one exception is the permission prompt at 4px, which is fidelity to the real client, not a system radius. Nothing here is ever a rounded card.", "section": "shapes" },
+      { "name": "The Printed-Scale Rule", "body": "An instrument shows its scale whether or not there is a signal: segment rules, ticks, numerals and the reference mark are drawn on the empty track. An unlabelled gridline and an unlit ladder that cannot be seen both measure nothing.", "section": "shapes" },
+      { "name": "The Hard-Cut Rule", "body": "State changes are cuts, not transitions. Tally borders move at 120ms linear, the preview blink uses steps(1), the cut flash has no curve at all, and the record lamp, cursor and spinner are modulo toggles off the frame clock. Easing exists in exactly two places: the meter transitions and the ticker's one-cell step.", "section": "components" },
+      { "name": "The Calm-Variant Rule", "body": "Under prefers-reduced-motion, the surface does not stop being a multiviewer; it stops fidgeting. Transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor holds solid; the spinner freezes at ✻; the record lamp holds lit; the ticker stops stepping; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.", "section": "components" },
+      { "name": "The Scale-On-Track Rule", "body": "A meter's scale colours belong to its track, and the fill is clipped back to the reading. A bar that carries its own gradient shows \"into the red\" at 10% of scale, which is a lie about the measurement. Full-scale references are constants, printed, and never auto-fitted to the data.", "section": "components" },
+      { "name": "The Runtime-Kind Rule", "body": "Any class whose value is computed at runtime — transcript line kinds, tally states — is styled globally or via a data- attribute, never in a scoped block. Scoped CSS prunes what it cannot see statically.", "section": "components" },
+      { "name": "The Never-Empty Rule", "body": "Every panel opens mid-flight with 7–16 pre-filled blocks of scrollback, and scrollback survives a task turnover (a dashed rule is inserted instead of clearing). An empty panel on this wall reads as a dead feed.", "section": "components" }
+    ],
+    "dos": [
+      "Do resolve every status from one value. Border, badge, meter tone and UMD word all derive from the same run | cue | hold | done status, so a source can never display two states.",
+      "Do use the gap token as the only gutter between panels, and clamp panel heights to the viewport rather than fixing pixels.",
+      "Do put every piece of chrome in the .umd-type label register (Martian Mono 500, uppercase, 0.1em) and every transcript in Iosevka 400.",
+      "Do put .tnum on any number that changes on screen.",
+      "Do reach for --txt-hi when something needs to be brighter than --txt, and for the matching on-* token when text sits on a saturated lamp.",
+      "Do express emphasis inside a transcript with colour. There is no bold Iosevka on this surface and adding one costs about 1 MB.",
+      "Do style runtime-valued classes globally in app.css, alongside the existing .ln rules.",
+      "Do draw new signal states as coloured 1px hairlines and coloured lamps, and derive dimmed variants with color-mix(in oklab, <signal> N%, var(--ink-200)) the way the tally system already does.",
+      "Do print an instrument's scale — ticks, numerals, segment rules, reference mark — on the empty track, and put the scale colours on the track with the fill clipped back to the reading.",
+      "Do give a timed state a number beside it. A 900ms event that shows no countdown is read once and then read as decoration.",
+      "Do keep the transcript bottom-anchored and clipped; add density, never a scrollbar."
+    ],
+    "donts": [
+      "Don't use red to mean failure in chrome. On this wall red is the program bus, and it means the source is working.",
+      "Don't give a source green as a tally state. Cue green reaches a source only through the preview bus; its other jobs are Git identity and the in-range band of a meter.",
+      "Don't interchange the two ambers: #ffb02e is instrument readout and peak-hold, #ffab00 is the operator-blocked lamp.",
+      "Don't add a neutral or black outward shadow, and don't add a second recess. The program monitor's screen is the whole depth budget; use an ink step or a hairline instead.",
+      "Don't introduce another near-white literal. One survives in the build (.ln.tool at #e6edf3) and it is drift, not a second emphasis step; use --txt-hi.",
+      "Don't exceed a 2px corner radius. The 4px permission prompt is client fidelity, not a licence for rounded cards.",
+      "Don't add a third font family. A unicode-range-scoped @font-face repairing a missing glyph is not one; anything that renders more than the codepoints the body face lacks is.",
+      "Don't let a meter auto-fit its scale to the data, and don't paint the gradient onto the fill.",
+      "Don't animate a state change with a fade. Broadcast switches; it does not dissolve.",
+      "Don't answer prefers-reduced-motion by freezing the surface or dropping panels. Slow the content, hold the indicators, keep the wall.",
+      "Don't let a panel render empty or ship a scrollbar. Both break the object the surface is imitating."
+    ]
+  }
+}

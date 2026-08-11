@@ -1,0 +1,11 @@
+allowBuilds:
+  electron-winstaller: set this to true or false
+
+# electron's postinstall fetches the platform binary, so it must be allowed to
+# run. Listing it here implicitly denies every other package's build script.
+onlyBuiltDependencies:
+  - electron
+
+# electron-builder pulls in electron-winstaller, a Windows-installer builder this
+# macOS-only app never needs. Its skipped build is expected, not a failure.
+strictDepBuilds: false

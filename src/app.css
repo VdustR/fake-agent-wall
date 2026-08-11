@@ -1,0 +1,190 @@
+/* Iosevka ships ~1 MB per weight even subsetted, so the terminal body loads one
+   weight only; the two places that wanted bold use colour instead. */
+@import '@fontsource/iosevka/400.css';
+@import '@fontsource/martian-mono/400.css';
+@import '@fontsource/martian-mono/500.css';
+@import '@fontsource/martian-mono/700.css';
+
+/* U+23BF is the result gutter Claude Code actually prints, and no monospace face
+   on this machine carries it — they all fall back to a double-width box that
+   breaks column alignment. Borrowing the one local face that has the glyph, for
+   that codepoint only, keeps the real character in the text. */
+@font-face {
+  font-family: 'GutterMark';
+  src: local('Apple Symbols'), local('Segoe UI Symbol'), local('DejaVu Sans Mono');
+  unicode-range: U+23BF;
+}
+
+:root {
+  /* Master-control chrome: graphite plate, not neon-on-black. */
+  --ink-000: #08090a;
+  --ink-050: #0d0f11;
+  --ink-100: #131619;
+  --ink-150: #1a1e23;
+  --ink-200: #22272e;
+  --line: #1e2329;
+  --line-hi: #333b45;
+
+  /* Terminal ink */
+  /* Four ink steps, all of them legible after camera compression: 12.4 / 10.4 /
+     7.5 / 5.3 against the panel well. The detail layer is the first thing a
+     codec eats, and this surface exists to be filmed. */
+  --txt: #c9d1d9;
+  --txt-dim: #98a3af;
+  --txt-fnt: #7d8792;
+  --umd: #b6c0cb;
+  /* One emphasis white, not five. Every near-white in the build resolved to a
+     slightly different hex before this; the differences read as drift, never as
+     hierarchy. */
+  --txt-hi: #e8eef4;
+  /* Ink for text sitting ON a saturated lamp. */
+  --on-live: #ffffff;
+  --on-cue: #04170c;
+  --on-coral: #1a0d08;
+  /* Unlit meter segment: a ladder has to be visible before it can read as one. */
+  --led-off: #39434f;
+  --led-hot: #ff7a5c;
+
+  /* Tally lamps */
+  --live: #ff2b18;
+  --cue: #17d76a;
+  --hold: #ffab00;
+  --done: #2f81f7;
+
+  --amber: #ffb02e;
+  --coral: #d97757;
+
+  --add: #56d364;
+  --add-bg: rgba(46, 160, 67, 0.15);
+  --del: #f8756c;
+  --del-bg: rgba(248, 81, 73, 0.13);
+
+  --f-umd: 'Martian Mono', ui-monospace, monospace;
+  --f-term: 'GutterMark', 'Iosevka', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --gap: clamp(5px, 0.5vw, 10px);
+  --r: 2px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  min-width: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--ink-000);
+  color: var(--txt);
+  font-family: var(--f-term);
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Broadcast label register: uppercase, tracked, small, never body copy. */
+.umd-type {
+  font-family: var(--f-umd);
+  font-size: clamp(6.5px, 0.46vw, 9.5px);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A hard rule, the way a rack panel is silkscreened. */
+.hair {
+  background: var(--line);
+}
+
+/* ---------------------------------------------------------------------------
+   Transcript line semantics.
+   Kept global because the kind arrives as a runtime value and Svelte's scoped
+   CSS cannot see it statically. Colours mirror the real client's roles.
+   --------------------------------------------------------------------------- */
+.ln {
+  flex: none;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  color: var(--txt);
+  /* Hanging indent, so a wrapped line stays under its own gutter the way a
+     real terminal's soft wrap does instead of resetting to column zero. */
+  padding-left: 3ch;
+  text-indent: -3ch;
+}
+.ln .bul {
+  color: var(--coral);
+  font-weight: 400;
+}
+.ln.tool {
+  color: var(--txt-hi);
+}
+.ln.gut,
+.ln.cont {
+  color: var(--txt-dim);
+}
+.ln.ctx {
+  color: var(--txt-fnt);
+}
+.ln.add {
+  color: var(--add);
+  background: var(--add-bg);
+}
+.ln.del {
+  color: var(--del);
+  background: var(--del-bg);
+}
+.ln.todo-done {
+  color: var(--txt-fnt);
+}
+.ln.todo-open {
+  color: var(--txt-dim);
+}
+.ln.text {
+  color: var(--txt-hi);
+}
+.ln.user {
+  color: var(--umd);
+}
+.ln.err {
+  color: var(--del);
+}
+.ln.ok {
+  color: var(--add);
+}
+.ln.dim {
+  color: var(--txt-fnt);
+}
+.ln.rule {
+  height: 0;
+  margin: 0.6em 0;
+  border-top: 1px dashed var(--line-hi);
+  overflow: hidden;
+}
+.ln.spin {
+  color: var(--coral);
+  margin-top: 0.25em;
+}
+.ln.spin .meta {
+  color: var(--txt-fnt);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
