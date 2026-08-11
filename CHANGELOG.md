@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/VdustR/fake-agent-wall/compare/v0.1.1...v0.2.0) (2026-08-11)
+
+
+### Features
+
+* rename to Fake Agent Wall, fix macOS signing, build all platforms ([3a8eee6](https://github.com/VdustR/fake-agent-wall/commit/3a8eee67ae05f6ad72205963c06a07038ba073d4))
+
+
+### Documentation
+
+* refresh the screenshot for the tmux status line ([47ee147](https://github.com/VdustR/fake-agent-wall/commit/47ee1475095995566288271375a4ebb3f2b60642))
+
 ## [0.1.1](https://github.com/VdustR/fake-agent-wall/compare/v0.1.0...v0.1.1) (2026-08-11)
 
 
