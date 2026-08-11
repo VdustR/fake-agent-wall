@@ -182,7 +182,8 @@ function trayIcon() {
   // Elsewhere a template renders as a black-on-black smudge, so those platforms
   // get the coloured icon instead.
   if (!IS_MAC) return nativeImage.createFromPath(join(HERE, 'assets', 'tray.png'))
-  const img = nativeImage.createFromPath(join(HERE, 'assets', 'trayTemplate.png'))
+  const filename = wall ? 'trayPlayingTemplate.png' : 'trayTemplate.png'
+  const img = nativeImage.createFromPath(join(HERE, 'assets', filename))
   img.setTemplateImage(true)
   return img
 }
@@ -190,6 +191,7 @@ function trayIcon() {
 function refreshTray() {
   if (!tray) return
   const s = getSettings()
+  if (IS_MAC) tray.setImage(trayIcon())
   tray.setToolTip(wall ? 'Fake Agent Wall — playing (double-tap esc to stop)' : 'Fake Agent Wall — click to play')
 
   const minuteChoice = (m) => ({

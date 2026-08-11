@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Terminal multiviewer: one program terminal and three source monitors. -->
+  <path fill="#000" fill-rule="evenodd" d="M1 2h14v12H1V2Zm2 2v8h6V4H3Zm8 0v2h2V4h-2Zm0 4v1h2V8h-2Zm0 3v1h2v-1h-2Z"/>
+  <path fill="#000" d="m4 6 2 2-2 2V9l1-1-1-1V6Zm2 4h2v1H6v-1Z"/>
+</svg>
