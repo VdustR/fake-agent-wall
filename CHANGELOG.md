@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/VdustR/fake-agent-wall/compare/v0.2.3...v0.3.0) (2026-08-12)
+
+
+### Features
+
+* add iTerm-compatible theme settings ([#8](https://github.com/VdustR/fake-agent-wall/issues/8)) ([ad7a68d](https://github.com/VdustR/fake-agent-wall/commit/ad7a68d674c044c295a8b1609b6b47ae0c66ed89))
+
 ## [0.2.3](https://github.com/VdustR/fake-agent-wall/compare/v0.2.2...v0.2.3) (2026-08-11)
 
 
