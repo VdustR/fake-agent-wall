@@ -14,4 +14,17 @@ contextBridge.exposeInMainWorld('agentWall', {
     ipcRenderer.on('wall:hint', handler)
     return () => ipcRenderer.off('wall:hint', handler)
   },
+  onThemeToggle(callback) {
+    const handler = () => callback()
+    ipcRenderer.on('wall:theme-toggle', handler)
+    return () => ipcRenderer.off('wall:theme-toggle', handler)
+  },
+  onThemeClose(callback) {
+    const handler = () => callback()
+    ipcRenderer.on('wall:theme-close', handler)
+    return () => ipcRenderer.off('wall:theme-close', handler)
+  },
+  setThemePanelOpen(open) {
+    ipcRenderer.send('wall:theme-panel', open)
+  },
 })

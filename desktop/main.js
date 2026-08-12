@@ -3,6 +3,7 @@ import {
   BrowserWindow,
   globalShortcut,
   Menu,
+  ipcMain,
   nativeImage,
   powerMonitor,
   powerSaveBlocker,
@@ -34,6 +35,7 @@ let blockerId = null
 let lastEscAt = 0
 let armedAt = 0
 let idleTimer = null
+let themePanelOpen = false
 
 /* ------------------------------------------------------------------- window */
 
@@ -45,6 +47,7 @@ function openWall() {
   }
   lastEscAt = 0
   armedAt = 0
+  themePanelOpen = false
 
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
 
@@ -122,13 +125,34 @@ function closeWall() {
  */
 function swallowInput(wc) {
   wc.on('before-input-event', (event, input) => {
-    if (input.type === 'keyDown' && input.key === 'Escape') onEscape()
+    if (input.type !== 'keyDown') {
+      if (!themePanelOpen) event.preventDefault()
+      return
+    }
+
+    const themeShortcut = (input.meta || input.control) && input.shift && input.code === 'Comma'
+    if (themeShortcut) {
+      wc.send('wall:theme-toggle')
+      event.preventDefault()
+      return
+    }
+    if (input.key === 'Escape') {
+      if (themePanelOpen) wc.send('wall:theme-close')
+      else onEscape()
+      event.preventDefault()
+      return
+    }
+    if (themePanelOpen) return
     event.preventDefault()
   })
 }
 
 function onEscape() {
   if (!wall) return
+  if (themePanelOpen) {
+    wall.webContents.send('wall:theme-close')
+    return
+  }
   const now = Date.now()
   // One press, two delivery paths: collapse them into a single event.
   if (now - lastEscAt < DEDUPE_MS) return
@@ -141,6 +165,15 @@ function onEscape() {
   armedAt = now
   hint(true)
 }
+
+ipcMain.on('wall:theme-panel', (event, open) => {
+  if (!wall || event.sender !== wall.webContents) return
+  themePanelOpen = open === true
+  if (themePanelOpen) {
+    armedAt = 0
+    lastEscAt = 0
+  }
+})
 
 /** Ask the page to surface the exit hint. Purely cosmetic; exiting never depends on it. */
 function hint(armed) {

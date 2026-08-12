@@ -4,16 +4,61 @@
   import Pgm from './components/Pgm.svelte'
   import StatusLine from './components/StatusLine.svelte'
   import Telemetry from './components/Telemetry.svelte'
+  import ThemePanel from './components/ThemePanel.svelte'
   import Ticker from './components/Ticker.svelte'
   import Tile from './components/Tile.svelte'
   import { Swarm } from './lib/swarm.svelte'
+  import { applyTheme, cloneTheme, loadTheme, saveTheme, type ThemeSettings } from './lib/theme'
 
   const swarm = new Swarm()
+  let themeOpen = $state(false)
+  let committedTheme = $state<ThemeSettings>()
 
   onMount(() => {
+    committedTheme = loadTheme()
+    applyTheme(committedTheme)
     swarm.start()
-    return () => swarm.stop()
+
+    const toggle = () => setThemeOpen(!themeOpen)
+    const close = () => setThemeOpen(false)
+    const onKeydown = (event: KeyboardEvent) => {
+      const shortcut = (event.metaKey || event.ctrlKey) && event.shiftKey && event.code === 'Comma'
+      if (shortcut) {
+        event.preventDefault()
+        event.stopPropagation()
+        toggle()
+      } else if (event.key === 'Escape' && themeOpen) {
+        event.preventDefault()
+        event.stopPropagation()
+        close()
+      }
+    }
+    window.addEventListener('keydown', onKeydown, { capture: true })
+    const offToggle = window.agentWall?.onThemeToggle(toggle)
+    const offClose = window.agentWall?.onThemeClose(close)
+
+    return () => {
+      swarm.stop()
+      window.removeEventListener('keydown', onKeydown, { capture: true })
+      offToggle?.()
+      offClose?.()
+    }
   })
+
+  function setThemeOpen(open: boolean): void {
+    if (!open && committedTheme) applyTheme(committedTheme)
+    themeOpen = open
+    window.agentWall?.setThemePanelOpen(open)
+  }
+
+  function applyAndClose(theme: ThemeSettings): boolean {
+    if (!saveTheme(theme)) return false
+    committedTheme = cloneTheme(theme)
+    applyTheme(committedTheme)
+    themeOpen = false
+    window.agentWall?.setThemePanelOpen(false)
+    return true
+  }
 
   const beat = $derived(swarm.uptimeMs)
   // The desktop shell hides the pointer and owns the exit gesture; in a plain
@@ -47,6 +92,14 @@
 
   <Ticker {swarm} />
   {#if desktop}<ExitHint />{/if}
+  {#if themeOpen && committedTheme}
+    <ThemePanel
+      value={committedTheme}
+      onpreview={applyTheme}
+      onapply={applyAndClose}
+      oncancel={() => setThemeOpen(false)}
+    />
+  {/if}
 </main>
 
 <style>
@@ -57,6 +110,13 @@
     cursor: none;
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  .deck.desktop :global(.theme-panel),
+  .deck.desktop :global(.theme-panel *) {
+    cursor: auto;
+    user-select: auto;
+    -webkit-user-select: auto;
   }
 
   .deck {
