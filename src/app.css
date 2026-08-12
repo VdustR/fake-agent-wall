@@ -79,6 +79,11 @@ body {
   height: 100%;
 }
 
+::selection {
+  color: var(--txt-hi);
+  background: var(--selection, var(--line-hi));
+}
+
 body {
   background: var(--ink-000);
   color: var(--txt);

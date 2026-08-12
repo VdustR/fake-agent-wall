@@ -59,6 +59,27 @@ so it counts the whole Mac sitting untouched rather than just this app.
 app becomes a plain caffeine switch. Set it to *Never* and it leaves power
 management alone.
 
+### Themes
+
+Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on macOS or
+<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on Windows and Linux to open
+the theme panel. The shortcut works in both the desktop app and the web version.
+
+Search the bundled iTerm presets, select one, and adjust any of its background,
+foreground, cursor, selection, or 16 ANSI colours. Changes preview immediately.
+**Reset preset** restores the selected preset, while **Cancel** or Escape returns
+to the last applied theme. **Apply** saves the palette and separate UI/code font
+families in local browser storage and restores them on the next launch. Font
+families must already be installed on the computer; every value falls back to
+`ui-monospace, monospace`.
+
+The 533 converted presets come from
+[`mbadolato/iTerm2-Color-Schemes`](https://github.com/mbadolato/iTerm2-Color-Schemes)
+through [`VdustR/term-ptt-custom-theme`](https://github.com/VdustR/term-ptt-custom-theme).
+The palette collection is MIT; individual scheme rights belong to their original
+authors. See [Third-Party Notices](THIRD_PARTY_NOTICES.md). Fake Agent Wall does
+not import or export `.itermcolors` files.
+
 Stopping the wall takes Escape pressed twice within 1.5 seconds. Nothing else
 interrupts it. Moving the mouse or pressing Escape once raises a hint plate
 showing the way out, and every other key is swallowed. That gesture lives in the

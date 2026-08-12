@@ -420,7 +420,7 @@ black seam plus a top-weighted inner shadow, the way a monitor sits in a cut-out
 lighter inset effects also exist and are wells rather than recesses: the PPM tracks and
 context bridge tracks carry `inset 0 0 0 1px var(--line)` as a printed frame.
 
-There is exactly one lift, and it is not in the rack. The exit slate is a fixed overlay
+There is exactly one neutral lift, and it is not in the rack. The exit slate is a fixed overlay
 above the whole surface, and it carries the build's only neutral drop shadow
 (`0 10px 40px rgb(0 0 0 / 70%)`). It earns it by being the one element that must be
 legible against content it cannot predict: it lands over live transcripts, over lamps,
@@ -447,7 +447,7 @@ build.
 
 **The Lamp-Not-Lift Rule.** No outward shadow *inside the rack* is a lift. Every one is tinted by the state it announces, and no neutral or black outward shadow exists on any mounted element. Depth is spent once, inward, on the program monitor's recess. If a rack surface needs to separate from its neighbour, change its ink step or draw a hairline.
 
-**The One-Overlay Rule.** Exactly one element floats over the wall and it is the exit slate. It is fixed, non-interactive, transient, and it carries the only neutral drop shadow in the build. A second floating plate would turn a rack into a stack of dialogs; if new information needs to reach the viewer, give it a band or a panel.
+**The Playback-Overlay Rule.** The exit slate is the only overlay that can surface during unattended playback. It is fixed, non-interactive, transient, and carries the only neutral drop shadow in the build. The Theme Panel is an operator mode summoned explicitly by shortcut; it is flush to the right edge, has no shadow, and must be closed before playback returns to its untouched wall state.
 
 **The Hairline Rule.** Structural edges are `{colors.line-hi}`, internal dividers are `{colors.line}`, and both are exactly 1px. No 2px dividers, no gradients-as-borders, no soft separators.
 
@@ -482,6 +482,44 @@ slate's fuse is the same family: a 2px flat bar, no cap, no radius.
 **The Printed-Scale Rule.** An instrument shows its scale whether or not there is a signal: segment rules, ticks, numerals and the reference mark are drawn on the empty track. An unlabelled gridline and an unlit ladder that cannot be seen both measure nothing.
 
 ## Components
+
+### Theme Panel
+
+The theme panel is an operator surface summoned with `Cmd/Ctrl + Shift + ,`; it
+has no persistent button or mark on the wall. It enters from the right as a
+graphite equipment drawer with one bright hairline, preserving the master-control
+world rather than introducing a separate settings-app visual language. In the
+desktop shell, opening the panel temporarily releases ordinary keyboard input so
+search and font fields work; closing it restores kiosk input capture. Escape
+cancels the draft and never arms the wall's double-Escape exit gesture.
+
+The colour model matches the converted iTerm preset schema: background,
+foreground, cursor, selection, eight ANSI colours, and eight bright ANSI colours.
+Preset search, selection, direct colour edits, and reset all preview immediately.
+Apply alone persists the draft to local storage; Cancel, Escape, and the close
+control restore the last applied theme. The selected preset remains the reset
+baseline even after individual colours change.
+
+Swarmdeck semantic tokens are derived from the iTerm palette rather than stored
+as a second editable palette. Background and foreground generate the graphite,
+hairline, and text ramps with `color-mix(in oklch, ...)`; ANSI red, green, yellow,
+and blue feed program, preview, hold, and idle; cursor feeds Claude coral; bright
+variants feed readouts and transcript diff colours. Ink on saturated fills is
+chosen from black or white for legibility. This mapping preserves the wall's
+status grammar while allowing light and dark terminal schemes.
+
+Typography has two independent user values: UI font for tmux/master-control
+chrome and code font for terminal content. Both preview while typing and always
+append `ui-monospace, monospace`. The code stack keeps the `GutterMark`
+unicode-range repair before the user family, so U+23BF remains aligned. The panel
+does not fetch fonts or accept webfont markup; a missing local family falls
+through immediately.
+
+The panel itself follows the active draft theme. It uses hard plate fills, 1px
+rules, 0–2px corners, uppercase UI labels, terminal-face values, and no decorative
+glow. The preset list carries four small palette swatches for recognition. The
+full ANSI grid remains visible even when some colours are not consumed directly
+by Swarmdeck, because schema fidelity and preset editing are part of the feature.
 
 ### Status Line
 
@@ -659,7 +697,7 @@ like an ordinary page.
 - **Don't** give a source green as a tally state. Cue green reaches a source only through the preview bus; its other jobs are Git identity and the in-range band of a meter.
 - **Don't** interchange the two ambers: `{colors.amber}` is instrument readout and peak-hold, `{colors.hold}` is the operator-blocked lamp.
 - **Don't** add a second tmux element below the status line, or a master-control badge, plate or lamp inside it. One band, one crossing.
-- **Don't** add a neutral or black outward shadow to anything mounted in the rack, and don't add a second recess or a second floating overlay. The monitor's recess and the exit slate's drop shadow are the whole depth budget; use an ink step or a hairline instead.
+- **Don't** add a neutral or black outward shadow to anything mounted in the rack or to the Theme Panel. The monitor's recess and the exit slate's drop shadow are the whole depth budget; use an ink step or a hairline instead.
 - **Don't** reintroduce a display type step or glowing type. The wall lost both with the rail and reads better without them; hierarchy comes from position, fill and colour.
 - **Don't** use an `on-*` lamp ink on a grey plate, or plate black on a saturated fill.
 - **Don't** exceed a 2px corner radius. The 4px permission prompt is client fidelity, not a licence for rounded cards.

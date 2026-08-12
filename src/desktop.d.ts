@@ -11,6 +11,9 @@ declare global {
     agentWall?: {
       isDesktop: true
       onHint(callback: (payload: HintPayload) => void): () => void
+      onThemeToggle(callback: () => void): () => void
+      onThemeClose(callback: () => void): () => void
+      setThemePanelOpen(open: boolean): void
     }
   }
 }
