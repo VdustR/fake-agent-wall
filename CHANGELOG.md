@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/VdustR/fake-agent-wall/compare/v0.4.0...v0.5.0) (2026-08-13)
+
+
+### Features
+
+* add adaptive operations feeds and typography settings ([#12](https://github.com/VdustR/fake-agent-wall/issues/12)) ([b6dd2ed](https://github.com/VdustR/fake-agent-wall/commit/b6dd2ed2b78cf13b11b86f620f0a25c3d4e2d88e))
+
 ## [0.4.0](https://github.com/VdustR/fake-agent-wall/compare/v0.3.0...v0.4.0) (2026-08-13)
 
 
