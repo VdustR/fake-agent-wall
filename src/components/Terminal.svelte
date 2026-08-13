@@ -65,8 +65,8 @@
   </div>
 
   <div class="bar">
-    <span class="mode">⏵⏵ accept edits on</span>
-    <span class="left">{agent.model} · {Math.round(agent.contextLeft)}% context left</span>
+    <span class="mode">⏵⏵ {agent.executionPolicy}</span>
+    <span class="left">{agent.provider} / {agent.model} · {Math.round(agent.contextLeft)}% context left</span>
   </div>
 </div>
 

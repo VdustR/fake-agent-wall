@@ -46,6 +46,14 @@ export const TASKS = [
   'delete the last three feature flags',
   'give the CLI a real exit-code contract',
   'de-duplicate the two markdown parsers',
+  'prove the Rust parser is free of allocation regressions',
+  'repair the Python ingestion pipeline after a schema drift',
+  'make the Go worker drain cleanly during a rolling deploy',
+  'plan the Terraform change without replacing the database',
+  'trace the slow query through the Postgres execution plan',
+  'close the keyboard trap in the billing modal',
+  'rotate the signing keys without invalidating active sessions',
+  'reconcile the OpenAPI contract with the generated SDKs',
 ] as const
 
 export const AGENT_ROLES = [
@@ -162,7 +170,43 @@ export const TODOS = [
   'Document the resume contract',
 ] as const
 
-export const MODELS = ['opus-5', 'opus-5', 'opus-5', 'sonnet-5', 'sonnet-5', 'haiku-4.5'] as const
+/**
+ * Current frontier coding/agent models. The mix is deliberately heterogeneous:
+ * Swarmdeck is the orchestration surface, so a source identifies its upstream
+ * provider instead of pretending every worker is a Claude Code session.
+ */
+export const MODELS = [
+  { name: 'claude-fable-5', provider: 'anthropic' },
+  { name: 'claude-opus-4.8', provider: 'anthropic' },
+  { name: 'gpt-5.6-sol', provider: 'openai' },
+  { name: 'gpt-5.6-terra', provider: 'openai' },
+  { name: 'gpt-5.6-luna', provider: 'openai' },
+  { name: 'gemini-3.1-pro', provider: 'google' },
+  { name: 'gemini-3.6-flash', provider: 'google' },
+  { name: 'grok-4.5', provider: 'xai' },
+  { name: 'deepseek-v4-pro', provider: 'deepseek' },
+  { name: 'deepseek-v4-flash', provider: 'deepseek' },
+  { name: 'qwen3.7-max', provider: 'alibaba' },
+  { name: 'qwen3.7-plus', provider: 'alibaba' },
+  { name: 'kimi-k2.6', provider: 'moonshot' },
+  { name: 'glm-5.1', provider: 'zai' },
+  { name: 'minimax-m2.7', provider: 'minimax' },
+  { name: 'ernie-5.1', provider: 'baidu' },
+] as const
+
+/**
+ * Fleet-level execution policies, not provider CLI flags. The duplication is
+ * intentional weighting: unattended workers mostly run autonomously, while a
+ * small review cohort preserves permission-prompt activity on the wall.
+ */
+export const EXECUTION_POLICIES = [
+  { label: 'auto · full access', prompts: false },
+  { label: 'auto · full access', prompts: false },
+  { label: 'auto · full access', prompts: false },
+  { label: 'bypass permissions', prompts: false },
+  { label: 'bypass permissions', prompts: false },
+  { label: 'auto review · workspace', prompts: true },
+] as const
 
 export const SUBAGENTS = [
   'explore',
@@ -172,44 +216,80 @@ export const SUBAGENTS = [
   'plan',
 ] as const
 
-/** Code fragments used to build diff hunks. Shape matters more than meaning. */
-export const CODE_DEL = [
-  'const raw = await request.text()',
-  'let delay = base * 2 ** attempt',
-  'if (!session) throw new Error("missing session")',
-  'return rows.filter((r) => r.tenant === ctx.tenant)',
-  'await queue.push(job)',
-  'const cache = new Map<string, Row[]>()',
-  'setTimeout(() => flush(), 250)',
-  'export const MAX = 100',
-  'if (seen.has(id)) return',
-  'const parsed = JSON.parse(body)',
-] as const
-
-export const CODE_ADD = [
-  'const raw = await request.arrayBuffer()',
-  'const delay = policy.next(attempt, { jitter: true })',
-  'if (!session) return err("SESSION_MISSING", { id })',
-  'return rows.filter((r) => scope.owns(r))',
-  'await queue.push(job, { bounded: true })',
-  'const cache = new LruCache<string, Row[]>({ max: 512 })',
-  'queueMicrotask(flush)',
-  'export const MAX = Number(env.QUEUE_MAX ?? 100)',
-  'if (seen.has(hashOf(payload))) return',
-  'const parsed = Schema.parse(await json(body))',
-] as const
-
-export const CODE_CTX = [
-  '}',
-  '',
-  'export async function handle(request: Request) {',
-  '  const ctx = await context(request)',
-  '  try {',
-  '  } finally {',
-  '    span.end()',
-  '  const scope = tenantScope(ctx)',
-  '// TODO: bound this',
-  '  const policy = retryPolicy(config)',
+/** Coherent diff scenes: path, syntax, and change belong to the same language. */
+export const CODE_SCENES = [
+  {
+    path: 'packages/runtime/src/queue/policy.ts',
+    before: ['const delay = base * 2 ** attempt', 'await queue.push(job)'],
+    after: ['const delay = policy.next(attempt, { jitter: true })', 'await queue.push(job, { bounded: true })'],
+    context: ['export async function dispatch(job: Job) {', '  const policy = retryPolicy(config)', '}'],
+  },
+  {
+    path: 'crates/parser/src/stream.rs',
+    before: ['let frame = buffer.to_vec();', 'frames.push(frame);'],
+    after: ['let frame = Bytes::copy_from_slice(buffer);', 'sender.send(frame).await?;'],
+    context: ['pub async fn decode(buffer: &[u8]) -> Result<()> {', '    metrics.frames.inc();', '}'],
+  },
+  {
+    path: 'services/ingest/pipeline/batch.py',
+    before: ['rows = [json.loads(line) for line in payload]', 'session.add_all(rows)'],
+    after: ['rows = [Event.model_validate_json(line) for line in payload]', 'session.execute(insert(Event), rows)'],
+    context: ['async def ingest(payload: list[str]) -> int:', '    async with session.begin():', '    return len(rows)'],
+  },
+  {
+    path: 'cmd/worker/drain.go',
+    before: ['close(jobs)', 'return nil'],
+    after: ['stop := queue.BeginDrain()', 'return stop.Wait(ctx)'],
+    context: ['func shutdown(ctx context.Context) error {', '    logger.Info("draining worker")', '}'],
+  },
+  {
+    path: 'db/migrations/042_tenant_events.sql',
+    before: ['CREATE INDEX events_tenant_idx ON events (tenant_id);'],
+    after: ['CREATE INDEX CONCURRENTLY events_tenant_created_idx', '  ON events (tenant_id, created_at DESC);'],
+    context: ['-- CONCURRENTLY must run outside a transaction block', '-- Preserve writes while the index is built', 'ANALYZE events;'],
+  },
+  {
+    path: 'infra/modules/database/main.tf',
+    before: ['deletion_protection = false', 'apply_immediately   = true'],
+    after: ['deletion_protection = true', 'apply_immediately   = var.environment != "production"'],
+    context: ['resource "aws_rds_cluster" "primary" {', '  engine = "aurora-postgresql"', '}'],
+  },
+  {
+    path: 'deploy/base/worker.yaml',
+    before: ['replicas: 1', 'memory: 256Mi'],
+    after: ['replicas: 3', 'memory: 512Mi', 'maxUnavailable: 0'],
+    context: ['kind: Deployment', 'spec:', '  strategy:'],
+  },
+  {
+    path: 'apps/ios/Sources/SessionStore.swift',
+    before: ['self.sessions = try await api.fetchSessions()', 'isLoading = false'],
+    after: ['defer { isLoading = false }', 'self.sessions = try await api.fetchSessions()'],
+    context: ['@MainActor', 'func refresh() async throws {', '}'],
+  },
+  {
+    path: 'apps/android/data/SessionRepository.kt',
+    before: ['return api.sessions().map { it.toDomain() }'],
+    after: ['return cache.getOrPut("sessions") {', '    api.sessions().map(SessionDto::toDomain)', '}'],
+    context: ['suspend fun sessions(): List<Session> {', '    coroutineContext.ensureActive()', '}'],
+  },
+  {
+    path: 'scripts/rotate-signing-keys.sh',
+    before: ['kubectl delete secret signing-key', 'kubectl create secret generic signing-key'],
+    after: ['kubectl apply -f "$next_key_manifest"', 'kubectl rollout status deploy/api --timeout=120s'],
+    context: ['set -euo pipefail', 'next_key_manifest="${1:?manifest required}"', 'echo "rotation complete"'],
+  },
+  {
+    path: 'apps/web/src/routes/billing/+page.svelte',
+    before: ['<div class="modal" on:keydown={trapFocus}>', '<button on:click={close}>×</button>'],
+    after: ['<dialog bind:this={dialog} oncancel={close}>', '<button onclick={close} aria-label="Close billing">×</button>'],
+    context: ['<script lang="ts">', '  let dialog: HTMLDialogElement', '</dialog>'],
+  },
+  {
+    path: 'api/schema/session.graphql',
+    before: ['expiresAt: String!', 'ownerId: String!'],
+    after: ['expiresAt: DateTime!', 'owner: User!'],
+    context: ['type Session implements Node {', '  id: ID!', '}'],
+  },
 ] as const
 
 export const ERRORS = [

@@ -27,6 +27,7 @@
     <span class="src tnum">src {agent.numLabel}</span>
     <span class="who">{agent.label}</span>
     <span class="task">{agent.task}</span>
+    <span class="provider">{agent.provider}</span>
     <span class="model">{agent.model}</span>
     {#if cueing}
       <span class="next cueing">cue src {cueing}</span>
@@ -110,6 +111,10 @@
   .model {
     color: var(--coral);
     font-weight: 700;
+  }
+  .provider {
+    color: var(--txt-fnt);
+    font-weight: 500;
   }
   /* The cue lead is 900ms of green; without a number beside it the signature
      interaction reads once and then reads as decoration. */

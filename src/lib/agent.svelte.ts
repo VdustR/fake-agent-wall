@@ -1,4 +1,4 @@
-import { AGENT_ROLES, BRANCHES, MODELS, REPOS, TASKS } from './corpus'
+import { AGENT_ROLES, BRANCHES, EXECUTION_POLICIES, MODELS, REPOS, TASKS } from './corpus'
 import { chance, int, mulberry32, pick, range, type Rand } from './rng'
 import { makePrompt, nextBlock, openingEmits, type Emit, type Line, type Prompt } from './transcript'
 import { SPINNER_VERBS } from './verbs'
@@ -16,6 +16,9 @@ export class Agent {
   repo = $state('')
   branch = $state('')
   model = $state('')
+  provider = $state('')
+  executionPolicy = $state('')
+  promptsForPermission = $state(false)
   task = $state('')
 
   lines = $state.raw<Line[]>([])
@@ -101,7 +104,12 @@ export class Agent {
     const r = this.#r
     this.repo = pick(r, REPOS)
     this.branch = pick(r, BRANCHES)
-    this.model = pick(r, MODELS)
+    const model = pick(r, MODELS)
+    const policy = pick(r, EXECUTION_POLICIES)
+    this.model = model.name
+    this.provider = model.provider
+    this.executionPolicy = policy.label
+    this.promptsForPermission = policy.prompts
     this.task = pick(r, TASKS)
     // Scrollback survives: the panel keeps reading as a long-lived session
     // instead of blinking empty every time a task turns over.
@@ -180,7 +188,7 @@ export class Agent {
       return
     }
 
-    if (chance(r, 0.08)) {
+    if (this.promptsForPermission && chance(r, 0.18)) {
       this.status = 'hold'
       this.prompt = makePrompt(r)
       this.#phaseUntil = now + range(r, 3600, 7600)

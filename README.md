@@ -17,7 +17,7 @@ recording.
 
 | Real | Invented |
 | --- | --- |
-| The transcript grammar: `⏺` tool bullets, the `⎿` result gutter, right-aligned diff line numbers, `☒`/`☐` todos, the `(N tool uses · Nk tokens · Nm Ns)` subagent summary, the `⏵⏵ accept edits on` mode line, permission prompts | Every repository, branch, file path, diff hunk, test result and benchmark |
+| The transcript grammar: `⏺` tool bullets, the `⎿` result gutter, right-aligned diff line numbers, `☒`/`☐` todos, the `(N tool uses · Nk tokens · Nm Ns)` subagent summary, execution-policy mode lines, permission prompts | Every repository, branch, file path, diff hunk, test result and benchmark |
 | The 215 spinner verbs, read out of an installed Claude Code binary with `strings` and written to `src/lib/verbs.ts` | Every token count, context percentage, call rate and timecode |
 
 Nothing on this page measures anything. Do not present a number from it as a
@@ -67,6 +67,9 @@ the theme panel. The shortcut works in both the desktop app and the web version.
 
 Search the bundled iTerm presets, select one, and adjust any of its background,
 foreground, cursor, selection, or 16 ANSI colours. Changes preview immediately.
+New installations start with **Claude Dark**. The former Swarmdeck default and
+its v1 stored selection are removed; choices applied from this version onward
+persist normally.
 **Reset preset** restores the selected preset, while **Cancel** or Escape returns
 to the last applied theme. **Apply** saves the palette and separate UI/code font
 families in local browser storage and restores them on the next launch. Font
