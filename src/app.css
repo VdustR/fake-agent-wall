@@ -4,6 +4,8 @@
 @import '@fontsource/martian-mono/400.css';
 @import '@fontsource/martian-mono/500.css';
 @import '@fontsource/martian-mono/700.css';
+@import '@fontsource/source-serif-4/400.css';
+@import '@fontsource/source-serif-4/600.css';
 
 /* U+23BF is the result gutter Claude Code actually prints, and no monospace face
    on this machine carries it — they all fall back to a double-width box that
@@ -60,8 +62,9 @@
   --del-bg: color-mix(in oklch, #d47563 13%, transparent);
   --selection: #363634;
 
-  --f-umd: 'Martian Mono', ui-monospace, monospace;
-  --f-term: 'GutterMark', 'Iosevka', ui-monospace, 'SF Mono', Menlo, monospace;
+  --f-editorial: 'Source Serif 4', Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
+  --f-umd: 'Martian Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
+  --f-term: 'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
 
   --gap: clamp(5px, 0.5vw, 10px);
   --r: 2px;

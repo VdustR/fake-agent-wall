@@ -102,8 +102,11 @@
   }
   .task {
     color: var(--txt-dim);
+    font-family: var(--f-editorial);
+    font-size: 1.25em;
+    font-weight: 400;
     text-transform: none;
-    letter-spacing: 0.04em;
+    letter-spacing: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;

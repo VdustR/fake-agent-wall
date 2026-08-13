@@ -16,10 +16,11 @@
     value: ThemeSettings
     onpreview: (theme: ThemeSettings) => void
     onapply: (theme: ThemeSettings) => boolean
+    onreset: () => ThemeSettings | null
     oncancel: () => void
   }
 
-  let { value, onpreview, onapply, oncancel }: Props = $props()
+  let { value, onpreview, onapply, onreset, oncancel }: Props = $props()
   // The panel is remounted for every editing session, so the prop is the draft snapshot.
   // svelte-ignore state_referenced_locally
   let draft = $state(cloneTheme(value))
@@ -37,7 +38,7 @@
   })
 
   function choosePreset(preset: ThemePreset): void {
-    const fonts = { uiFont: draft.uiFont, codeFont: draft.codeFont }
+    const fonts = { editorialFont: draft.editorialFont, uiFont: draft.uiFont, codeFont: draft.codeFont }
     draft = { ...settingsFromPreset(preset), ...fonts }
     onpreview(cloneTheme(draft))
   }
@@ -47,7 +48,7 @@
     onpreview(cloneTheme(draft))
   }
 
-  function updateFont(kind: 'uiFont' | 'codeFont', family: string): void {
+  function updateFont(kind: 'editorialFont' | 'uiFont' | 'codeFont', family: string): void {
     draft[kind] = family
     onpreview(cloneTheme(draft))
   }
@@ -59,6 +60,17 @@
 
   function applyDraft(): void {
     saveError = !onapply(cloneTheme(draft))
+  }
+
+  function restoreDefaults(): void {
+    const restored = onreset()
+    if (!restored) {
+      saveError = true
+      return
+    }
+    draft = restored
+    search = ''
+    saveError = false
   }
 </script>
 
@@ -119,21 +131,29 @@
     <section>
       <h2>Typography</h2>
       <label class="font-field">
-        <span>UI font family</span>
-        <input value={draft.uiFont} oninput={(event) => updateFont('uiFont', event.currentTarget.value)} spellcheck="false" />
-        <output style:font-family={`${draft.uiFont}, ui-monospace, monospace`}>SWARM BUS · 012345</output>
+        <span>Editorial font stack</span>
+        <input value={draft.editorialFont} oninput={(event) => updateFont('editorialFont', event.currentTarget.value)} spellcheck="false" />
+        <output class="editorial-preview" style:font-family={draft.editorialFont}>Claude, composed for the work ahead.</output>
       </label>
       <label class="font-field">
-        <span>Code font family</span>
-        <input value={draft.codeFont} oninput={(event) => updateFont('codeFont', event.currentTarget.value)} spellcheck="false" />
-        <output style:font-family={`${draft.codeFont}, ui-monospace, monospace`}>⏺ Read(src/App.svelte)</output>
+        <span>Chrome font stack</span>
+        <input value={draft.uiFont} oninput={(event) => updateFont('uiFont', event.currentTarget.value)} spellcheck="false" />
+        <output style:font-family={draft.uiFont}>SWARM BUS · 012345</output>
       </label>
-      <p class="fallback">Fallback: ui-monospace, monospace</p>
+      <label class="font-field">
+        <span>Terminal font stack</span>
+        <input value={draft.codeFont} oninput={(event) => updateFont('codeFont', event.currentTarget.value)} spellcheck="false" />
+        <output style:font-family={draft.codeFont}>⏺ Read(src/App.svelte)</output>
+      </label>
+      <p class="fallback">Each value is a complete CSS font-family stack.</p>
     </section>
   </div>
 
   <footer>
-    <span class:error={saveError}>{saveError ? 'Could not save · check browser storage' : ''}</span>
+    <div class="footer-start">
+      <button class="restore" type="button" onclick={restoreDefaults}>Restore defaults</button>
+      <span class:error={saveError}>{saveError ? 'Could not update browser storage' : ''}</span>
+    </div>
     <div>
       <button class="secondary" type="button" onclick={oncancel}>Cancel</button>
       <button class="apply" type="button" onclick={applyDraft}>Apply</button>
@@ -145,7 +165,7 @@
   .theme-panel { position: fixed; z-index: 100; inset: 0 0 0 auto; width: min(460px, 100vw); display: flex; flex-direction: column; color: var(--txt); background: var(--ink-050); border-left: 1px solid var(--line-hi); font-family: var(--f-umd); cursor: default; user-select: text; }
   header, footer { flex: none; display: flex; align-items: center; justify-content: space-between; background: var(--ink-150); border-color: var(--line-hi); }
   header { height: 62px; padding: 0 16px 0 20px; border-bottom: 1px solid var(--line-hi); }
-  h1 { font-size: 16px; line-height: 1; text-transform: uppercase; letter-spacing: .08em; }
+  h1 { font: 600 22px/.95 var(--f-editorial); letter-spacing: -.02em; }
   header p { margin-top: 7px; color: var(--txt-fnt); font: 10px/1 var(--f-term); }
   button, input { font: inherit; }
   button { color: inherit; border: 0; }
@@ -153,7 +173,8 @@
   .close:hover { color: var(--txt-hi); background: var(--ink-200); }
   .panel-body { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: var(--line-hi) var(--ink-050); }
   section { padding: 18px 20px 20px; border-bottom: 1px solid var(--line); }
-  h2, .field-label { display: block; color: var(--umd); font-size: 10px; line-height: 1; letter-spacing: .1em; text-transform: uppercase; }
+  h2 { color: var(--umd); font: 600 15px/1 var(--f-editorial); letter-spacing: -.01em; }
+  .field-label { display: block; color: var(--umd); font-size: 10px; line-height: 1; letter-spacing: .1em; text-transform: uppercase; }
   h3 { margin-top: 18px; color: var(--txt-fnt); font-size: 9px; text-transform: uppercase; letter-spacing: .12em; }
   .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   input[type='search'], .font-field input { width: 100%; height: 36px; margin-top: 10px; padding: 0 10px; color: var(--txt-hi); background: var(--ink-000); border: 1px solid var(--line-hi); border-radius: 2px; outline: none; font-family: var(--f-term); }
@@ -176,13 +197,17 @@
   .ansi-colors input { display: block; width: 100%; height: 28px; margin-top: 5px; }
   .font-field { display: block; margin-top: 14px; color: var(--txt-fnt); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
   .font-field output { display: block; min-height: 38px; padding: 11px 10px; color: var(--txt-hi); background: var(--ink-100); border: 1px solid var(--line); font-size: 12px; text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden; }
+  .font-field output.editorial-preview { font-size: 15px; line-height: 1; }
   .fallback { margin-top: 10px; color: var(--txt-fnt); font: 9px/1 var(--f-term); }
   footer { min-height: 58px; padding: 0 16px 0 20px; border-top: 1px solid var(--line-hi); }
-  footer > span { color: var(--txt-fnt); font: 9px/1 var(--f-term); }
-  footer > span.error { color: var(--del); }
+  .footer-start { min-width: 0; align-items: center; }
+  .footer-start span { color: var(--txt-fnt); font: 9px/1 var(--f-term); }
+  .footer-start span.error { color: var(--del); }
   footer div { display: flex; gap: 8px; }
   footer button { min-width: 82px; height: 32px; padding: 0 14px; border: 1px solid var(--line-hi); text-transform: uppercase; letter-spacing: .08em; font-size: 9px; cursor: pointer; }
   .secondary { background: var(--ink-100); }
+  .restore { min-width: auto; padding: 0; color: var(--txt-dim); background: transparent; border-color: transparent; }
+  .restore:hover { color: var(--txt-hi); }
   .apply { color: var(--on-coral); background: var(--coral); border-color: var(--coral); }
   @media (max-width: 520px) { .theme-panel { width: 100vw; } .ansi-colors { grid-template-columns: repeat(4, 1fr); } }
 </style>

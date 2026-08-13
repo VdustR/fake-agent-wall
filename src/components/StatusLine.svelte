@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Swarm } from '../lib/swarm.svelte'
+  import RollingNumber from './RollingNumber.svelte'
 
   interface Props {
     swarm: Swarm
@@ -39,14 +40,14 @@
   </div>
 
   <div class="right">
-    <span class="seg live"><b>{counts.run}</b>&#8239;live</span>
-    <span class="seg think"><b>{counts.cue}</b>&#8239;think</span>
-    <span class="seg hold"><b>{counts.hold}</b>&#8239;hold</span>
+    <span class="seg live"><b><RollingNumber value={counts.run} label={`${counts.run} live`} /></b>&#8239;live</span>
+    <span class="seg think"><b><RollingNumber value={counts.cue} label={`${counts.cue} thinking`} /></b>&#8239;think</span>
+    <span class="seg hold"><b><RollingNumber value={counts.hold} label={`${counts.hold} held`} /></b>&#8239;hold</span>
     <span class="pipe">│</span>
-    <span class="seg"><b class="tnum">{(swarm.totalTokens / 1000).toFixed(1)}k</b>&#8239;tok</span>
-    <span class="seg"><b class="tnum">{swarm.totalTools}</b>&#8239;calls</span>
+    <span class="seg"><b><RollingNumber value={(swarm.totalTokens / 1000).toFixed(1)} label={`${Math.round(swarm.totalTokens)} tokens`} />k</b>&#8239;tok</span>
+    <span class="seg"><b><RollingNumber value={swarm.totalTools} label={`${swarm.totalTools} tool calls`} /></b>&#8239;calls</span>
     <span class="pipe">│</span>
-    <span class="clock tnum">{tc.slice(0, 8)}</span>
+    <span class="clock"><RollingNumber value={tc.slice(0, 8)} label={`time ${tc.slice(0, 8)}`} /></span>
   </div>
 </header>
 
