@@ -246,7 +246,7 @@ export const CODE_SCENES = [
     path: 'db/migrations/042_tenant_events.sql',
     before: ['CREATE INDEX events_tenant_idx ON events (tenant_id);'],
     after: ['CREATE INDEX CONCURRENTLY events_tenant_created_idx', '  ON events (tenant_id, created_at DESC);'],
-    context: ['BEGIN;', '-- Preserve writes while the index is built', 'COMMIT;'],
+    context: ['-- CONCURRENTLY must run outside a transaction block', '-- Preserve writes while the index is built', 'ANALYZE events;'],
   },
   {
     path: 'infra/modules/database/main.tf',
