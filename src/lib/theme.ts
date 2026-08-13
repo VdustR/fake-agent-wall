@@ -42,31 +42,13 @@ export interface ThemeSettings {
   codeFont: string
 }
 
-const STORAGE_KEY = 'fake-agent-wall.theme.v1'
+const STORAGE_KEY = 'fake-agent-wall.theme.v2'
+const LEGACY_STORAGE_KEY = 'fake-agent-wall.theme.v1'
 const HEX = /^#[0-9a-f]{6}$/i
 
 export const presets = presetData.colors as ThemePreset[]
 
-export const swarmdeckPreset: ThemePreset = {
-  id: 'swarmdeck',
-  name: 'Swarmdeck',
-  source: 'Fake Agent Wall',
-  sourcePath: 'src/app.css',
-  license: 'MIT',
-  scheme: {
-    black: '#08090a', red: '#ff2b18', green: '#17d76a', yellow: '#ffab00',
-    blue: '#2f81f7', purple: '#d97757', cyan: '#56d364', white: '#c9d1d9',
-    brightBlack: '#39434f', brightRed: '#f8756c', brightGreen: '#56d364',
-    brightYellow: '#ffb02e', brightBlue: '#7aa7ff', brightPurple: '#ff9b7f',
-    brightCyan: '#8ee8d0', brightWhite: '#e8eef4',
-  },
-  metadata: {
-    background: '#08090a', foreground: '#c9d1d9', cursor: '#d97757',
-    selection: '#333b45', isDark: true,
-  },
-}
-
-export const allPresets = [swarmdeckPreset, ...presets]
+export const allPresets = presets
 
 export function settingsFromPreset(preset: ThemePreset): ThemeSettings {
   return {
@@ -77,7 +59,10 @@ export function settingsFromPreset(preset: ThemePreset): ThemeSettings {
   }
 }
 
-export const defaultTheme = settingsFromPreset(swarmdeckPreset)
+const claudeDarkPreset = presets.find((preset) => preset.id === 'claude-dark')
+if (!claudeDarkPreset) throw new Error('Bundled Claude Dark theme is missing')
+
+export const defaultTheme = settingsFromPreset(claudeDarkPreset)
 
 export function cloneTheme(theme: ThemeSettings): ThemeSettings {
   return { ...theme, colors: { ...theme.colors } }
@@ -85,6 +70,9 @@ export function cloneTheme(theme: ThemeSettings): ThemeSettings {
 
 export function loadTheme(): ThemeSettings {
   try {
+    // v1 defaulted to the removed Swarmdeck palette. Drop it once so existing
+    // installs receive Claude Dark; subsequent user choices persist under v2.
+    localStorage.removeItem(LEGACY_STORAGE_KEY)
     const stored: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')
     if (isThemeSettings(stored)) return cloneTheme(stored)
   } catch {

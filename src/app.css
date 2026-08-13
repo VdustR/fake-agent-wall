@@ -17,47 +17,48 @@
 
 :root {
   /* Master-control chrome: graphite plate, not neon-on-black. */
-  --ink-000: #08090a;
-  --ink-050: #0d0f11;
-  --ink-100: #131619;
-  --ink-150: #1a1e23;
-  --ink-200: #22272e;
-  --line: #1e2329;
-  --line-hi: #333b45;
+  --ink-000: #262624;
+  --ink-050: color-mix(in oklch, #262624, #e5e4e1 4%);
+  --ink-100: color-mix(in oklch, #262624, #e5e4e1 7%);
+  --ink-150: color-mix(in oklch, #262624, #e5e4e1 10%);
+  --ink-200: color-mix(in oklch, #262624, #e5e4e1 14%);
+  --line: color-mix(in oklch, #262624, #e5e4e1 12%);
+  --line-hi: color-mix(in oklch, #262624, #e5e4e1 22%);
 
   /* Terminal ink */
   /* Four ink steps, all of them legible after camera compression: 12.4 / 10.4 /
      7.5 / 5.3 against the panel well. The detail layer is the first thing a
      codec eats, and this surface exists to be filmed. */
-  --txt: #c9d1d9;
-  --txt-dim: #98a3af;
-  --txt-fnt: #7d8792;
-  --umd: #b6c0cb;
+  --txt: #e5e4e1;
+  --txt-dim: color-mix(in oklch, #262624, #e5e4e1 72%);
+  --txt-fnt: color-mix(in oklch, #262624, #e5e4e1 56%);
+  --umd: color-mix(in oklch, #262624, #e5e4e1 84%);
   /* One emphasis white, not five. Every near-white in the build resolved to a
      slightly different hex before this; the differences read as drift, never as
      hierarchy. */
-  --txt-hi: #e8eef4;
+  --txt-hi: #efeeeb;
   /* Ink for text sitting ON a saturated lamp. */
-  --on-live: #ffffff;
-  --on-cue: #04170c;
-  --on-coral: #1a0d08;
+  --on-live: #08090a;
+  --on-cue: #08090a;
+  --on-coral: #08090a;
   /* Unlit meter segment: a ladder has to be visible before it can read as one. */
-  --led-off: #39434f;
-  --led-hot: #ff7a5c;
+  --led-off: color-mix(in oklch, #262624, #e5e4e1 24%);
+  --led-hot: #f4a9a9;
 
   /* Tally lamps */
-  --live: #ff2b18;
-  --cue: #17d76a;
-  --hold: #ffab00;
-  --done: #2f81f7;
+  --live: #d47563;
+  --cue: #9aca86;
+  --hold: #e8c96b;
+  --done: #6a9bcc;
 
-  --amber: #ffb02e;
+  --amber: #fab319;
   --coral: #d97757;
 
-  --add: #56d364;
-  --add-bg: rgba(46, 160, 67, 0.15);
-  --del: #f8756c;
-  --del-bg: rgba(248, 81, 73, 0.13);
+  --add: #a8d166;
+  --add-bg: color-mix(in oklch, #9aca86 15%, transparent);
+  --del: #f4a9a9;
+  --del-bg: color-mix(in oklch, #d47563 13%, transparent);
+  --selection: #363634;
 
   --f-umd: 'Martian Mono', ui-monospace, monospace;
   --f-term: 'GutterMark', 'Iosevka', ui-monospace, 'SF Mono', Menlo, monospace;

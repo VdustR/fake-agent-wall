@@ -9,9 +9,7 @@
 import {
   BASH,
   BASH_DESC,
-  CODE_ADD,
-  CODE_CTX,
-  CODE_DEL,
+  CODE_SCENES,
   DIRS,
   ERRORS,
   FILES,
@@ -175,23 +173,20 @@ function bashBlock(r: Rand): Emit[] {
 }
 
 function editBlock(r: Rand): Emit[] {
-  const p = path(r)
-  const adds = int(r, 2, 18)
-  const dels = int(r, 0, 9)
+  const scene = pick(r, CODE_SCENES)
+  const p = scene.path
+  const adds = scene.after.length
+  const dels = scene.before.length
   const start = int(r, 12, 320)
   const out: Emit[] = [
     t('tool', `⏺ Update(${p})`, true, 300),
-    t('gut', `  ⎿  Updated ${p} with ${adds} addition${adds === 1 ? '' : 's'} and ${dels} removal${dels === 1 ? '' : 's'}`, false, 200),
+    t('gut', `  ⎿  Updated ${p} with ${adds} additions and ${dels} removals`, false, 200),
   ]
   let ln = start
-  out.push(t('ctx', `    ${num(ln++)}    ${pick(r, CODE_CTX)}`, false, 45))
-  const hunks = int(r, 1, 3)
-  for (let h = 0; h < hunks; h++) {
-    if (chance(r, 0.75)) out.push(t('del', `    ${num(ln)} -  ${pick(r, CODE_DEL)}`, false, 55))
-    out.push(t('add', `    ${num(ln++)} +  ${pick(r, CODE_ADD)}`, false, 55))
-    if (chance(r, 0.5)) out.push(t('add', `    ${num(ln++)} +  ${pick(r, CODE_CTX)}`, false, 55))
-    out.push(t('ctx', `    ${num(ln++)}    ${pick(r, CODE_CTX)}`, false, 45))
-  }
+  out.push(t('ctx', `    ${num(ln++)}    ${scene.context[0]}`, false, 45))
+  for (const line of scene.before) out.push(t('del', `    ${num(ln)} -  ${line}`, false, 55))
+  for (const line of scene.after) out.push(t('add', `    ${num(ln++)} +  ${line}`, false, 55))
+  for (const line of scene.context.slice(1)) out.push(t('ctx', `    ${num(ln++)}    ${line}`, false, 45))
   out.push(t('cont', '', false, 480))
   return out
 }
@@ -239,6 +234,58 @@ function webBlock(r: Rand): Emit[] {
   ]
 }
 
+function rustBlock(r: Rand): Emit[] {
+  const tests = int(r, 38, 420)
+  return [
+    t('tool', '⏺ Bash(cargo test --workspace --all-features)', true, 480),
+    t('gut', `  ⎿  Compiling kestrel-runtime v0.${int(r, 8, 29)}.0`, false, 90),
+    t('cont', `     test result: ok. ${tests} passed; 0 failed; ${int(r, 2, 18)} ignored`, false, 520),
+  ]
+}
+
+function pythonBlock(r: Rand): Emit[] {
+  return [
+    t('tool', '⏺ Bash(uv run pytest -q --disable-warnings)', true, 420),
+    t('gut', `  ⎿  ${'·'.repeat(int(r, 18, 38))}  ${int(r, 84, 760)} passed`, false, 110),
+    t('cont', `     coverage: ${int(r, 82, 99)}% · ${(r() * 8 + 1).toFixed(2)}s`, false, 480),
+  ]
+}
+
+function infrastructureBlock(r: Rand): Emit[] {
+  const change = int(r, 1, 7)
+  return [
+    t('tool', '⏺ Bash(terraform plan -out=.tfplan)', true, 520),
+    t('gut', `  ⎿  Plan: ${change} to add, ${int(r, 1, 5)} to change, 0 to destroy.`, false, 180),
+    t('ok', '     No forced replacements detected.', false, 500),
+  ]
+}
+
+function databaseBlock(r: Rand): Emit[] {
+  return [
+    t('tool', '⏺ Bash(psql -f db/explain/tenant_query.sql)', true, 460),
+    t('gut', `  ⎿  Index Scan using tenant_events_pkey  (actual time=${(r() + 0.1).toFixed(3)}..${(r() * 4 + 1).toFixed(3)} ms)`, false, 120),
+    t('cont', `     Planning Time: ${(r() * 2).toFixed(3)} ms · Execution Time: ${(r() * 8 + 1).toFixed(3)} ms`, false, 500),
+  ]
+}
+
+function browserBlock(r: Rand): Emit[] {
+  const nodes = int(r, 36, 180)
+  return [
+    t('tool', '⏺ Bash(pnpm exec playwright test --project=chromium)', true, 480),
+    t('gut', `  ⎿  ✓ keyboard navigation · ${nodes} accessibility nodes inspected`, false, 100),
+    t('ok', `     ${int(r, 8, 42)} passed · 0 focus-order regressions`, false, 500),
+  ]
+}
+
+function securityBlock(r: Rand): Emit[] {
+  const needsReview = chance(r, 0.25)
+  return [
+    t('tool', '⏺ Bash(trivy fs --severity HIGH,CRITICAL .)', true, 500),
+    t('gut', `  ⎿  ${int(r, 120, 940)} packages scanned · 0 secrets committed`, false, 100),
+    t(needsReview ? 'err' : 'ok', needsReview ? '     HIGH  transitive package requires review' : '     0 high · 0 critical findings', false, 520),
+  ]
+}
+
 function proseBlock(r: Rand): Emit[] {
   const s = pick(r, PROSE)
   return [t('text', s, true, 520), t('cont', '', false, 220)]
@@ -264,6 +311,12 @@ const DECK: Array<[Maker, number]> = [
   [writeBlock, 6],
   [taskBlock, 5],
   [webBlock, 3],
+  [rustBlock, 3],
+  [pythonBlock, 3],
+  [infrastructureBlock, 3],
+  [databaseBlock, 3],
+  [browserBlock, 3],
+  [securityBlock, 2],
 ]
 
 const TOTAL = DECK.reduce((a, [, w]) => a + w, 0)
@@ -293,7 +346,7 @@ export function makePrompt(r: Rand): Prompt {
       title: 'Bash command',
       body: [BASH[i] as string, BASH_DESC[i] as string],
       question: 'Do you want to proceed?',
-      options: ['Yes', "Yes, and don't ask again for pnpm commands", 'No, and tell Claude what to do differently (esc)'],
+      options: ['Yes', "Yes, and don't ask again for pnpm commands", 'No, and tell the agent what to do differently (esc)'],
     }
   }
   const p = path(r)
@@ -301,6 +354,6 @@ export function makePrompt(r: Rand): Prompt {
     title: 'Edit file',
     body: [p, `${int(r, 2, 14)} additions · ${int(r, 0, 6)} removals`],
     question: `Do you want to make this edit to ${p.split('/').pop()}?`,
-    options: ['Yes', "Yes, allow all edits during this session (shift+tab)", 'No, and tell Claude what to do differently (esc)'],
+    options: ['Yes', "Yes, allow all edits during this session (shift+tab)", 'No, and tell the agent what to do differently (esc)'],
   }
 }
