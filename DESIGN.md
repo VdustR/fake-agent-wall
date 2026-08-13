@@ -30,30 +30,34 @@ colors:
   del: "#f4a9a9"
   del-bg: "color-mix(in oklch, #d47563 13%, transparent)"
 typography:
+  editorial:
+    fontFamily: "'Source Serif 4', Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif"
+    fontWeight: 400
+    lineHeight: 1.15
   headline:
-    fontFamily: "'Martian Mono', ui-monospace, monospace"
+    fontFamily: "'Martian Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
     fontSize: "clamp(9.5px, 0.86vw, 15px)"
     fontWeight: 700
     lineHeight: 1
     fontFeature: "tabular-nums"
   status:
-    fontFamily: "'GutterMark', 'Iosevka', ui-monospace, 'SF Mono', Menlo, monospace"
+    fontFamily: "'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
     fontSize: "clamp(9.5px, 0.72vw, 14px)"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "normal"
   body:
-    fontFamily: "'GutterMark', 'Iosevka', ui-monospace, 'SF Mono', Menlo, monospace"
+    fontFamily: "'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
     fontSize: "clamp(9px, 0.67vw, 13px)"
     fontWeight: 400
     lineHeight: 1.44
   body-pgm:
-    fontFamily: "'GutterMark', 'Iosevka', ui-monospace, 'SF Mono', Menlo, monospace"
+    fontFamily: "'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
     fontSize: "clamp(10.5px, 0.84vw, 16px)"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "'Martian Mono', ui-monospace, monospace"
+    fontFamily: "'Martian Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
     fontSize: "clamp(6.5px, 0.46vw, 9.5px)"
     fontWeight: 500
     lineHeight: 1
@@ -244,7 +248,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - Graphite tonal layering (five ink steps) instead of shadow-based elevation, with exactly one recess on the whole surface.
 - Hard 1px hairlines; corners at 2px or 0.
 - Tally lamps as the primary status channel: red program bus, green preview bus, amber operator-blocked, blue idle.
-- Two type families with strictly separated jobs: Martian Mono for chrome, Iosevka for transcript body and for the one tmux band.
+- Three typography roles with strict boundaries: Source Serif 4 for narrative text, Martian Mono for chrome, and Iosevka for transcript body and the one tmux band.
 - No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
 - Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
@@ -311,17 +315,19 @@ Two kinds of filled block exist, and they take different ink.
 
 ## Typography
 
-**Chrome Font:** Martian Mono (with `ui-monospace`, `monospace`)
-**Terminal Font:** Iosevka (with `ui-monospace`, `SF Mono`, `Menlo`, `monospace`)
+**Editorial Font:** Source Serif 4 (with Charter, Sitka Text, Cambria, Georgia, `serif`)
+**Chrome Font:** Martian Mono (with SFMono-Regular, Menlo, Monaco, Consolas, `ui-monospace`, `monospace`)
+**Terminal Font:** Iosevka (with SFMono-Regular, Menlo, Monaco, Consolas, `ui-monospace`, `monospace`)
 **Glyph patch:** GutterMark — a `@font-face` bound to `U+23BF` only
 
-**Character:** Two monospaces with no overlap in job. Martian Mono is wide, mechanical
+**Character:** Two monospaces own the wall, with one editorial serif used for narrative
+text and the Theme Panel hierarchy. Martian Mono is wide, mechanical
 and heavily tracked — it behaves like silkscreen printed onto a rack panel, and is the
 only face allowed to be uppercase. Iosevka is narrow and quiet, chosen because a dense
 terminal needs characters per line more than it needs personality. Ligatures are
 disabled globally so the transcript renders the way a real terminal does.
 
-There is **no display step**. The largest type on the surface is the program monitor's
+There is **no display step on the wall**. The largest type on the surface is the program monitor's
 transcript at a 16px ceiling; the next largest is the bus readout at 15px. The build
 previously carried a 38px glowing timecode and a tracked wordmark, and both went when
 the rail became a status line. Size is no longer a hierarchy channel on this surface —
@@ -343,7 +349,7 @@ against a face that has it; every other codepoint falls straight through to Iose
 
 ### Named Rules
 
-**The Two-Register Rule.** Martian Mono is the chrome register and Iosevka is the terminal register. Uppercase and tracked is chrome; a transcript is Iosevka. There is no third face and no display serif. The single crossing is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
+**The Wall-Register Rule.** Martian Mono is the chrome register and Iosevka is the terminal register. Uppercase and tracked is chrome; a transcript is Iosevka. Source Serif 4 is limited to narrative text such as the PGM task and the Theme Panel hierarchy. The single crossing between the two wall registers is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
 
 **The One-Terminal-Edge Rule.** Exactly one band on this surface speaks tmux: the status line across the top. It is the only place the terminal face is used as chrome, the only place chrome is mixed-case and untracked, and the only place `{colors.txt-fnt}`/`{colors.txt-dim}`/`{colors.txt-hi}` grade a *label* rather than a transcript. Everything below it — sources, instruments, the ticker, every plate and badge — is master control. The mixture is deliberate and it is capped at one band. A second tmux element anywhere else makes the surface read as two half-finished worlds instead of a terminal wall mounted in a rack, and a master-control device inside the status line does the same in reverse.
 
@@ -701,7 +707,7 @@ like an ordinary page.
 - **Don't** reintroduce a display type step or glowing type. The wall lost both with the rail and reads better without them; hierarchy comes from position, fill and colour.
 - **Don't** use an `on-*` lamp ink on a grey plate, or plate black on a saturated fill.
 - **Don't** exceed a 2px corner radius. The 4px permission prompt is client fidelity, not a licence for rounded cards.
-- **Don't** add a third font family. A `unicode-range`-scoped `@font-face` repairing a missing glyph is not one; anything that renders more than the codepoints the body face lacks is.
+- **Don't** use the editorial serif for telemetry, terminal output, badges or instrument labels. It is limited to narrative text and settings hierarchy.
 - **Don't** synthesise bold inside a transcript. The 700 weight in the status line is a 10–14px chrome allowance, not a body-text device.
 - **Don't** let a meter auto-fit its scale to the data, and don't paint the gradient onto the fill.
 - **Don't** animate a state change with a fade. Broadcast switches; it does not dissolve.

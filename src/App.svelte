@@ -1,6 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { flip } from 'svelte/animate'
+  import { cubicOut } from 'svelte/easing'
   import ExitHint from './components/ExitHint.svelte'
+  import Operations from './components/Operations.svelte'
+  import OpsNotice from './components/OpsNotice.svelte'
   import Pgm from './components/Pgm.svelte'
   import StatusLine from './components/StatusLine.svelte'
   import Telemetry from './components/Telemetry.svelte'
@@ -8,16 +12,24 @@
   import Ticker from './components/Ticker.svelte'
   import Tile from './components/Tile.svelte'
   import { Swarm } from './lib/swarm.svelte'
-  import { applyTheme, cloneTheme, loadTheme, saveTheme, type ThemeSettings } from './lib/theme'
+  import { OperationsWorld } from './lib/operations.svelte'
+  import { applyTheme, clearThemeSettings, cloneTheme, defaultTheme, loadTheme, saveTheme, type ThemeSettings } from './lib/theme'
 
   const swarm = new Swarm()
+  const operations = new OperationsWorld(swarm)
   let themeOpen = $state(false)
   let committedTheme = $state<ThemeSettings>()
+  let gridElement = $state<HTMLDivElement>()
 
   onMount(() => {
     committedTheme = loadTheme()
     applyTheme(committedTheme)
     swarm.start()
+    operations.start()
+    const gridObserver = new ResizeObserver(([entry]) => {
+      if (entry) operations.setViewport(entry.contentRect.width, entry.contentRect.height)
+    })
+    if (gridElement) gridObserver.observe(gridElement)
 
     const toggle = () => setThemeOpen(!themeOpen)
     const close = () => setThemeOpen(false)
@@ -39,6 +51,8 @@
 
     return () => {
       swarm.stop()
+      operations.stop()
+      gridObserver.disconnect()
       window.removeEventListener('keydown', onKeydown, { capture: true })
       offToggle?.()
       offClose?.()
@@ -60,43 +74,59 @@
     return true
   }
 
+  function restoreDefaults(): ThemeSettings | null {
+    if (!clearThemeSettings()) return null
+    committedTheme = cloneTheme(defaultTheme)
+    applyTheme(committedTheme)
+    return cloneTheme(committedTheme)
+  }
+
   const beat = $derived(swarm.uptimeMs)
   // The desktop shell hides the pointer and owns the exit gesture; in a plain
   // browser tab neither applies and the page behaves like an ordinary page.
   const desktop = typeof window !== 'undefined' && window.agentWall?.isDesktop === true
   const onAir = $derived(swarm.agents[swarm.pgm] ?? swarm.agents[0]!)
+  const gridItems = $derived(operations.gridItems)
 </script>
 
 <main class="deck" class:desktop>
   <StatusLine {swarm} />
 
-  <div class="wall">
-    <div class="col">
-      <Pgm
-        agent={onAir}
-        {beat}
-        flash={swarm.flash}
-        calm={swarm.reducedMotion}
-        nextCutIn={swarm.nextCutIn}
-        cueing={swarm.pst === -1 ? null : (swarm.agents[swarm.pst]?.numLabel ?? null)}
-      />
-      <Telemetry {swarm} />
-    </div>
+    <div class="wall">
+      <div class="col">
+        <Pgm
+          agent={onAir}
+          {beat}
+          flash={swarm.flash}
+          calm={swarm.reducedMotion}
+          nextCutIn={swarm.nextCutIn}
+          cueing={swarm.pst === -1 ? null : (swarm.agents[swarm.pst]?.numLabel ?? null)}
+        />
+        <Telemetry {swarm} />
+      </div>
 
-    <div class="grid">
-      {#each swarm.agents as a, i (a.slot)}
-        <Tile agent={a} {beat} onAir={i === swarm.pgm} cued={i === swarm.pst} calm={swarm.reducedMotion} />
-      {/each}
+      <div class="grid" bind:this={gridElement}>
+        {#each gridItems as item, index (item.key)}
+          <div class="grid-item" style:grid-area={operations.placementAt(index)} animate:flip={{ duration: swarm.reducedMotion ? 0 : 680, easing: cubicOut }}>
+            {#if item.type === 'agent'}
+              <Tile agent={item.agent} {beat} onAir={item.agent.slot === swarm.pgm} cued={item.agent.slot === swarm.pst} calm={swarm.reducedMotion} />
+            {:else}
+              <Operations world={operations} kind={item.kind} />
+            {/if}
+          </div>
+        {/each}
+      </div>
     </div>
-  </div>
 
   <Ticker {swarm} />
+  <OpsNotice notice={operations.notice} />
   {#if desktop}<ExitHint />{/if}
   {#if themeOpen && committedTheme}
     <ThemePanel
       value={committedTheme}
       onpreview={applyTheme}
       onapply={applyAndClose}
+      onreset={restoreDefaults}
       oncancel={() => setThemeOpen(false)}
     />
   {/if}
@@ -176,11 +206,13 @@
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(12, minmax(0, 1fr));
     gap: var(--gap);
     min-height: 0;
   }
+  .grid-item { min-width: 0; min-height: 0; will-change: transform; }
+  .grid-item :global(> *) { height: 100%; }
 
 
   @media (max-width: 1080px) {
@@ -189,8 +221,8 @@
       grid-template-rows: minmax(0, 52fr) minmax(0, 48fr);
     }
     .grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-template-rows: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: repeat(12, minmax(0, 1fr));
     }
   }
 
@@ -202,5 +234,11 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-rows: repeat(5, minmax(0, 1fr));
     }
+    .grid-item { grid-area: auto !important; }
+    /* Nine feeds cannot fill a two-column matrix evenly. The final terminal
+       becomes the wide closing source, so the mosaic always seals its bottom
+       edge instead of leaving an accidental tenth-cell void. */
+    .grid-item:last-child { grid-column: 1 / -1 !important; }
   }
+  @media (prefers-reduced-motion: reduce) { .grid-item { will-change: auto; } }
 </style>
