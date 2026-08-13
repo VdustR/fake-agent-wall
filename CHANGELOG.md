@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/VdustR/fake-agent-wall/compare/v0.3.0...v0.4.0) (2026-08-13)
+
+
+### Features
+
+* enrich the simulated agent fleet ([#10](https://github.com/VdustR/fake-agent-wall/issues/10)) ([a4e27ff](https://github.com/VdustR/fake-agent-wall/commit/a4e27ff5c22474f67c1cf49ef04f9e16d52b253c))
+
 ## [0.3.0](https://github.com/VdustR/fake-agent-wall/compare/v0.2.3...v0.3.0) (2026-08-12)
 
 
