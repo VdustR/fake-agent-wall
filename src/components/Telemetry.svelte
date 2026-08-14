@@ -1,5 +1,11 @@
 <script lang="ts">
   import type { Swarm } from '../lib/swarm.svelte'
+  import {
+    normalizeThroughput,
+    throughputFullScale,
+    TOKENS_PER_SOURCE_FULL_SCALE,
+    TOOLS_PER_SOURCE_FULL_SCALE,
+  } from '../lib/telemetry-scale'
 
   interface Props {
     swarm: Swarm
@@ -7,34 +13,36 @@
   const { swarm }: Props = $props()
 
   /**
-   * Full-scale references for the bus meters. A PPM is only readable because its
-   * scale is fixed and printed; a bar that rescales itself measures nothing.
+   * Full-scale references calibrated to the synthetic fleet. The wall grows
+   * more agents at larger viewports, so one global ceiling made the same two
+   * channels pin at 100% even though their absolute readings were still moving.
+   * A stable fleet still has a fixed, printed PPM scale.
    */
-  const FS_TOKENS = 60_000
-  const FS_TOOLS = 300
-
   const TICKS = [0, 20, 40, 60, 80, 100]
   /** Where the graticule prints its reference mark, as a percentage of scale. */
   const REF = 70
 
-  const norm = (v: number, fs: number) => Math.max(0, Math.min(1, v / fs))
+  const tokenScale = $derived(throughputFullScale(swarm.agents.length, TOKENS_PER_SOURCE_FULL_SCALE))
+  const toolScale = $derived(throughputFullScale(swarm.agents.length, TOOLS_PER_SOURCE_FULL_SCALE))
 
   const channels = $derived([
     {
       key: 'tok',
       label: 'tokens / min',
-      value: norm(swarm.tokensPerMin, FS_TOKENS),
-      peak: norm(swarm.peakTokens, FS_TOKENS),
+      value: normalizeThroughput(swarm.tokensPerMin, tokenScale),
+      peak: normalizeThroughput(swarm.peakTokens, tokenScale),
       flat: false,
       read: `${(swarm.tokensPerMin / 1000).toFixed(1)}k`,
+      load: `${Math.round(normalizeThroughput(swarm.tokensPerMin, tokenScale) * 100)}% fs`,
     },
     {
       key: 'tools',
       label: 'tool calls / min',
-      value: norm(swarm.toolsPerMin, FS_TOOLS),
-      peak: norm(swarm.peakTools, FS_TOOLS),
+      value: normalizeThroughput(swarm.toolsPerMin, toolScale),
+      peak: normalizeThroughput(swarm.peakTools, toolScale),
       flat: false,
       read: `${Math.round(swarm.toolsPerMin)}`,
+      load: `${Math.round(normalizeThroughput(swarm.toolsPerMin, toolScale) * 100)}% fs`,
     },
     {
       key: 'src',
@@ -45,6 +53,7 @@
       // channel does not run into the red the way a throughput channel does.
       flat: true,
       read: `${swarm.running}/${swarm.agents.length}`,
+      load: `${Math.round(swarm.running / swarm.agents.length * 100)}% live`,
     },
   ])
 </script>
@@ -62,10 +71,11 @@
         <span class="lb umd-type">{c.label}</span>
         <span class="ppm">
           <i class="fill" class:flat={c.flat} style="--v:{c.value}"></i>
+          {#if !c.flat}<i class="level" style="--v:{c.value}"></i>{/if}
           {#if c.peak > 0.01}<i class="cap" style="--p:{c.peak}"></i>{/if}
           <i class="ref" style="--at:{REF}%"></i>
         </span>
-        <span class="read tnum">{c.read}</span>
+        <span class="read tnum"><b>{c.read}</b><small>{c.load}</small></span>
       </div>
     {/each}
 
@@ -159,18 +169,31 @@
     text-overflow: ellipsis;
   }
   .read {
+    display: grid;
+    justify-items: end;
     font-family: var(--f-umd);
-    font-weight: 700;
-    font-size: clamp(9.5px, 0.86vw, 15px);
-    line-height: 1.2;
-    color: var(--amber);
     text-align: right;
+  }
+  .read b {
+    color: var(--amber);
+    font-size: clamp(9.5px, 0.86vw, 15px);
+    line-height: 1;
+  }
+  .read small {
+    margin-top: 2px;
+    color: var(--txt-fnt);
+    font-size: clamp(5.5px, 0.4vw, 8px);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .ppm {
     position: relative;
     display: block;
     height: clamp(9px, 0.95vw, 15px);
+    overflow: hidden;
     background: var(--ink-050);
     box-shadow: inset 0 0 0 1px var(--line);
     /* Segment rules, the way a real ladder is printed rather than drawn. */
@@ -191,6 +214,15 @@
   }
   .fill.flat {
     background: var(--cue);
+  }
+  .level {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--v) * 100% - 1px);
+    width: 2px;
+    background: var(--txt-hi);
+    transition: left 220ms linear;
   }
   .cap {
     position: absolute;
