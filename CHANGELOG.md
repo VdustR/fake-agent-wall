@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/VdustR/fake-agent-wall/compare/v0.5.0...v0.6.0) (2026-08-14)
+
+
+### Features
+
+* make the agent wall adaptive ([#14](https://github.com/VdustR/fake-agent-wall/issues/14)) ([8904094](https://github.com/VdustR/fake-agent-wall/commit/8904094e60a1a6a396594cef367d111f2df3377e))
+
 ## [0.5.0](https://github.com/VdustR/fake-agent-wall/compare/v0.4.0...v0.5.0) (2026-08-13)
 
 
