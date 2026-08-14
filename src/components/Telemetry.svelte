@@ -71,7 +71,7 @@
         <span class="lb umd-type">{c.label}</span>
         <span class="ppm">
           <i class="fill" class:flat={c.flat} style="--v:{c.value}"></i>
-          <i class="level" class:flat={c.flat} style="--v:{c.value}"></i>
+          {#if !c.flat}<i class="level" style="--v:{c.value}"></i>{/if}
           {#if c.peak > 0.01}<i class="cap" style="--p:{c.peak}"></i>{/if}
           <i class="ref" style="--at:{REF}%"></i>
         </span>
@@ -193,6 +193,7 @@
     position: relative;
     display: block;
     height: clamp(9px, 0.95vw, 15px);
+    overflow: hidden;
     background: var(--ink-050);
     box-shadow: inset 0 0 0 1px var(--line);
     /* Segment rules, the way a real ladder is printed rather than drawn. */
@@ -222,9 +223,6 @@
     width: 2px;
     background: var(--txt-hi);
     transition: left 220ms linear;
-  }
-  .level.flat {
-    background: var(--cue);
   }
   .cap {
     position: absolute;
