@@ -1,17 +1,20 @@
 import { AGENT_ROLES, BRANCHES, EXECUTION_POLICIES, MODELS, REPOS, TASKS } from './corpus'
 import { chance, int, mulberry32, pick, range, type Rand } from './rng'
-import { makePrompt, nextBlock, openingEmits, type Emit, type Line, type Prompt } from './transcript'
+import { makePrompt, nextBlock, openingEmits, type BlockFlavor, type Emit, type Line, type Prompt } from './transcript'
 import { SPINNER_VERBS } from './verbs'
 
 export type Status = 'run' | 'cue' | 'hold' | 'done'
 
-/** Ring size per panel. Enough scrollback to read, small enough to stay cheap. */
-const KEEP = 60
+/** Ring size per panel. Large program monitors need enough scrollback to avoid
+ * turning unused screen area into a dead field on high-resolution walls. */
+const KEEP = 112
 
 export class Agent {
   readonly slot: number
   readonly label: string
+  readonly flavor: BlockFlavor
   #r: Rand
+  #tempo = 1
 
   repo = $state('')
   branch = $state('')
@@ -57,11 +60,14 @@ export class Agent {
   constructor(slot: number, seed: number) {
     this.slot = slot
     this.#r = mulberry32(seed)
+    this.flavor = (['implementation', 'research', 'validation', 'orchestration'] as const)[(slot - 1) % 4]!
+    this.#tempo = [1.3, 0.82, 1.05, 0.68][(slot - 1) % 4] as number
     this.label = `${pick(this.#r, AGENT_ROLES)}-${String(slot).padStart(2, '0')}`
     this.#newSession(0)
     // Every panel opens mid-flight. A wall of near-empty terminals reads as
     // "nothing is happening", which is the one thing this prop must never say.
-    this.#prefill(int(this.#r, 7, 16))
+    const base = this.flavor === 'research' ? 20 : this.flavor === 'orchestration' ? 13 : 16
+    this.#prefill(int(this.#r, base, base + 12))
   }
 
   get numLabel() {
@@ -76,7 +82,7 @@ export class Agent {
     this.partial = null
 
     for (let i = 0; i < blocks; i++) {
-      for (const e of nextBlock(this.#r, this.#todoDone)) {
+      for (const e of nextBlock(this.#r, this.#todoDone, this.flavor)) {
         out.push(e.line)
         if (e.line.k === 'tool') {
           this.toolUses += 1
@@ -94,7 +100,7 @@ export class Agent {
 
     this.lines = out.slice(-KEEP)
     this.status = 'cue'
-    // Stagger the first turn so nine panels do not fire in lockstep.
+    // Stagger the first turn so the generated fleet does not fire in lockstep.
     const t0 = performance.now()
     this.#pickVerb(t0)
     this.#phaseUntil = t0 + range(this.#r, 300, 4200)
@@ -143,7 +149,7 @@ export class Agent {
       return
     }
     this.#chars = e.type ? 0 : e.line.s.length
-    this.#speed = range(this.#r, 260, 620)
+    this.#speed = range(this.#r, 260, 620) * this.#tempo
     this.partial = e.type ? { k: e.line.k, s: '' } : { ...e.line }
   }
 
@@ -158,7 +164,7 @@ export class Agent {
       this.toolUses += 1
       this.lifeTools += 1
       this.#eventN += 1
-      this.lastEvent = { n: this.#eventN, text: e.line.s.replace(/^⏺ /, '') }
+      this.lastEvent = { n: this.#eventN, text: e.line.s.replace(/^● /, '') }
       this.contextLeft = Math.max(6, this.contextLeft - range(this.#r, 0.3, 1.6))
     }
     const down = Math.round(e.line.s.length * range(this.#r, 0.6, 1.4)) + 4
@@ -182,13 +188,13 @@ export class Agent {
         { k: 'cont' as const, s: '' },
         {
           k: 'ok' as const,
-          s: `⏺ Done — ${this.toolUses} tool uses · ${((this.tokensUp + this.tokensDown) / 1000).toFixed(1)}k tokens`,
+          s: `● Complete — ${this.toolUses} tool calls · ${((this.tokensUp + this.tokensDown) / 1000).toFixed(1)}k tokens`,
         },
       ].slice(-KEEP)
       return
     }
 
-    if (this.promptsForPermission && chance(r, 0.18)) {
+    if (this.promptsForPermission && chance(r, this.flavor === 'orchestration' ? 0.27 : 0.14)) {
       this.status = 'hold'
       this.prompt = makePrompt(r)
       this.#phaseUntil = now + range(r, 3600, 7600)
@@ -215,7 +221,7 @@ export class Agent {
         this.prompt = null
         this.lines = [
           ...this.lines,
-          { k: 'dim' as const, s: '  ⎿  Approved · continuing' },
+          { k: 'dim' as const, s: '  └  Approved · continuing' },
           { k: 'cont' as const, s: '' },
         ].slice(-KEEP)
         this.status = 'cue'
@@ -228,7 +234,7 @@ export class Agent {
     if (this.status === 'cue') {
       if (now >= this.#verbUntil) this.#pickVerb(now)
       if (now >= this.#phaseUntil) {
-        this.#queue = nextBlock(this.#r, this.#todoDone)
+        this.#queue = nextBlock(this.#r, this.#todoDone, this.flavor)
         if (chance(this.#r, 0.3)) this.#todoDone = Math.min(6, this.#todoDone + 1)
         this.status = 'run'
         this.#beginLine()

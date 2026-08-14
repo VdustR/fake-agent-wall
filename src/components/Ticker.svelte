@@ -89,7 +89,7 @@
     padding: 0 13px;
     border-right: 1px solid var(--line);
     font-size: clamp(9px, 0.68vw, 13px);
-    line-height: 1;
+    line-height: 1.2;
     align-self: center;
     white-space: nowrap;
     overflow: hidden;

@@ -58,7 +58,7 @@ linux:
   # without an email address.
   maintainer: ViPro <vdustr@gmail.com>
   category: Graphics
-  synopsis: A fake wall of Claude Code terminals for video props
+  synopsis: A synthetic coding-agent ambient display
   target:
     - target: AppImage
       arch: [x64]

@@ -8,7 +8,9 @@ export interface TickerItem {
   clock: string
 }
 
-const AGENT_COUNT = 9
+// Start dense enough for ordinary screens. Large walls extend the synthetic
+// fleet on demand so card size, rather than a fixed source count, limits density.
+const INITIAL_AGENT_COUNT = 26
 const CUT_MIN = 9_500
 const CUT_MAX = 15_000
 /** How long the incoming source sits in preview before the cut. */
@@ -18,7 +20,8 @@ const HISTORY = 90
 const pad = (n: number, w = 2) => String(Math.floor(n)).padStart(w, '0')
 
 export class Swarm {
-  readonly agents: Agent[] = []
+  agents = $state.raw<Agent[]>([])
+  readonly #seed: number
 
   pgm = $state(0)
   /** Slot index queued for the next cut, or -1 when nothing is cued. */
@@ -56,10 +59,38 @@ export class Swarm {
   #tokenWindow: Array<[number, number]> = []
   #toolWindow: Array<[number, number]> = []
   #startOffset = 0
+  #visibleSlots = new Set<number>()
+  #backgroundAcc = 0
+  #mediaQuery: MediaQueryList | null = null
+  #mediaListener: ((event: MediaQueryListEvent) => void) | null = null
 
   constructor(seed = 20260811) {
-    for (let i = 0; i < AGENT_COUNT; i++) this.agents.push(new Agent(i + 1, seed + i * 7919))
+    this.#seed = seed
+    this.ensureAgentCount(INITIAL_AGENT_COUNT)
     this.#startOffset = 3_000_000 + seed % 900_000
+  }
+
+  ensureAgentCount(count: number): void {
+    if (count <= this.agents.length) return
+    const additions = Array.from(
+      { length: count - this.agents.length },
+      (_, index) => {
+        const slot = this.agents.length + index + 1
+        return new Agent(slot, this.#seed + (slot - 1) * 7919)
+      },
+    )
+    this.agents = [...this.agents, ...additions]
+  }
+
+  setAgentCount(count: number): void {
+    const target = Math.max(INITIAL_AGENT_COUNT, count)
+    if (target >= this.agents.length) {
+      this.ensureAgentCount(target)
+      return
+    }
+    this.agents = this.agents.slice(0, target)
+    if (this.pgm >= target) this.pgm = 0
+    if (this.pst >= target) this.pst = -1
   }
 
   /** SMPTE-style running clock for the rail. Fabricated, like everything else. */
@@ -75,7 +106,9 @@ export class Swarm {
   start() {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     this.reducedMotion = mq.matches
-    mq.addEventListener('change', (e) => (this.reducedMotion = e.matches))
+    this.#mediaQuery = mq
+    this.#mediaListener = event => (this.reducedMotion = event.matches)
+    mq.addEventListener('change', this.#mediaListener)
 
     this.#prev = performance.now()
     this.#cueAt = this.#prev + 6000
@@ -110,17 +143,29 @@ export class Swarm {
   stop() {
     cancelAnimationFrame(this.#raf)
     clearInterval(this.#watchdog)
+    if (this.#mediaQuery && this.#mediaListener) this.#mediaQuery.removeEventListener('change', this.#mediaListener)
+    this.#mediaQuery = null
+    this.#mediaListener = null
+  }
+
+  setVisibleSlots(slots: number[]) {
+    this.#visibleSlots = new Set(slots)
   }
 
   frame(now: number, dt: number) {
     this.uptimeMs += dt
+    this.#backgroundAcc += dt
+    const tickBackground = this.#backgroundAcc >= 250
+    const backgroundDt = this.#backgroundAcc
+    if (tickBackground) this.#backgroundAcc = 0
 
     let running = 0
     let tokens = 0
     let tools = 0
     for (const a of this.agents) {
       a.calm = this.reducedMotion
-      a.tick(now, dt)
+      if (this.#visibleSlots.has(a.slot)) a.tick(now, dt)
+      else if (tickBackground) a.tick(now, backgroundDt)
       if (a.status !== 'done') running += 1
       tokens += a.lifeTokens
       tools += a.lifeTools

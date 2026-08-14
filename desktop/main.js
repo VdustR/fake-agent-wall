@@ -68,7 +68,7 @@ function openWall() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      // Nine terminals animate continuously; letting Chromium throttle the
+      // The generated terminal fleet animates continuously; letting Chromium throttle the
       // page the moment it is occluded is exactly the freeze this prop must
       // never show.
       backgroundThrottling: false,

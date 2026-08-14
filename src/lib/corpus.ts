@@ -173,16 +173,16 @@ export const TODOS = [
 /**
  * Current frontier coding/agent models. The mix is deliberately heterogeneous:
  * Swarmdeck is the orchestration surface, so a source identifies its upstream
- * provider instead of pretending every worker is a Claude Code session.
+ * provider instead of presenting the fleet as one vendor's client.
  */
 export const MODELS = [
-  { name: 'claude-fable-5', provider: 'anthropic' },
-  { name: 'claude-opus-4.8', provider: 'anthropic' },
+  { name: 'opus', provider: 'anthropic' },
+  { name: 'sonnet', provider: 'anthropic' },
   { name: 'gpt-5.6-sol', provider: 'openai' },
   { name: 'gpt-5.6-terra', provider: 'openai' },
   { name: 'gpt-5.6-luna', provider: 'openai' },
   { name: 'gemini-3.1-pro', provider: 'google' },
-  { name: 'gemini-3.6-flash', provider: 'google' },
+  { name: 'gemini-3.7-flash', provider: 'google' },
   { name: 'grok-4.5', provider: 'xai' },
   { name: 'deepseek-v4-pro', provider: 'deepseek' },
   { name: 'deepseek-v4-flash', provider: 'deepseek' },

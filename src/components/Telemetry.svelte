@@ -52,7 +52,7 @@
 <section class="tel">
   <header class="bar umd-type">
     <span class="who">swarm bus</span>
-    <span class="unit">ppm · % of scale</span>
+    <span class="unit">sim · ppm · % of scale</span>
   </header>
 
   <!-- Bus meters on one printed scale, the way a meter bridge is silkscreened. -->
@@ -99,7 +99,7 @@
   <div class="bridge">
     <span class="blabel umd-type">context<br />remaining</span>
     <div class="cols">
-      {#each swarm.agents as a (a.slot)}
+      {#each swarm.agents.slice(0, 27) as a (a.slot)}
         <div class="col">
           <span class="pc umd-type tnum">{Math.round(a.contextLeft)}</span>
           <span class="track"
@@ -117,6 +117,7 @@
     flex: none;
     display: flex;
     flex-direction: column;
+    container: telemetry / size;
     background: var(--ink-100);
     border: 1px solid var(--line-hi);
     border-radius: var(--r);
@@ -161,7 +162,7 @@
     font-family: var(--f-umd);
     font-weight: 700;
     font-size: clamp(9.5px, 0.86vw, 15px);
-    line-height: 1;
+    line-height: 1.2;
     color: var(--amber);
     text-align: right;
   }
@@ -268,8 +269,6 @@
     position: absolute;
     left: 34px;
     right: 12px;
-    /* --at is unitless on purpose: calc() has no valid percentage-times-length
-       product, and the earlier percentage form silently resolved to auto. */
     bottom: calc(9px + var(--at) * 0.01 * clamp(32px, 3.6vw, 56px));
     height: 1px;
     background: var(--line-hi);
@@ -337,14 +336,44 @@
     color: var(--txt-fnt);
   }
 
-  @media (max-width: 720px) {
-    /* The wall itself is the scarce thing on a phone; the bridge is the
-       readout that survives being dropped. */
+  /* This component moves around the mosaic, so its own dimensions—not the
+     window width—decide whether the context bridge fits. */
+  @container telemetry (max-width: 520px) {
     .bridge {
       display: none;
     }
     .bars {
-      height: 30px;
+      flex: 1;
+      height: auto;
+      min-height: 30px;
+    }
+    .hist {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 80px;
+    }
+    .rule {
+      bottom: calc(2px + var(--at) * 1%);
+    }
+  }
+  @container telemetry (max-height: 325px) {
+    .bridge {
+      display: none;
+    }
+    .hist {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 60px;
+    }
+    .bars {
+      flex: 1;
+      height: auto;
+      min-height: 30px;
+    }
+    .rule {
+      bottom: calc(2px + var(--at) * 1%);
     }
   }
 </style>

@@ -1,6 +1,6 @@
 ---
 name: Swarmdeck
-description: A master-control multiviewer for a wall of Claude Code agent sessions, framed by a tmux status line.
+description: A master-control multiviewer for a heterogeneous wall of coding agents, framed by a tmux status line.
 colors:
   ink-000: "#262624"
   ink-050: "color-mix(in oklch, #262624, #e5e4e1 4%)"
@@ -31,33 +31,33 @@ colors:
   del-bg: "color-mix(in oklch, #d47563 13%, transparent)"
 typography:
   editorial:
-    fontFamily: "'Source Serif 4', Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif"
+    fontFamily: "'Instrument Serif', Charter, Georgia, serif"
     fontWeight: 400
     lineHeight: 1.15
   headline:
-    fontFamily: "'Martian Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
+    fontFamily: "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(9.5px, 0.86vw, 15px)"
     fontWeight: 700
     lineHeight: 1
     fontFeature: "tabular-nums"
   status:
-    fontFamily: "'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
+    fontFamily: "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(9.5px, 0.72vw, 14px)"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "normal"
   body:
-    fontFamily: "'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
+    fontFamily: "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(9px, 0.67vw, 13px)"
     fontWeight: 400
     lineHeight: 1.44
   body-pgm:
-    fontFamily: "'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
+    fontFamily: "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(10.5px, 0.84vw, 16px)"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "'Martian Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
+    fontFamily: "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(6.5px, 0.46vw, 9.5px)"
     fontWeight: 500
     lineHeight: 1
@@ -208,7 +208,7 @@ components:
 Swarmdeck is a rack-mounted broadcast multiviewer that happens to be showing agent
 sessions instead of camera feeds. The governing idea is that many things working at
 once is a broadcast problem, not a dashboard problem: a multiviewer already solves
-"which of these nine is on air, which is queued, which needs me" with tally lamps,
+"which source is on air, which is queued, which needs me" with tally lamps,
 UMD label strips and a program monitor, and this build adopts that object wholesale
 rather than inventing a stats header. The surface is graphite, not black; hairlines
 are silkscreened at exactly 1px; inside the rack, nothing floats.
@@ -230,10 +230,10 @@ happening", which is the one thing the surface must never say. The chrome is
 deliberately thin and small (labels bottom out at 6.5px) so that the transcripts
 underneath keep the majority of the pixels; the status line is roughly 40% shorter
 than the rail it replaced, and that height went straight back to the wall. Read at a
-glance the wall answers "nine sessions, all working, one on air"; read up close it
-answers with real Claude Code transcript grammar — `⏺` tool bullets, `⎿` result
-gutters, right-aligned diff line numbers, todo checklists, permission prompts, the
-accept-edits mode line.
+glance the wall answers "many sessions, all working, one on air"; read up close it
+answers with a coherent vendor-neutral transcript grammar — tool markers, result
+gutters, right-aligned diff line numbers, todo checklists, permission prompts and
+execution-policy lines.
 
 Two constraints shape the palette beyond taste. The surface exists to be filmed, so
 the ink ramp is graded for contrast that survives codec compression — the detail layer
@@ -248,7 +248,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - Graphite tonal layering (five ink steps) instead of shadow-based elevation, with exactly one recess on the whole surface.
 - Hard 1px hairlines; corners at 2px or 0.
 - Tally lamps as the primary status channel: red program bus, green preview bus, amber operator-blocked, blue idle.
-- Three typography roles with strict boundaries: Source Serif 4 for narrative text, Martian Mono for chrome, and Iosevka for transcript body and the one tmux band.
+- Three typography roles with strict boundaries: Instrument Serif for narrative text, Monaspace Xenon for chrome, and Monaspace Neon for transcript body and the one tmux band.
 - No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
 - Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
@@ -257,12 +257,12 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 ## Colors
 
 A graphite instrument palette: five near-black plate tones carrying one saturated
-signal colour at a time, plus Claude Code's coral as the single product accent.
+signal colour at a time, plus Swarmdeck coral as the single product accent.
 
 ### Primary
 
 - **Program Red** (`{colors.live}`): the program bus. It says "this source is working", never "this source has failed". Full strength plus an outer lamp glow means on air; a 72% mix into `ink-200` means the source is streaming output; a 40% mix means it is thinking. Also the reverse-video background of the active window in the status line, the `live` count in the right status, the top band of the PPM scale, the default lit segment of every LED ladder, and the armed border and fuse of the exit slate.
-- **Claude Coral** (`{colors.coral}`): the product accent, carried over from the real client. Tool-call bullets, the typing cursor, the model name in the PGM header, the permission-prompt frame and its selected option, the output-pressure histogram, the solid `[swarmdeck]` session block at the head of the status line, and the solid `SWARM LOG` tag on the ticker.
+- **Swarmdeck Coral** (`{colors.coral}`): the product accent. Tool-call bullets, the typing cursor, the model name in the PGM header, the permission-prompt frame and its selected option, the output-pressure histogram, the solid `[swarmdeck]` session block at the head of the status line, and the solid `SWARM LOG` tag on the ticker.
 
 ### Secondary
 
@@ -273,7 +273,7 @@ signal colour at a time, plus Claude Code's coral as the single product accent.
 ### Tertiary
 
 - **Idle Blue** (`{colors.done}`): a finished session between tasks. The coldest and quietest lamp on the wall; it exists so "done" does not read as "broken". It is a wall colour only — in the status line an idle window drops to `{colors.txt-fnt}` instead, because tmux dims an inactive window rather than lighting it.
-- **Diff Green / Diff Red** (`{colors.add}` on `{colors.add-bg}` / `{colors.del}` on `{colors.del-bg}`): added and removed diff lines inside transcripts, plus the success line and the accept-edits mode line. These belong to the transcript's own grammar and never leak into chrome.
+- **Diff Green / Diff Red** (`{colors.add}` on `{colors.add-bg}` / `{colors.del}` on `{colors.del-bg}`): added and removed diff lines inside transcripts, plus success and autonomous-execution lines. These belong to the transcript's own grammar and never leak into chrome.
 
 ### Neutral
 
@@ -315,17 +315,15 @@ Two kinds of filled block exist, and they take different ink.
 
 ## Typography
 
-**Editorial Font:** Source Serif 4 (with Charter, Sitka Text, Cambria, Georgia, `serif`)
-**Chrome Font:** Martian Mono (with SFMono-Regular, Menlo, Monaco, Consolas, `ui-monospace`, `monospace`)
-**Terminal Font:** Iosevka (with SFMono-Regular, Menlo, Monaco, Consolas, `ui-monospace`, `monospace`)
-**Glyph patch:** GutterMark — a `@font-face` bound to `U+23BF` only
+**Editorial Font:** Instrument Serif (with Charter, Georgia, `serif`)
+**Chrome Font:** Monaspace Xenon (with SFMono-Regular, `ui-monospace`, `monospace`)
+**Terminal Font:** Monaspace Neon (with SFMono-Regular, `ui-monospace`, `monospace`)
 
-**Character:** Two monospaces own the wall, with one editorial serif used for narrative
-text and the Theme Panel hierarchy. Martian Mono is wide, mechanical
-and heavily tracked — it behaves like silkscreen printed onto a rack panel, and is the
-only face allowed to be uppercase. Iosevka is narrow and quiet, chosen because a dense
-terminal needs characters per line more than it needs personality. Ligatures are
-disabled globally so the transcript renders the way a real terminal does.
+**Character:** Two related Monaspace voices own the wall, with Instrument Serif used
+for narrative text and the settings hierarchy. Xenon is mechanical and squared-off,
+so it reads as silkscreen printed onto a rack panel. Neon is calmer and more open in
+long transcripts while retaining the same family proportions. Ligatures are disabled
+globally so code remains explicit at dense sizes.
 
 There is **no display step on the wall**. The largest type on the surface is the program monitor's
 transcript at a 16px ceiling; the next largest is the bus readout at 15px. The build
@@ -333,29 +331,24 @@ previously carried a 38px glowing timecode and a tracked wordmark, and both went
 the rail became a status line. Size is no longer a hierarchy channel on this surface —
 position, fill and colour are.
 
-GutterMark is not a third register. It is a `@font-face` whose `src` is a list of
-`local()` system faces and whose `unicode-range` is the single codepoint `U+23BF` —
-the `⎿` result gutter Claude Code actually prints, which no monospace on the target
-machine carries, and which otherwise falls back to a double-width box that breaks
-column alignment. It sits first in the terminal stack so that one character resolves
-against a face that has it; every other codepoint falls straight through to Iosevka.
+The neutral `└` result gutter is carried by the normal terminal font stack. It keeps
+wrapped result lines visually attached to their tool call without requiring a
+client-specific glyph or fallback face.
 
 ### Hierarchy
 
-- **Headline** (Martian Mono 700, `clamp(9.5px, 0.86vw, 15px)`, line-height 1, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. Small, because on this panel the bar carries the magnitude and the numeral only confirms it.
-- **Status** (Iosevka 400, `clamp(9.5px, 0.72vw, 14px)`, line-height 1, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This is the only chrome on the surface written in the terminal face, and the only chrome that is not uppercase. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
-- **Body** (Iosevka 400, `clamp(9px, 0.67vw, 13px)`, line-height 1.44): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`clamp(10.5px, 0.84vw, 16px)`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read.
-- **Label** (Martian Mono 500, `clamp(6.5px, 0.46vw, 9.5px)`, `0.1em`, uppercase, line-height 1): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `clamp(10px, 0.86vw, 15px)` at `0.13em`), because that plate is read across a room rather than on camera.
+- **Headline** (Monaspace Xenon 700, `clamp(9.5px, 0.86vw, 15px)`, line-height 1.2, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. Small, because on this panel the bar carries the magnitude and the numeral only confirms it.
+- **Status** (Monaspace Neon 400, `clamp(9.5px, 0.72vw, 14px)`, line-height 1.2, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This is the only chrome on the surface written in the terminal face, and the only chrome that is not uppercase. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
+- **Body** (Monaspace Neon 400, `clamp(9px, 0.67vw, 13px)`, line-height 1.44): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`clamp(10.5px, 0.84vw, 16px)`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read. Instrument Serif task copy in the PGM header has a 10px floor because its fine strokes do not survive below that size.
+- **Label** (Monaspace Xenon 500, `clamp(6.5px, 0.46vw, 9.5px)`, `0.1em`, uppercase, line-height 1.2): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `clamp(10px, 0.86vw, 15px)` at `0.13em`), because that plate is read across a room rather than on camera.
 
 ### Named Rules
 
-**The Wall-Register Rule.** Martian Mono is the chrome register and Iosevka is the terminal register. Uppercase and tracked is chrome; a transcript is Iosevka. Source Serif 4 is limited to narrative text such as the PGM task and the Theme Panel hierarchy. The single crossing between the two wall registers is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
+**The Wall-Register Rule.** Monaspace Xenon is the chrome register and Monaspace Neon is the terminal register. Uppercase and tracked is chrome; a transcript is Neon. Instrument Serif is limited to narrative text such as the PGM task and the settings hierarchy. The single crossing between the two wall registers is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
 
 **The One-Terminal-Edge Rule.** Exactly one band on this surface speaks tmux: the status line across the top. It is the only place the terminal face is used as chrome, the only place chrome is mixed-case and untracked, and the only place `{colors.txt-fnt}`/`{colors.txt-dim}`/`{colors.txt-hi}` grade a *label* rather than a transcript. Everything below it — sources, instruments, the ticker, every plate and badge — is master control. The mixture is deliberate and it is capped at one band. A second tmux element anywhere else makes the surface read as two half-finished worlds instead of a terminal wall mounted in a rack, and a master-control device inside the status line does the same in reverse.
 
-**The Glyph-Patch Exception.** A `@font-face` scoped by `unicode-range` to a single codepoint is a character repair, not a type register, and is the only sanctioned way to add a family to the stack. It must borrow `local()` faces, cover exactly the codepoints the body face lacks, and add no weight, no download, and no styling of its own. Reading GutterMark as licence for a third family is the misreading this rule exists to prevent.
-
-**The One-Weight Rule.** Iosevka ships at weight 400 only — roughly 1 MB per weight — so the transcript has no bold. Emphasis inside a transcript is always a colour change. The status line uses `font-weight: 700` on the terminal face and gets a synthetic bold; that is accepted at 10–14px chrome and is not licence to synthesise weight inside a transcript. Martian Mono carries 400/500/700 because 7px chrome needs real weight contrast to survive.
+**The One-Weight Rule.** Monaspace Neon ships at weight 400 only, so the transcript has no bold. Emphasis inside a transcript is always a colour change. The status line may use synthetic 700 at 10–14px chrome; Monaspace Xenon carries 400/500/700 because 7px labels need real weight contrast to survive.
 
 **The Hanging-Gutter Rule.** Every transcript line carries `padding-left: 3ch; text-indent: -3ch`, so a soft-wrapped line stays under its own gutter instead of resetting to column zero. This is what makes a clipped 9px terminal still parse as a terminal.
 
@@ -369,13 +362,14 @@ the ticker across the bottom. Every band is `flex: none` except the wall. The st
 is `clamp(24px, 2.3vw, 36px)` and the ticker `clamp(26px, 2.6vw, 42px)`, so the chrome
 costs under 80px at a laptop viewport and the wall takes everything else.
 
-**The wall** is a two-column grid at `minmax(0, 41fr) minmax(0, 59fr)` with
-`{spacing.gap}` both as gutter and as padding. The left column stacks the program
-monitor (`flex: 1`) over the telemetry panel (`flex: none`); the right column is a
-3x3 grid of source tiles with equal fractional rows and columns. The wall carries a
-faint radial rack-panel wash from its top edge so the tiles read as mounted rather
-than floating, and 11px cross-hair registration marks at the top-left and bottom-right
-corners at 50% opacity.
+**The wall** is a content-aware mosaic on a fine logical grid. JavaScript measures
+the available container, selects a feasible source capacity, and packs PGM, telemetry,
+terminal and operations blocks around their preferred pixel sizes and aspect ratios.
+PGM remains the dominant source but has a practical maximum width; large and ultrawide
+viewports add generated agents instead of stretching a fixed source set. The wall
+carries a faint radial rack-panel wash from its top edge so the tiles read as mounted
+rather than floating, and 11px cross-hair registration marks at the top-left and
+bottom-right corners at 50% opacity.
 
 **Rhythm.** One spacing token does nearly all the work: `{spacing.gap}` between and
 around every panel. Inside panels the scale is `6px` (tight label rows), `10px` (strip
@@ -394,20 +388,25 @@ rather than as three separate widgets.
 at `left: 50%` and `bottom: clamp(52px, 7vh, 96px)`, `z-index: 40`, `pointer-events: none`.
 It clears the ticker and reads over the lower rows of the wall.
 
-**Density is preserved by dropping labels, never by scrolling.** Responsive behaviour
-is a fixed sequence of subtractions:
+**Density is preserved by changing capacity and dropping labels, never by scrolling.**
+Container dimensions choose the composition first; component and viewport queries
+then remove secondary chrome when an allocated block becomes constrained:
 
 - **≤1180px** — the status line drops the token and call totals, keeping the `live` and `hold` counts and the clock.
-- **≤1080px** — the wall stacks to a single column at `52fr / 48fr` (program stack above, 3x3 grid below).
 - **≤900px** — the PGM UMD strip drops everything past the branch pair (`t+`, tools, token counters) and the task line disappears from the PGM header.
-- **≤860px** — the status line drops the window list entirely, leaving the session block and the right status.
-- **≤720px** — the wall shifts to `46fr / 54fr` and the grid becomes 2 columns × 5 rows; source tiles drop their repo/branch label; tile terminals drop the accept-edits status bar (PGM keeps it); the telemetry context bridge is dropped and the histogram fixes at 30px.
+- Narrow containers hide lower-priority terminal runtime and mode labels while keeping
+  the model and context state visible.
+- Constrained telemetry blocks remove the context bridge and let the output-pressure
+  chart absorb the remaining height.
 
 ### Named Rules
 
 **The No-Scroll Rule.** Nothing on this surface scrolls, at any width. Panels clip; transcripts are bottom-anchored (`justify-content: flex-end`) so the newest line is always the last visible one. A scrollbar would break the object.
 
-**The Subtraction Rule.** At a narrower viewport, remove labels — never shrink the wall, never reduce the source count, never let a panel collapse below readable transcript size. The source number, name, meter and tally state are the four labels that survive every breakpoint; in the status line the session block and the `live`/`hold` counts are what survive.
+**The Capacity Rule.** At a narrower viewport, reduce the number of secondary blocks
+before collapsing them below useful dimensions. At a larger viewport, add generated
+agents until the available area is occupied near the blocks' preferred proportions.
+The on-air source remains represented even when its ordinary source tile is omitted.
 
 **The Chrome-Pays-First Rule.** When the viewport gets scarce, the chrome bands give up height and content before the wall does. The status line replaced a rail nearly twice its height for exactly this reason, and both bands drop their own content at breakpoints the wall does not observe.
 
@@ -462,7 +461,7 @@ build.
 Hard rectangles. Corners round at `{rounded.panel}` (2px) on the program monitor,
 source tiles, the telemetry panel and the exit slate — enough to read as machined, not
 enough to read as a card. The permission prompt is the single 4px corner on the surface,
-and it is 4px because that is what the real Claude Code client draws. Nothing else on
+and it is 4px so it remains distinct from rack-mounted panels. Nothing else on
 the surface has a radius: the status line, its session block and every window entry, the
 ticker and its tag, every badge, plate and chip are square.
 
@@ -509,16 +508,15 @@ baseline even after individual colours change.
 Swarmdeck semantic tokens are derived from the iTerm palette rather than stored
 as a second editable palette. Background and foreground generate the graphite,
 hairline, and text ramps with `color-mix(in oklch, ...)`; ANSI red, green, yellow,
-and blue feed program, preview, hold, and idle; cursor feeds Claude coral; bright
+and blue feed program, preview, hold, and idle; cursor feeds Swarmdeck coral; bright
 variants feed readouts and transcript diff colours. Ink on saturated fills is
 chosen from black or white for legibility. This mapping preserves the wall's
 status grammar while allowing light and dark terminal schemes.
 
 Typography has two independent user values: UI font for tmux/master-control
 chrome and code font for terminal content. Both preview while typing and always
-append `ui-monospace, monospace`. The code stack keeps the `GutterMark`
-unicode-range repair before the user family, so U+23BF remains aligned. The panel
-does not fetch fonts or accept webfont markup; a missing local family falls
+append `ui-monospace, monospace`. The panel does not fetch fonts or accept webfont
+markup; a missing local family falls
 through immediately.
 
 The panel itself follows the active draft theme. It uses hard plate fills, 1px
@@ -561,7 +559,7 @@ transition and no fade curve.
 
 ### Source Tile
 
-Nine identical tiles carrying a clipped transcript over a UMD strip. The tally is the
+Generated source tiles carry a clipped transcript over a UMD strip. The tally is the
 tile's own border, resolved by a single `data-tally` attribute:
 
 - **`air`** — solid `{colors.live}` + on-air lamp, plus a solid red `PGM` badge in the feed corner.
@@ -581,17 +579,17 @@ when the source is held, and the tally state word (`on air` / `live` / `think` /
 The transcript field. Bottom-anchored, clipped, on `{colors.ink-050}`. Line kinds are
 styled globally in `app.css` rather than scoped in the component, because the kind
 arrives as a runtime value that Svelte's scoped-CSS pruning cannot see statically —
-scoping them would silently delete the rules. Fourteen kinds map to the real client's
-roles: `tool` (brightened to `{colors.txt-hi}`, coral `⏺` bullet), `gut`/`cont` (dim
+scoping them would silently delete the rules. Fourteen kinds form the shared agent
+grammar: `tool` (brightened to `{colors.txt-hi}`, coral `●` bullet), `gut`/`cont` (dim
 result gutters), `ctx` (faint diff context), `add`/`del` (tinted text on a translucent
 tinted band), `todo-done`/`todo-open`, `text`, `user`, `err`, `ok`, `dim`, `spin`, and
 `rule` (a dashed 1px separator with 0.6em breathing room, used to mark a session
 turnover).
 
 A block cursor (0.62em × 1em, coral) blinks on the streaming line at a 530ms half-cycle,
-and the spinner cycles the real client's `· ✢ ✳ ∗ ✻ ✽` glyph set at 110ms alongside a
-faint `(Ns · ↑ Nk tokens · esc to interrupt)` meta. The status bar pins the accept-edits
-mode line (in a green/faint mix) against `model · N% context left`.
+and the spinner cycles a restrained `· o O o` sequence at 110ms alongside a faint
+`(Ns · ↑ Nk tokens · esc to interrupt)` meta. The status bar pins the fleet execution
+policy (in a green/faint mix) against `provider / model · N% context left`.
 
 The **permission prompt** is the one framed object inside a transcript: a 4px coral
 border on an 8% coral wash, with title, indented body, question and numbered options
@@ -624,9 +622,9 @@ not an overload.
 
 Beneath it, an **output pressure** histogram of 90 coral bars — newest three at full
 coral, the rest at a 58% mix — with numbered 25/50/75 rules across it and a reserved
-left gutter for their numerals. Then the **context remaining** bridge: nine vertical
-tracks scaling on `transform: scaleY()` at 300ms linear, scaled rather than resized
-because nine of them move at once and only transform stays off the layout path. A track
+left gutter for their numerals. Then the **context remaining** bridge: one vertical
+track per visible source, scaling on `transform: scaleY()` at 300ms linear. Tracks are
+scaled rather than resized so their animation stays off the layout path. A track
 below 25% switches to hold amber.
 
 ### Ticker
@@ -637,7 +635,7 @@ into the right edge on an alpha stop. Each cell reads an inverted source-number 
 (`{colors.umd}` plate, `{colors.ink-000}` ink), a two-digit seconds clock, repo in cue
 green, and event text. On every arrival the row steps exactly one cell width
 (`translateX(-1 cell) → 0`, 260ms `cubic-bezier(0.22, 0.7, 0.3, 1)`) instead of
-reflowing — variable-width reflow is what makes nine simultaneous reporters look like
+reflowing — variable-width reflow is what makes simultaneous reporters look like
 noise. Fewer, wider cells so each event survives being read at a glance rather than
 truncating to a verb.
 
@@ -669,7 +667,7 @@ like an ordinary page.
 
 **The Hard-Cut Rule.** State changes are cuts, not transitions. Tally borders move at 120ms linear, the preview blink uses `steps(1)`, the cut flash has no curve at all, the exit slate cuts in on `steps(2)`, and the cursor and spinner are modulo toggles off the frame clock. Easing exists in exactly three places: the meter transitions, the ticker's one-cell step, and the exit fuse's linear burn.
 
-**The Calm-Variant Rule.** Under `prefers-reduced-motion`, the surface does not stop being a multiviewer; it stops fidgeting. A global rule flattens every CSS animation and transition to 0.001ms, and the components answer for their own content: transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor holds solid; the spinner freezes at `✻`; the ticker stops stepping; the exit fuse holds full; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.
+**The Calm-Variant Rule.** Under `prefers-reduced-motion`, the surface does not stop being a multiviewer; it stops fidgeting. A global rule flattens every CSS animation and transition to 0.001ms, and the components answer for their own content: transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor holds solid; the spinner freezes at `O`; the ticker stops stepping; the exit fuse holds full; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.
 
 **The Display-Only Rule.** A component that shows a system affordance never owns it. The exit hint draws the gesture the main process implements and holds no part of the exit path; if the component fails to render, the gesture still works. Any future indicator for a shell-owned capability follows the same split.
 
@@ -686,10 +684,10 @@ like an ordinary page.
 - **Do** resolve every status from one value. Tile border, badge, meter tone, UMD word and status-line window ink all derive from the same `run | cue | hold | done` status, so a source can never display two states.
 - **Do** keep the tmux register to the top band. If new chrome belongs to the wall, write it in the label register; if it belongs to the status line, write it in the terminal face, mixed case, untracked.
 - **Do** use `{spacing.gap}` as the only gutter between panels, and clamp panel heights to the viewport rather than fixing pixels.
-- **Do** put every piece of master-control chrome in the `.umd-type` label register (Martian Mono 500, uppercase, `0.1em`) and every transcript in Iosevka 400.
+- **Do** put every piece of master-control chrome in the `.umd-type` label register (Monaspace Xenon 500, uppercase, `0.1em`) and every transcript in Monaspace Neon 400.
 - **Do** put `.tnum` on any number that changes on screen.
 - **Do** reach for `{colors.txt-hi}` when something needs to be brighter than `{colors.txt}`, for the matching `on-*` token when text sits on a saturated lamp, and for `{colors.ink-000}` when it sits on a grey plate.
-- **Do** express emphasis inside a transcript with colour. There is no bold Iosevka on this surface and adding one costs about 1 MB.
+- **Do** express emphasis inside a transcript with colour. The terminal face intentionally ships at one weight.
 - **Do** style runtime-valued classes globally in `app.css`, alongside the existing `.ln` rules.
 - **Do** draw new signal states as coloured 1px hairlines and coloured lamps, and derive dimmed variants with `color-mix(in oklab, <signal> N%, var(--ink-200))` the way the tally system already does.
 - **Do** print an instrument's scale — ticks, numerals, segment rules, reference mark — on the empty track, and put the scale colours on the track with the fill clipped back to the reading.

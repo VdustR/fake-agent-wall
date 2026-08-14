@@ -11,10 +11,11 @@
 
   const { agent, beat, pgm = false, calm = false }: Props = $props()
 
-  // The real client cycles this glyph set while a turn is in flight.
-  const GLYPHS = ['·', '✢', '✳', '∗', '✻', '✽']
+  const GLYPHS = ['·', 'o', 'O', 'o']
 
-  const glyph = $derived(calm ? '✻' : GLYPHS[Math.floor(beat / 110) % GLYPHS.length])
+  const displayLine = (line: string) => line
+
+  const glyph = $derived(calm ? 'O' : GLYPHS[Math.floor(beat / 110) % GLYPHS.length])
   // Held steady rather than blinking when the viewer asked for less motion.
   const blink = $derived(calm || Math.floor(beat / 530) % 2 === 0)
   const secs = $derived(Math.floor(agent.sessionMs / 1000) % 600)
@@ -25,20 +26,20 @@
   <div class="log">
     {#each agent.lines as l}
       {#if l.k === 'tool'}
-        <div class="ln tool"><b class="bul">⏺</b>{l.s.slice(1)}</div>
+        <div class="ln tool"><b class="bul">●</b>{displayLine(l.s.slice(1))}</div>
       {:else}
-        <div class="ln {l.k}">{l.s || ' '}</div>
+        <div class="ln {l.k}">{displayLine(l.s) || ' '}</div>
       {/if}
     {/each}
 
     {#if agent.partial}
       {#if agent.partial.k === 'tool'}
-        <div class="ln tool"><b class="bul">⏺</b>{agent.partial.s.slice(1)}<i
+        <div class="ln tool"><b class="bul">●</b>{displayLine(agent.partial.s.slice(1))}<i
             class="cur"
             class:on={blink}
           ></i></div>
       {:else}
-        <div class="ln {agent.partial.k}">{agent.partial.s}<i class="cur" class:on={blink}></i></div>
+        <div class="ln {agent.partial.k}">{displayLine(agent.partial.s)}<i class="cur" class:on={blink}></i></div>
       {/if}
     {/if}
 
@@ -66,7 +67,10 @@
 
   <div class="bar">
     <span class="mode">⏵⏵ {agent.executionPolicy}</span>
-    <span class="left">{agent.provider} / {agent.model} · {Math.round(agent.contextLeft)}% context left</span>
+    <span class="left">
+      <span class="runtime">{agent.provider} / {agent.model} ·&nbsp;</span>
+      <span class="context">{Math.round(agent.contextLeft)}% context left</span>
+    </span>
   </div>
 </div>
 
@@ -76,6 +80,7 @@
     flex-direction: column;
     min-height: 0;
     height: 100%;
+    container: terminal / inline-size;
     background: var(--ink-050);
     font-size: clamp(9px, 0.67vw, 13px);
     line-height: 1.44;
@@ -112,7 +117,7 @@
     background: var(--coral);
   }
 
-  /* Permission prompt: the real client draws a rounded box around it. */
+  /* Permission requests are distinct from transcript output without borrowing a client skin. */
   .ask {
     flex: none;
     margin-top: 0.55em;
@@ -150,6 +155,8 @@
 
   .bar {
     flex: none;
+    box-sizing: border-box;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     gap: 1ch;
@@ -170,16 +177,32 @@
     color: color-mix(in oklab, var(--add) 62%, var(--txt-fnt));
   }
   .left {
-    flex: none;
+    flex: 0 1 auto;
+    display: flex;
+    min-width: 0;
     color: var(--txt-fnt);
   }
+  .runtime {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .context {
+    flex: none;
+    color: var(--txt-dim);
+  }
 
-  @media (max-width: 720px) {
-    /* A phone-width tile has room for transcript or for chrome, not both.
-       The mode line is the first thing worth trading for two more lines. */
-    .term:not(.pgm) .bar {
+  @container terminal (max-width: 340px) {
+    .runtime {
       display: none;
     }
+  }
+  @container terminal (max-width: 240px) {
+    .mode {
+      display: none;
+    }
+  }
+  @container terminal (max-width: 300px) {
     .log {
       padding: 0.3em 0.5em;
     }
