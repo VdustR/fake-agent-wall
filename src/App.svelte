@@ -1,7 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { flip } from 'svelte/animate'
-  import { cubicOut } from 'svelte/easing'
   import ExitHint from './components/ExitHint.svelte'
   import Operations from './components/Operations.svelte'
   import OpsNotice from './components/OpsNotice.svelte'
@@ -13,21 +11,30 @@
   import Tile from './components/Tile.svelte'
   import { Swarm } from './lib/swarm.svelte'
   import { OperationsWorld } from './lib/operations.svelte'
-  import { applyTheme, clearThemeSettings, cloneTheme, defaultTheme, loadTheme, saveTheme, type ThemeSettings } from './lib/theme'
+  import { applyTheme, clearThemeSettings, cloneTheme, defaultTheme, loadTheme, normalizeWallLabel, saveTheme, type ThemeSettings } from './lib/theme'
 
   const swarm = new Swarm()
   const operations = new OperationsWorld(swarm)
   let themeOpen = $state(false)
   let committedTheme = $state<ThemeSettings>()
+  let wallLabel = $state('fake-agent-wall')
   let gridElement = $state<HTMLDivElement>()
 
   onMount(() => {
     committedTheme = loadTheme()
+    wallLabel = normalizeWallLabel(committedTheme.wallLabel)
     applyTheme(committedTheme)
     swarm.start()
     operations.start()
+    let resizeFrame = 0
+    let resizeSettled = 0
     const gridObserver = new ResizeObserver(([entry]) => {
-      if (entry) operations.setViewport(entry.contentRect.width, entry.contentRect.height)
+      if (!entry) return
+      clearTimeout(resizeSettled)
+      cancelAnimationFrame(resizeFrame)
+      const { width, height } = entry.contentRect
+      resizeFrame = requestAnimationFrame(() => operations.setViewport(width, height))
+      resizeSettled = window.setTimeout(() => operations.setViewport(width, height), 160)
     })
     if (gridElement) gridObserver.observe(gridElement)
 
@@ -52,6 +59,8 @@
     return () => {
       swarm.stop()
       operations.stop()
+      cancelAnimationFrame(resizeFrame)
+      clearTimeout(resizeSettled)
       gridObserver.disconnect()
       window.removeEventListener('keydown', onKeydown, { capture: true })
       offToggle?.()
@@ -60,7 +69,10 @@
   })
 
   function setThemeOpen(open: boolean): void {
-    if (!open && committedTheme) applyTheme(committedTheme)
+    if (!open && committedTheme) {
+      applyTheme(committedTheme)
+      wallLabel = normalizeWallLabel(committedTheme.wallLabel)
+    }
     themeOpen = open
     window.agentWall?.setThemePanelOpen(open)
   }
@@ -68,6 +80,7 @@
   function applyAndClose(theme: ThemeSettings): boolean {
     if (!saveTheme(theme)) return false
     committedTheme = cloneTheme(theme)
+    wallLabel = committedTheme.wallLabel
     applyTheme(committedTheme)
     themeOpen = false
     window.agentWall?.setThemePanelOpen(false)
@@ -77,6 +90,7 @@
   function restoreDefaults(): ThemeSettings | null {
     if (!clearThemeSettings()) return null
     committedTheme = cloneTheme(defaultTheme)
+    wallLabel = committedTheme.wallLabel
     applyTheme(committedTheme)
     return cloneTheme(committedTheme)
   }
@@ -87,31 +101,39 @@
   const desktop = typeof window !== 'undefined' && window.agentWall?.isDesktop === true
   const onAir = $derived(swarm.agents[swarm.pgm] ?? swarm.agents[0]!)
   const gridItems = $derived(operations.gridItems)
+  $effect(() => {
+    const slots = gridItems.flatMap(item => item.type === 'agent' && item.agent ? [item.agent.slot] : [])
+    swarm.setVisibleSlots([...slots, onAir.slot])
+  })
 </script>
 
 <main class="deck" class:desktop>
-  <StatusLine {swarm} />
+  <StatusLine {swarm} {wallLabel} />
 
     <div class="wall">
-      <div class="col">
-        <Pgm
-          agent={onAir}
-          {beat}
-          flash={swarm.flash}
-          calm={swarm.reducedMotion}
-          nextCutIn={swarm.nextCutIn}
-          cueing={swarm.pst === -1 ? null : (swarm.agents[swarm.pst]?.numLabel ?? null)}
-        />
-        <Telemetry {swarm} />
-      </div>
-
-      <div class="grid" bind:this={gridElement}>
-        {#each gridItems as item, index (item.key)}
-          <div class="grid-item" style:grid-area={operations.placementAt(index)} animate:flip={{ duration: swarm.reducedMotion ? 0 : 680, easing: cubicOut }}>
-            {#if item.type === 'agent'}
-              <Tile agent={item.agent} {beat} onAir={item.agent.slot === swarm.pgm} cued={item.agent.slot === swarm.pst} calm={swarm.reducedMotion} />
+      <div
+        class="grid"
+        bind:this={gridElement}
+        data-slot-capacity={operations.slotCount}
+        data-layout-violations={operations.layoutViolations.join(',')}
+      >
+        {#each gridItems as item (item.key)}
+          <div class="grid-item" style:grid-area={operations.placementFor(item.key)}>
+            {#if item.type === 'pgm'}
+              <Pgm
+                agent={onAir}
+                {beat}
+                flash={swarm.flash}
+                calm={swarm.reducedMotion}
+                nextCutIn={swarm.nextCutIn}
+                cueing={swarm.pst === -1 ? null : (swarm.agents[swarm.pst]?.numLabel ?? null)}
+              />
+            {:else if item.type === 'telemetry'}
+              <Telemetry {swarm} />
+            {:else if item.type === 'agent'}
+              <Tile agent={item.agent!} {beat} onAir={item.agent!.slot === swarm.pgm} cued={item.agent!.slot === swarm.pst} calm={swarm.reducedMotion} />
             {:else}
-              <Operations world={operations} kind={item.kind} />
+              <Operations world={operations} kind={item.kind!} />
             {/if}
           </div>
         {/each}
@@ -124,7 +146,7 @@
   {#if themeOpen && committedTheme}
     <ThemePanel
       value={committedTheme}
-      onpreview={applyTheme}
+      onpreview={(theme) => { applyTheme(theme); wallLabel = theme.wallLabel || 'fake-agent-wall' }}
       onapply={applyAndClose}
       onreset={restoreDefaults}
       oncancel={() => setThemeOpen(false)}
@@ -161,9 +183,7 @@
     position: relative;
     flex: 1;
     min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 41fr) minmax(0, 59fr);
-    gap: var(--gap);
+    display: block;
     padding: var(--gap);
     /* Faint rack-panel field so the tiles read as mounted, not floating. */
     background:
@@ -193,52 +213,20 @@
     right: 1px;
   }
 
-  .col {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap);
-    min-height: 0;
-  }
-  .col :global(> section:first-child) {
-    flex: 1;
-    min-height: 0;
-  }
-
   .grid {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    grid-template-rows: repeat(12, minmax(0, 1fr));
-    gap: var(--gap);
+    grid-template-columns: repeat(192, minmax(0, 1fr));
+    grid-template-rows: repeat(192, minmax(0, 1fr));
+    gap: 0;
     min-height: 0;
+    height: 100%;
   }
-  .grid-item { min-width: 0; min-height: 0; will-change: transform; }
+  .grid-item {
+    min-width: 0;
+    min-height: 0;
+    padding: calc(var(--gap) / 2);
+  }
   .grid-item :global(> *) { height: 100%; }
 
 
-  @media (max-width: 1080px) {
-    .wall {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: minmax(0, 52fr) minmax(0, 48fr);
-    }
-    .grid {
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      grid-template-rows: repeat(12, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 720px) {
-    .wall {
-      grid-template-rows: minmax(0, 46fr) minmax(0, 54fr);
-    }
-    .grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: repeat(5, minmax(0, 1fr));
-    }
-    .grid-item { grid-area: auto !important; }
-    /* Nine feeds cannot fill a two-column matrix evenly. The final terminal
-       becomes the wide closing source, so the mosaic always seals its bottom
-       edge instead of leaving an accidental tenth-cell void. */
-    .grid-item:last-child { grid-column: 1 / -1 !important; }
-  }
-  @media (prefers-reduced-motion: reduce) { .grid-item { will-change: auto; } }
 </style>

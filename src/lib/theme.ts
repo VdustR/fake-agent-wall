@@ -41,15 +41,20 @@ export interface ThemeSettings {
   editorialFont: string
   uiFont: string
   codeFont: string
+  wallLabel: string
 }
 
 const STORAGE_KEY = 'fake-agent-wall.theme.v3'
 const LEGACY_STORAGE_KEYS = ['fake-agent-wall.theme.v1', 'fake-agent-wall.theme.v2'] as const
 const HEX = /^#[0-9a-f]{6}$/i
 
-export const DEFAULT_EDITORIAL_FONT = "'Source Serif 4', Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif"
-export const DEFAULT_UI_FONT = "'Martian Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
-export const DEFAULT_CODE_FONT = "'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace"
+const LEGACY_EDITORIAL_FONT = "'Source Serif 4', Charter, Georgia, serif"
+const LEGACY_UI_FONT = "'Martian Mono', 'SFMono-Regular', ui-monospace, monospace"
+const LEGACY_CODE_FONT = "Iosevka, 'SFMono-Regular', ui-monospace, monospace"
+export const DEFAULT_EDITORIAL_FONT = "'Instrument Serif', Charter, Georgia, serif"
+export const DEFAULT_UI_FONT = "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace"
+export const DEFAULT_CODE_FONT = "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
+export const DEFAULT_WALL_LABEL = 'fake-agent-wall'
 
 export const presets = presetData.colors as ThemePreset[]
 
@@ -62,16 +67,24 @@ export function settingsFromPreset(preset: ThemePreset): ThemeSettings {
     editorialFont: DEFAULT_EDITORIAL_FONT,
     uiFont: DEFAULT_UI_FONT,
     codeFont: DEFAULT_CODE_FONT,
+    wallLabel: DEFAULT_WALL_LABEL,
   }
 }
 
-const claudeDarkPreset = presets.find((preset) => preset.id === 'claude-dark')
-if (!claudeDarkPreset) throw new Error('Bundled Claude Dark theme is missing')
+const defaultPreset = presets.find((preset) => preset.id === 'catppuccin-mocha')
+if (!defaultPreset) throw new Error('Bundled default theme is missing')
 
-export const defaultTheme = settingsFromPreset(claudeDarkPreset)
+export const defaultTheme = settingsFromPreset(defaultPreset)
 
 export function cloneTheme(theme: ThemeSettings): ThemeSettings {
-  return { ...theme, colors: { ...theme.colors } }
+  return {
+    ...theme,
+    editorialFont: theme.editorialFont === LEGACY_EDITORIAL_FONT ? DEFAULT_EDITORIAL_FONT : theme.editorialFont,
+    uiFont: theme.uiFont === LEGACY_UI_FONT ? DEFAULT_UI_FONT : theme.uiFont,
+    codeFont: theme.codeFont === LEGACY_CODE_FONT ? DEFAULT_CODE_FONT : theme.codeFont,
+    wallLabel: normalizeWallLabel(theme.wallLabel),
+    colors: { ...theme.colors },
+  }
 }
 
 export function loadTheme(): ThemeSettings {
@@ -93,7 +106,7 @@ export function loadTheme(): ThemeSettings {
 
 export function saveTheme(theme: ThemeSettings): boolean {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(theme))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cloneTheme(theme)))
     return true
   } catch {
     return false
@@ -145,7 +158,7 @@ export function applyTheme(theme: ThemeSettings): void {
     '--selection': colors.selection,
     '--f-editorial': normalizedFontStack(theme.editorialFont, DEFAULT_EDITORIAL_FONT),
     '--f-umd': normalizedFontStack(theme.uiFont, DEFAULT_UI_FONT),
-    '--f-term': `'GutterMark', ${normalizedFontStack(theme.codeFont, DEFAULT_CODE_FONT)}`,
+    '--f-term': normalizedFontStack(theme.codeFont, DEFAULT_CODE_FONT),
   }
   for (const [name, value] of Object.entries(vars)) root.style.setProperty(name, value)
 }
@@ -189,6 +202,11 @@ function normalizedFontStack(value: string, fallback: string): string {
   return value.trim().replace(/[;,]+$/, '') || fallback
 }
 
+export function normalizeWallLabel(value: string | undefined): string {
+  const normalized = (value ?? '').replaceAll('[', '').replaceAll(']', '').trim().slice(0, 32)
+  return normalized || DEFAULT_WALL_LABEL
+}
+
 function isThemeSettings(value: unknown): value is ThemeSettings {
   if (!value || typeof value !== 'object') return false
   const candidate = value as Partial<ThemeSettings>
@@ -196,7 +214,8 @@ function isThemeSettings(value: unknown): value is ThemeSettings {
     typeof candidate.presetId !== 'string' ||
     typeof candidate.editorialFont !== 'string' ||
     typeof candidate.uiFont !== 'string' ||
-    typeof candidate.codeFont !== 'string'
+    typeof candidate.codeFont !== 'string' ||
+    (candidate.wallLabel !== undefined && typeof candidate.wallLabel !== 'string')
   ) return false
   if (!candidate.colors || typeof candidate.colors !== 'object') return false
   return [...ANSI_KEYS, ...META_KEYS].every((key) => HEX.test(candidate.colors?.[key] ?? ''))

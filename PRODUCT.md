@@ -18,17 +18,16 @@ something else is being filmed, recorded, or shown to an audience, so the primar
 
 ## Product Purpose
 
-Show a wall of Claude Code agent sessions all working at once, convincingly enough
-that a viewer believes a real swarm is running. Everything on screen is fabricated.
-Success = a viewer glances at it and reads "a lot of serious machine work is happening
-right now", and a developer who knows Claude Code does not spot the format as fake.
+Show a heterogeneous wall of coding-agent sessions all working at once, convincingly
+enough that a viewer believes a real swarm is running. Everything on screen is
+fabricated. Success = a viewer glances at it and reads "a lot of serious machine work
+is happening right now", then finds internally consistent engineering detail up close.
 
 ## Positioning
 
-Not a generic "hacker terminal" screensaver. It reproduces Claude Code's actual
-transcript grammar — tool-call bullets, result gutters, diff hunks, todo checklists,
-permission prompts, the real spinner verb list, token/context accounting — so it
-survives being looked at closely.
+Not a generic "hacker terminal" screensaver and not an imitation of one agent client.
+It combines recognizable shell, diff, task-list, permission, token and context
+conventions into a neutral orchestration surface that survives being looked at closely.
 
 ## Operating Context
 
@@ -47,21 +46,22 @@ visibly loop within a recording-length window.
 
 ## Brand Commitments
 
-- The in-panel transcripts must read as Claude Code, including its glyph set
-  (`⏺`, `⎿`, `✻`), its coral accent, and its status-line conventions.
+- In-panel transcripts use a consistent vendor-neutral grammar across providers.
+- Provider and model labels may identify the simulated route, but no provider owns the
+  visual system or interaction language.
 - The user's direction for the surrounding surface: "越花俏越好" — maximal showpiece.
 
 ## Evidence on Hand
 
-- Claude Code binary at `~/.local/share/claude/versions/<version>`.
-  243 spinner verbs extracted from it verbatim (`.verbs.txt`), plus real UI
-  strings (`ctrl+o to expand`, `esc to interrupt`, accept-edits mode line).
+- The historical spinner corpus originated from a client binary. It is synthetic
+  texture only; the displayed chrome and transcript grammar are product-owned.
 - No real agent telemetry exists and none will. Nothing on this surface may be
   presented as a measurement of anything real.
 
 ## Product Principles
 
-1. Fabricated content, real format. The lie is the data, never the grammar.
+1. Fabricated content, coherent format. The data is invented; the grammar stays
+   internally consistent without copying a vendor client.
 2. It has to survive a pause button — a still frame must hold up.
 3. Density is the message: emptiness reads as "nothing is happening".
 4. Unattended means self-sustaining; no state may run out or repeat visibly.

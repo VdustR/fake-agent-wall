@@ -46,7 +46,7 @@
   </div>
 
   <footer class="umd umd-type">
-    <span class="k">repo</span><span class="v">{agent.repo}</span>
+    <span class="k">repo</span><span class="v repo">{agent.repo}</span>
     <span class="k">branch</span><span class="v br">{agent.branch}</span>
     <span class="k">t+</span><span class="v tnum">{mmss}</span>
     <span class="k">tools</span><span class="v tnum">{agent.toolUses}</span>
@@ -103,8 +103,9 @@
   .task {
     color: var(--txt-dim);
     font-family: var(--f-editorial);
-    font-size: 1.25em;
+    font-size: clamp(10px, 1.25em, 15px);
     font-weight: 400;
+    line-height: 1.4;
     text-transform: none;
     letter-spacing: 0;
     overflow: hidden;
@@ -205,6 +206,10 @@
     color: var(--txt-hi);
     font-weight: 700;
     padding-right: 8px;
+  }
+  .v.repo,
+  .v.br {
+    flex: 0 1 22ch;
   }
   .v.br {
     color: var(--cue);

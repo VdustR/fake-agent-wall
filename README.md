@@ -1,24 +1,38 @@
 # Fake Agent Wall
 
-A wall of nine Claude Code sessions, all of them working, one of them on air.
-None of it is running. Every repository, diff, token count and timing on screen
-is invented.
+Fake Agent Wall is a responsive ambient display of synthetic coding-agent
+activity. Run it full-screen as a video or livestream backdrop, a presentation
+prop, or a screensaver-like display while your computer is idle.
 
-It exists to be filmed. Put it on a laptop, run it full screen, and it looks
-like a room full of machines doing serious work behind whatever you are actually
-recording.
+Its layout and source count adapt from compact windows to ultrawide screens.
+Every session, task, diff, provider route and metric is simulated.
 
 [Open the web version](https://vdustr.dev/fake-agent-wall/) ·
 [Download for macOS, Windows or Linux](https://github.com/VdustR/fake-agent-wall/releases/latest)
 
-![The wall: a program monitor on the left, a 3x3 grid of agent sessions on the right, a bus meter bridge below and a scrolling log along the bottom](docs/wall.png)
+![The wall: a program monitor, dynamically packed agent sessions, task and usage panels, and a live swarm bus](docs/wall.png)
+
+## Responsive wall
+
+The wall is a content-aware mosaic rather than a fixed grid. JavaScript measures
+the available container, selects how many blocks can remain useful, and packs
+each type around its preferred size and aspect ratio. PGM stays prominent
+without growing indefinitely; horizontal telemetry, vertical task and usage
+panels, and terminal feeds are allocated differently. On very large viewports,
+the simulation generates additional agents instead of stretching a small fixed
+set across empty space.
+
+Each synthetic agent also varies its work profile, transcript density, typing
+tempo, todos, permission prompts, provider, model, token use and context state.
+Resizing or browser zoom therefore changes both the composition and the amount
+of simulated activity while preserving the broadcast hierarchy.
 
 ## What is real and what is not
 
 | Real | Invented |
 | --- | --- |
-| The transcript grammar: `⏺` tool bullets, the `⎿` result gutter, right-aligned diff line numbers, `☒`/`☐` todos, the `(N tool uses · Nk tokens · Nm Ns)` subagent summary, execution-policy mode lines, permission prompts | Every repository, branch, file path, diff hunk, test result and benchmark |
-| The 215 spinner verbs, read out of an installed Claude Code binary with `strings` and written to `src/lib/verbs.ts` | Every token count, context percentage, call rate and timecode |
+| Familiar engineering structures: tool calls, result gutters, diffs, todos, task summaries, execution policies and permission prompts | Every repository, branch, file path, diff hunk, test result and benchmark |
+| A consistent agent grammar shared across simulated providers | Every token count, context percentage, call rate and timecode |
 
 Nothing on this page measures anything. Do not present a number from it as a
 real metric.
@@ -59,22 +73,26 @@ so it counts the whole Mac sitting untouched rather than just this app.
 app becomes a plain caffeine switch. Set it to *Never* and it leaves power
 management alone.
 
-### Themes
+### Wall settings
 
 Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on macOS or
 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on Windows and Linux to open
-the theme panel. The shortcut works in both the desktop app and the web version.
+the settings panel. The shortcut works in both the desktop app and the web version.
+
+The **Wall label** field customizes the bracketed session name at the top-left of
+the display. Brackets are added automatically and labels are limited to 32
+characters so the status line remains usable on narrow screens.
 
 Search the bundled iTerm presets, select one, and adjust any of its background,
 foreground, cursor, selection, or 16 ANSI colours. Changes preview immediately.
-New installations start with **Claude Dark**. The former Swarmdeck default and
-its v1 stored selection are removed; choices applied from this version onward
-persist normally.
+New installations start with **Catppuccin Mocha**, **Monaspace Xenon** for
+master-control chrome, **Monaspace Neon** for terminal content, and **Instrument
+Serif** for editorial text. Existing saved choices continue to load normally.
 **Reset preset** restores the selected preset, while **Cancel** or Escape returns
 to the last applied theme. **Apply** saves the palette and separate UI/code font
-families in local browser storage and restores them on the next launch. Font
-families must already be installed on the computer; every value falls back to
-`ui-monospace, monospace`.
+families in local browser storage and restores them on the next launch. The
+three defaults are bundled; custom font families must be installed on the
+computer and always fall back to system faces.
 
 The 533 converted presets come from
 [`mbadolato/iTerm2-Color-Schemes`](https://github.com/mbadolato/iTerm2-Color-Schemes)
@@ -133,29 +151,9 @@ Releases are cut by [Release Please](https://github.com/googleapis/release-pleas
 from Conventional Commits on `main`. Merging its release PR tags the version,
 publishes the release, and attaches a build for each platform.
 
-## One known rendering hack
-
-`⎿` (U+23BF) is the result gutter Claude Code prints, and no monospace face on
-macOS carries it. They all fall back to a double-width box that breaks column
-alignment. `src/app.css` borrows the glyph from a symbol face for that one
-codepoint:
-
-```css
-@font-face {
-  font-family: 'GutterMark';
-  src: local('Apple Symbols'), local('Segoe UI Symbol'), local('DejaVu Sans Mono');
-  unicode-range: U+23BF;
-}
-```
-
-A machine carrying none of those three shows a tofu box on every gutter line.
-The fix is to subset a symbol face down to U+23BF alone and ship it, a few
-hundred bytes. Substituting `└` looks close and is the wrong character.
-
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
 
-Not affiliated with Anthropic. Claude and Claude Code are their trademarks; this
-repository imitates the terminal output for a stage prop and ships none of their
-code.
+Provider and model names shown by the simulation are illustrative. This project is
+not affiliated with or endorsed by any provider, and ships none of their client code.

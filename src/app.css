@@ -1,21 +1,10 @@
-/* Iosevka ships ~1 MB per weight even subsetted, so the terminal body loads one
-   weight only; the two places that wanted bold use colour instead. */
-@import '@fontsource/iosevka/400.css';
-@import '@fontsource/martian-mono/400.css';
-@import '@fontsource/martian-mono/500.css';
-@import '@fontsource/martian-mono/700.css';
-@import '@fontsource/source-serif-4/400.css';
-@import '@fontsource/source-serif-4/600.css';
-
-/* U+23BF is the result gutter Claude Code actually prints, and no monospace face
-   on this machine carries it — they all fall back to a double-width box that
-   breaks column alignment. Borrowing the one local face that has the glyph, for
-   that codepoint only, keeps the real character in the text. */
-@font-face {
-  font-family: 'GutterMark';
-  src: local('Apple Symbols'), local('Segoe UI Symbol'), local('DejaVu Sans Mono');
-  unicode-range: U+23BF;
-}
+/* Terminal body faces load at 400 only; emphasis inside transcripts uses colour
+   rather than adding another large font payload. */
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/monaspace-neon/400.css';
+@import '@fontsource/monaspace-xenon/400.css';
+@import '@fontsource/monaspace-xenon/500.css';
+@import '@fontsource/monaspace-xenon/700.css';
 
 :root {
   /* Master-control chrome: graphite plate, not neon-on-black. */
@@ -62,9 +51,9 @@
   --del-bg: color-mix(in oklch, #d47563 13%, transparent);
   --selection: #363634;
 
-  --f-editorial: 'Source Serif 4', Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
-  --f-umd: 'Martian Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
-  --f-term: 'GutterMark', 'Iosevka', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
+  --f-editorial: 'Instrument Serif', Charter, Georgia, serif;
+  --f-umd: 'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace;
+  --f-term: 'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace;
 
   --gap: clamp(5px, 0.5vw, 10px);
   --r: 2px;
@@ -104,7 +93,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .tnum {
