@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/VdustR/fake-agent-wall/compare/v0.6.0...v0.6.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* keep telemetry meters responsive ([#16](https://github.com/VdustR/fake-agent-wall/issues/16)) ([24f5eee](https://github.com/VdustR/fake-agent-wall/commit/24f5eeeebe90f8cf77e07c0cf17b0f9dbcc96f8d))
+
 ## [0.6.0](https://github.com/VdustR/fake-agent-wall/compare/v0.5.0...v0.6.0) (2026-08-14)
 
 
