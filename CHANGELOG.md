@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/VdustR/fake-agent-wall/compare/v0.6.2...v0.6.3) (2026-08-15)
+
+
+### Bug Fixes
+
+* add keyboard navigation to preset search ([#21](https://github.com/VdustR/fake-agent-wall/issues/21)) ([88e6ecb](https://github.com/VdustR/fake-agent-wall/commit/88e6ecbe879530ca8efd0758d9d98b86d346f174))
+
 ## [0.6.2](https://github.com/VdustR/fake-agent-wall/compare/v0.6.1...v0.6.2) (2026-08-15)
 
 
