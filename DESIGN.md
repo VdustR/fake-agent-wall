@@ -192,7 +192,7 @@ components:
     textColor: "{colors.ink-000}"
     typography: "{typography.label}"
     padding: "0 12px"
-  exit-slate-tag-armed:
+  exit-slate-tag-holding:
     backgroundColor: "{colors.live}"
     textColor: "{colors.on-live}"
     typography: "{typography.label}"
@@ -252,7 +252,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
 - Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
-- Motion is broadcast motion: hard cuts and instant state changes; easing exists only for meters, the ticker step and the exit fuse.
+- Motion is broadcast motion: hard cuts and instant state changes; easing exists only for meters, the ticker step and the exit timebase.
 
 ## Colors
 
@@ -261,7 +261,7 @@ signal colour at a time, plus Swarmdeck coral as the single product accent.
 
 ### Primary
 
-- **Program Red** (`{colors.live}`): the program bus. It says "this source is working", never "this source has failed". Full strength plus an outer lamp glow means on air; a 72% mix into `ink-200` means the source is streaming output; a 40% mix means it is thinking. Also the reverse-video background of the active window in the status line, the `live` count in the right status, the top band of the PPM scale, the default lit segment of every LED ladder, and the armed border and fuse of the exit slate.
+- **Program Red** (`{colors.live}`): the program bus. It says "this source is working", never "this source has failed". Full strength plus an outer lamp glow means on air; a 72% mix into `ink-200` means the source is streaming output; a 40% mix means it is thinking. Also the reverse-video background of the active window in the status line, the `live` count in the right status, the top band of the PPM scale, the default lit segment of every LED ladder, and the hold border and timebase of the exit slate.
 - **Swarmdeck Coral** (`{colors.coral}`): the product accent. Tool-call bullets, the typing cursor, the model name in the PGM header, the permission-prompt frame and its selected option, the output-pressure histogram, the solid `[swarmdeck]` session block at the head of the status line, and the solid `SWARM LOG` tag on the ticker.
 
 ### Secondary
@@ -284,15 +284,15 @@ signal colour at a time, plus Swarmdeck coral as the single product accent.
 - **Chip Graphite** (`{colors.ink-200}`): the source-number chip, the resting `NEXT CUT` plate, and the mix partner for every dimmed tally colour.
 - **Hairline** (`{colors.line}`) / **Bright Hairline** (`{colors.line-hi}`): internal dividers and structural edges respectively. `line-hi` is also the ink for the registration crosses, the title-safe brackets, the graticule ticks and histogram rules, the status line's bottom edge and its `│` separators, and the exit slate's resting border.
 - **Terminal Ink** (`{colors.txt}` / `{colors.txt-dim}` / `{colors.txt-fnt}`): the three-step transcript legibility ramp — said text, gutter results, context lines — measured at 12.4 / 10.4 / 7.5 against the panel well. The same three steps grade the status line's window list: bright for a working source, `txt-dim` at rest, `txt-fnt` for idle.
-- **UMD Grey** (`{colors.umd}`): label-strip text, the user-turn line in transcripts, the PPM reference mark, and — as a *plate* — the ticker's source chip and the exit slate's unarmed tag. Measured at 5.3 against the panel well.
+- **UMD Grey** (`{colors.umd}`): label-strip text, the user-turn line in transcripts, the PPM reference mark, and — as a *plate* — the ticker's source chip and the exit slate's ready tag. Measured at 5.3 against the panel well.
 - **Emphasis White** (`{colors.txt-hi}`): the single brightening step. Agent names, source-number chips, PGM key values, status-line figures and running windows, transcript prose, the prompt question, the exit slate's message.
 
 ### Ink On A Fill
 
 Two kinds of filled block exist, and they take different ink.
 
-- **On a lamp** — `{colors.on-live}` / `{colors.on-cue}` / `{colors.on-coral}`: the inks for text sitting on a *saturated* fill. The `PGM` tag and on-air badge, the `PREVIEW` badge and cue plate, the `SWARM LOG` tag, the `[swarmdeck]` session block, the reverse-video windows in the status line, the armed exit tag.
-- **On a plate** — `{colors.ink-000}`: the ink for text sitting on a *grey* fill. The ticker's source chip and the exit slate's unarmed tag are `{colors.umd}` plates; a plate is not a lamp, so it takes plate black rather than borrowing a lamp's ink.
+- **On a lamp** — `{colors.on-live}` / `{colors.on-cue}` / `{colors.on-coral}`: the inks for text sitting on a *saturated* fill. The `PGM` tag and on-air badge, the `PREVIEW` badge and cue plate, the `SWARM LOG` tag, the `[swarmdeck]` session block, the reverse-video windows in the status line, the holding exit tag.
+- **On a plate** — `{colors.ink-000}`: the ink for text sitting on a *grey* fill. The ticker's source chip and the exit slate's ready tag are `{colors.umd}` plates; a plate is not a lamp, so it takes plate black rather than borrowing a lamp's ink.
 
 ### LED Ladder
 
@@ -301,7 +301,7 @@ Two kinds of filled block exist, and they take different ink.
 
 ### Named Rules
 
-**The Program-Bus Rule.** Red is not an error colour on this wall. Red means the source is doing work, and its intensity encodes how much: full + glow = on air, 72% mix = streaming, 40% mix = thinking. Nothing on this surface may use red to mean failure except a diff deletion, which is transcript grammar rather than chrome. The one non-status use of red is the armed state of the exit slate, where red means "the next keystroke ends the wall" — a consequence, still not a fault.
+**The Program-Bus Rule.** Red is not an error colour on this wall. Red means the source is doing work, and its intensity encodes how much: full + glow = on air, 72% mix = streaming, 40% mix = thinking. Nothing on this surface may use red to mean failure except a diff deletion, which is transcript grammar rather than chrome. The one non-status use of red is the holding state of the exit slate, where red means "releasing now cancels; completing the timebase ends the wall" — a consequence, still not a fault.
 
 **The Preview-Only Tally Rule.** Green is never a tally state a source can reach on its own — it appears on a source only when the mixer has queued it for the next cut. (Divergence from the stated world, which reserved green "exclusively" for the preview bus: the build gives cue green two further jobs outside the tally system — Git identity for branch and repo names, and the in-range band of every meter. That is the actual system; what holds without exception is the tally prohibition.)
 
@@ -446,7 +446,7 @@ build.
 - **Preview lamp** (`0 0 0 1px color-mix(in oklab, var(--cue) 55%, transparent), 0 0 20px color-mix(in oklab, var(--cue) 28%, transparent)`): the cued source.
 - **Instrument well** (`inset 0 0 0 1px var(--line)`): PPM tracks and context bridge tracks. A printed frame, not depth.
 - **Overlay lift** (`0 10px 40px rgb(0 0 0 / 70%)`): the exit slate, and nothing else on the surface.
-- **Armed ring** (`0 0 0 1px color-mix(in oklab, var(--live) 45%, transparent), 0 10px 40px rgb(0 0 0 / 70%)`): the exit slate once the first Escape has landed.
+- **Hold ring** (`0 0 0 1px color-mix(in oklab, var(--live) 45%, transparent), 0 10px 40px rgb(0 0 0 / 70%)`): the exit slate while Escape is held.
 
 ### Named Rules
 
@@ -476,7 +476,7 @@ Meters are strictly rectangular. LED ladders are `repeat(n, 1fr)` segment grids 
 segmentation as a printed `repeating-linear-gradient` every 5% of scale, a 1px
 reference mark that overhangs the track by 2px top and bottom, and a 2px peak-hold cap.
 The graticule prints 1px × 3px ticks with numerals centred beneath them. The exit
-slate's fuse is the same family: a 2px flat bar, no cap, no radius.
+slate's timebase is the same family: a 4px flat track with quarter marks, no cap, no radius.
 
 ### Named Rules
 
@@ -643,17 +643,17 @@ truncating to a verb.
 
 A slate plate that surfaces near the bottom of the screen to tell the viewer how to
 stop the wall. It renders only inside the Electron shell and **displays only** — the
-double-tap Escape gesture and the decision to quit live in the main process, so a
+long-press Escape gesture and the decision to quit live in the main process, so a
 wedged page costs the user a hint, never the exit.
 
-- **Surfacing:** on any pointer movement over 3px, or on the first Escape. It holds for 2600ms and then cuts out. Movement below the 3px threshold is ignored, because a resting hand's jitter would otherwise pin the plate on screen.
-- **Unarmed:** a `{colors.umd}` plate tag reading `exit` with `{colors.ink-000}` ink, and the line `double-tap esc to stop` in `{colors.txt-hi}` with `esc` in amber.
-- **Armed** (first Escape landed): the tag flips to solid `{colors.live}` on `{colors.on-live}`, the border goes red with an armed ring, the line becomes `press esc again to stop`, and a 2px **fuse** depletes left-to-right across the bottom of the plate over the remaining double-tap window (1500ms), keyed so it restarts on every surfacing.
+- **Surfacing:** on any pointer movement over 3px, or after four non-modifier keys within 1800ms. It holds for 2600ms and then cuts out. Movement below the 3px threshold, auto-repeat events, modifier chords, and the Theme Panel shortcut are ignored. Opening the Theme Panel clears any partially accumulated key sequence.
+- **Ready:** a `{colors.umd}` plate tag reading `exit` with `{colors.ink-000}` ink, and the line `hold esc to stop` in `{colors.txt-hi}` with `esc` in amber.
+- **Holding:** the tag reads `hold` on solid `{colors.live}`, the border gains a hold ring, the line becomes `keep holding esc to stop`, and a 4px **timebase** fills left-to-right over the 1200ms hold. Quarter marks make duration legible without adding a countdown.
 - **Entrance:** `90ms steps(2)` opacity — a hard cut, like everything else on this wall.
-- **Reduced motion:** the fuse holds full rather than burning. The window still expires; it stops being animated.
+- **Reduced motion:** the timebase holds full rather than filling. The hold duration is unchanged; only the animation is removed.
 
-The fuse is the exit affordance's own answer to the cut-clock problem: a timed state
-gets a visible quantity beside it, whether that is a countdown numeral or a burning bar.
+The timebase is the exit affordance's answer to the cut-clock problem: a timed state
+gets a visible quantity beside it, whether that is a countdown numeral or a filling bar.
 
 ### Desktop Mode
 
@@ -665,9 +665,9 @@ like an ordinary page.
 
 ### Named Rules
 
-**The Hard-Cut Rule.** State changes are cuts, not transitions. Tally borders move at 120ms linear, the preview blink uses `steps(1)`, the cut flash has no curve at all, the exit slate cuts in on `steps(2)`, and the cursor and spinner are modulo toggles off the frame clock. Easing exists in exactly three places: the meter transitions, the ticker's one-cell step, and the exit fuse's linear burn.
+**The Hard-Cut Rule.** State changes are cuts, not transitions. Tally borders move at 120ms linear, the preview blink uses `steps(1)`, the cut flash has no curve at all, the exit slate cuts in on `steps(2)`, and the cursor and spinner are modulo toggles off the frame clock. Easing exists in exactly three places: the meter transitions, the ticker's one-cell step, and the exit timebase's linear fill.
 
-**The Calm-Variant Rule.** Under `prefers-reduced-motion`, the surface does not stop being a multiviewer; it stops fidgeting. A global rule flattens every CSS animation and transition to 0.001ms, and the components answer for their own content: transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor holds solid; the spinner freezes at `O`; the ticker stops stepping; the exit fuse holds full; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.
+**The Calm-Variant Rule.** Under `prefers-reduced-motion`, the surface does not stop being a multiviewer; it stops fidgeting. A global rule flattens every CSS animation and transition to 0.001ms, and the components answer for their own content: transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor holds solid; the spinner freezes at `O`; the ticker stops stepping; the exit timebase holds full; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.
 
 **The Display-Only Rule.** A component that shows a system affordance never owns it. The exit hint draws the gesture the main process implements and holds no part of the exit path; if the component fails to render, the gesture still works. Any future indicator for a shell-owned capability follows the same split.
 
@@ -691,7 +691,7 @@ like an ordinary page.
 - **Do** style runtime-valued classes globally in `app.css`, alongside the existing `.ln` rules.
 - **Do** draw new signal states as coloured 1px hairlines and coloured lamps, and derive dimmed variants with `color-mix(in oklab, <signal> N%, var(--ink-200))` the way the tally system already does.
 - **Do** print an instrument's scale — ticks, numerals, segment rules, reference mark — on the empty track, and put the scale colours on the track with the fill clipped back to the reading.
-- **Do** give a timed state a visible quantity: a countdown numeral on the cut clock, a burning fuse on the exit window. A timed event with no quantity beside it is read once and then read as decoration.
+- **Do** give a timed state a visible quantity: a countdown numeral on the cut clock, a filling timebase on the exit window. A timed event with no quantity beside it is read once and then read as decoration.
 - **Do** keep a shell-owned capability's indicator display-only, so the capability survives the component failing.
 - **Do** keep the transcript bottom-anchored and clipped; add density, never a scrollbar.
 

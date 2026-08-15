@@ -1,8 +1,8 @@
 export interface HintPayload {
-  /** True once one Escape has landed and a second will stop the wall. */
-  armed: boolean
-  /** How long that second press has, in milliseconds. */
-  withinMs: number
+  /** Whether Escape is currently being held or the gesture is only being taught. */
+  state: 'ready' | 'holding'
+  /** How long Escape must remain held, in milliseconds. */
+  holdMs: number
 }
 
 declare global {
