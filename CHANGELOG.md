@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/VdustR/fake-agent-wall/compare/v0.6.1...v0.6.2) (2026-08-15)
+
+
+### Bug Fixes
+
+* require holding escape to stop wall ([#18](https://github.com/VdustR/fake-agent-wall/issues/18)) ([53f8fc4](https://github.com/VdustR/fake-agent-wall/commit/53f8fc4b34c9941152c6736e4aa1321ce3ff09b6))
+
 ## [0.6.1](https://github.com/VdustR/fake-agent-wall/compare/v0.6.0...v0.6.1) (2026-08-14)
 
 
