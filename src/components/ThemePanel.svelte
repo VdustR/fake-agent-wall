@@ -27,6 +27,9 @@
   let search = $state('')
   let saveError = $state(false)
   let searchInput = $state<HTMLInputElement>()
+  // The panel is remounted for every editing session, so the prop is the initial selection.
+  // svelte-ignore state_referenced_locally
+  let highlightedPresetId = $state(value.presetId)
 
   const visiblePresets = $derived.by(() => {
     const query = search.trim().toLocaleLowerCase()
@@ -38,9 +41,43 @@
   })
 
   function choosePreset(preset: ThemePreset): void {
+    highlightedPresetId = preset.id
     const retained = { editorialFont: draft.editorialFont, uiFont: draft.uiFont, codeFont: draft.codeFont, wallLabel: draft.wallLabel }
     draft = { ...settingsFromPreset(preset), ...retained }
     onpreview(cloneTheme(draft))
+  }
+
+  function updateSearch(input: string): void {
+    search = input
+    const query = input.trim().toLocaleLowerCase()
+    const matches = query ? allPresets.filter((preset) => preset.name.toLocaleLowerCase().includes(query)) : allPresets
+    highlightedPresetId = matches.some((preset) => preset.id === draft.presetId) ? draft.presetId : (matches[0]?.id ?? '')
+  }
+
+  function movePresetHighlight(offset: -1 | 1): void {
+    if (visiblePresets.length === 0) return
+    const currentIndex = visiblePresets.findIndex((preset) => preset.id === highlightedPresetId)
+    const nextIndex = currentIndex < 0
+      ? (offset === 1 ? 0 : visiblePresets.length - 1)
+      : (currentIndex + offset + visiblePresets.length) % visiblePresets.length
+    highlightedPresetId = visiblePresets[nextIndex]!.id
+    void tick().then(() => document.getElementById(`preset-option-${nextIndex}`)?.scrollIntoView({ block: 'nearest' }))
+  }
+
+  function handlePresetKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      movePresetHighlight(event.key === 'ArrowDown' ? 1 : -1)
+      return
+    }
+    if (event.key === 'Enter') {
+      const preset = visiblePresets.find((candidate) => candidate.id === highlightedPresetId)
+      if (preset) {
+        event.preventDefault()
+        choosePreset(preset)
+      }
+      return
+    }
   }
 
   function updateColor(key: AnsiKey | MetaKey, color: string): void {
@@ -74,7 +111,7 @@
       return
     }
     draft = restored
-    search = ''
+    updateSearch('')
     saveError = false
   }
 </script>
@@ -98,10 +135,10 @@
 
     <section class="preset-section">
       <label class="field-label" for="preset-search">Preset</label>
-      <input bind:this={searchInput} id="preset-search" type="search" bind:value={search} placeholder="Search 534 presets" autocomplete="off" />
-      <div class="preset-list" aria-label="Theme presets">
-        {#each visiblePresets as preset (preset.id)}
-          <button class:active={preset.id === draft.presetId} type="button" onclick={() => choosePreset(preset)}>
+      <input bind:this={searchInput} id="preset-search" type="search" value={search} placeholder="Search 534 presets" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="preset-list" aria-expanded="true" aria-activedescendant={visiblePresets.length ? `preset-option-${Math.max(0, visiblePresets.findIndex((preset) => preset.id === highlightedPresetId))}` : undefined} oninput={(event) => updateSearch(event.currentTarget.value)} onkeydown={handlePresetKeydown} />
+      <div id="preset-list" class="preset-list" role="listbox" aria-label="Theme presets">
+        {#each visiblePresets as preset, index (preset.id)}
+          <button id={`preset-option-${index}`} class:active={preset.id === draft.presetId} class:highlighted={preset.id === highlightedPresetId} type="button" role="option" tabindex="-1" aria-selected={preset.id === draft.presetId} onclick={() => choosePreset(preset)}>
             <span>{preset.name}</span>
             <span class="swatches" aria-hidden="true">
               {#each [preset.metadata.background, preset.scheme.red, preset.scheme.green, preset.scheme.blue] as color}
@@ -110,6 +147,9 @@
             </span>
           </button>
         {/each}
+        {#if visiblePresets.length === 0}
+          <p class="empty-presets" role="status">No matching presets</p>
+        {/if}
       </div>
     </section>
 
@@ -195,7 +235,10 @@
   .preset-list { height: 178px; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); background: var(--ink-000); scrollbar-color: var(--line-hi) var(--ink-000); }
   .preset-list button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: var(--txt-dim); background: transparent; border-bottom: 1px solid var(--line); font: 11px/1.2 var(--f-term); text-align: left; cursor: pointer; }
   .preset-list button:hover { color: var(--txt-hi); background: var(--ink-150); }
+  .preset-list button.highlighted { color: var(--txt-hi); outline: 1px solid var(--coral); outline-offset: -1px; }
   .preset-list button.active { color: var(--on-coral); background: var(--coral); }
+  .preset-list button.active.highlighted { outline-color: var(--on-coral); }
+  .empty-presets { margin: 0; padding: 12px 10px; color: var(--txt-fnt); font: 10px/1.2 var(--f-term); }
   .swatches { display: grid; grid-template-columns: repeat(4, 10px); height: 10px; border: 1px solid color-mix(in oklch, currentColor 30%, transparent); }
   .swatches i { display: block; }
   .text-button { padding: 4px 0; color: var(--coral); background: transparent; font: 10px/1.2 var(--f-term); cursor: pointer; }
