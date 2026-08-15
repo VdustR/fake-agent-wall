@@ -4,7 +4,7 @@
   /**
    * The exit affordance for the desktop app.
    *
-   * It only ever DISPLAYS. The main process owns the double-tap gesture and the
+   * It only ever DISPLAYS. The main process owns the hold gesture and the
    * decision to quit, so a wedged page cannot trap the screen — this component
    * going missing costs the user a hint, never the exit.
    */
@@ -13,9 +13,9 @@
   const MOVE_PX = 3
 
   let visible = $state(false)
-  let armed = $state(false)
-  let within = $state(1500)
-  /** Bumped on every surfacing so the countdown animation restarts. */
+  let holding = $state(false)
+  let holdMs = $state(1200)
+  /** Bumped on every surfacing so the timebase animation restarts. */
   let shown = $state(0)
 
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -23,21 +23,21 @@
   let lastY = 0
   let seeded = false
 
-  function surface(isArmed: boolean) {
-    armed = isArmed
+  function surface(state: 'ready' | 'holding') {
+    holding = state === 'holding'
     visible = true
     shown += 1
     clearTimeout(timer)
     timer = setTimeout(() => {
       visible = false
-      armed = false
+      holding = false
     }, HOLD_MS)
   }
 
   onMount(() => {
     const off = window.agentWall?.onHint((p) => {
-      within = p.withinMs
-      surface(p.armed)
+      holdMs = p.holdMs
+      surface(p.state)
     })
 
     const onMove = (e: PointerEvent) => {
@@ -51,7 +51,7 @@
       lastX = e.clientX
       lastY = e.clientY
       // A mouse move is a question, not a command: it asks how to get out.
-      if (!armed) surface(false)
+      if (!holding) surface('ready')
     }
 
     window.addEventListener('pointermove', onMove, { passive: true })
@@ -64,19 +64,20 @@
 </script>
 
 {#if visible}
-  <div class="slate" class:armed role="status">
-    <span class="tag umd-type">{armed ? 'arm' : 'exit'}</span>
+  <div class="slate" class:holding role="status">
+    <span class="tag umd-type">{holding ? 'hold' : 'exit'}</span>
     <span class="body">
       <span class="line umd-type">
-        {#if armed}
-          press <b>esc</b> again to stop
-        {:else}
-          double&#8209;tap <b>esc</b> to stop
-        {/if}
+        {holding ? 'keep holding ' : 'hold '}<b>esc</b> to stop
       </span>
-      {#if armed}
+      {#if holding}
         {#key shown}
-          <span class="fuse" style="--ms:{within}ms"></span>
+          <span class="progress" aria-hidden="true">
+            <span class="progress-fill" style="--ms:{holdMs}ms"></span>
+            <span class="progress-mark" style="left:25%"></span>
+            <span class="progress-mark" style="left:50%"></span>
+            <span class="progress-mark" style="left:75%"></span>
+          </span>
         {/key}
       {/if}
     </span>
@@ -108,7 +109,7 @@
       opacity: 1;
     }
   }
-  .slate.armed {
+  .slate.holding {
     border-color: var(--live);
     box-shadow:
       0 0 0 1px color-mix(in oklab, var(--live) 45%, transparent),
@@ -124,7 +125,7 @@
     font-weight: 700;
     letter-spacing: 0.18em;
   }
-  .slate.armed .tag {
+  .slate.holding .tag {
     background: var(--live);
     color: var(--on-live);
   }
@@ -144,28 +145,42 @@
     font-weight: 700;
   }
 
-  /* The window you have left, drawn as a burning fuse rather than a number. */
-  .fuse {
+  /* A printed timebase makes the required hold duration visible at a glance. */
+  .progress {
     position: absolute;
     left: 0;
     bottom: 0;
-    height: 2px;
+    height: 4px;
     width: 100%;
+    overflow: hidden;
+    background: var(--ink-050);
+  }
+  .progress-fill {
+    position: absolute;
+    inset: 0;
     background: var(--live);
     transform-origin: left;
-    animation: burn var(--ms) linear forwards;
+    animation: charge var(--ms) linear forwards;
   }
-  @keyframes burn {
+  .progress-mark {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--ink-000);
+    opacity: 0.55;
+  }
+  @keyframes charge {
     from {
-      transform: scaleX(1);
+      transform: scaleX(0);
     }
     to {
-      transform: scaleX(0);
+      transform: scaleX(1);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fuse {
+    .progress-fill {
       animation: none;
       transform: scaleX(1);
     }

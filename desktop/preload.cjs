@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('agentWall', {
   /**
    * The main process owns the exit gesture and tells the page when to surface
    * the hint. The page never decides whether the app closes — if the renderer
-   * wedges, double-tapping esc still works.
+   * wedges, holding esc still works.
    */
   onHint(callback) {
     const handler = (_event, payload) => callback(payload)

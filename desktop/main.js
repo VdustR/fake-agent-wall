@@ -1,7 +1,6 @@
 import {
   app,
   BrowserWindow,
-  globalShortcut,
   Menu,
   ipcMain,
   nativeImage,
@@ -22,18 +21,20 @@ const DEV_URL = process.env.AGENT_WALL_DEV_URL
  * have to hand over their display to check a layout change.
  */
 const WINDOWED = process.env.AGENT_WALL_WINDOWED === '1'
-/** Two presses inside this window exit. Longer feels unresponsive; shorter misfires. */
-const DOUBLE_TAP_MS = 1500
-/** A single physical press can reach us twice (window hook + global shortcut). */
-const DEDUPE_MS = 120
+/** Long enough to be intentional, short enough to remain a usable escape hatch. */
+const EXIT_HOLD_MS = 1200
+/** Repeated typing is treated as a sign that the operator is looking for an exit. */
+const HELP_KEY_COUNT = 4
+const HELP_KEY_WINDOW_MS = 1800
 const IDLE_POLL_MS = 2000
 const IS_MAC = process.platform === 'darwin'
 
 let wall = null
 let tray = null
 let blockerId = null
-let lastEscAt = 0
-let armedAt = 0
+let escDown = false
+let exitTimer = null
+let recentKeyTimes = []
 let idleTimer = null
 let themePanelOpen = false
 
@@ -45,8 +46,8 @@ function openWall() {
     wall.focus()
     return
   }
-  lastEscAt = 0
-  armedAt = 0
+  cancelExitHold(false)
+  recentKeyTimes = []
   themePanelOpen = false
 
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
@@ -84,7 +85,6 @@ function openWall() {
     wall.setAlwaysOnTop(true, 'screen-saver')
     wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
     swallowInput(wall.webContents)
-    globalShortcut.register('Escape', () => onEscape())
   }
 
   wall.once('ready-to-show', () => {
@@ -93,7 +93,6 @@ function openWall() {
   })
   wall.on('closed', () => {
     wall = null
-    globalShortcut.unregister('Escape')
     applyPowerBlocker()
     refreshTray()
   })
@@ -110,9 +109,9 @@ function openWall() {
 
 function closeWall() {
   if (!wall) return
+  cancelExitHold(false)
   const w = wall
   wall = null
-  globalShortcut.unregister('Escape')
   if (!WINDOWED && IS_MAC) w.setSimpleFullScreen(false)
   w.destroy()
   applyPowerBlocker()
@@ -120,11 +119,16 @@ function closeWall() {
 }
 
 /**
- * The wall accepts exactly one gesture: Escape twice. Everything else — keys,
+ * The wall accepts exactly one gesture: holding Escape. Everything else — keys,
  * accelerators, clicks — is consumed so nothing behind the wall can react.
  */
 function swallowInput(wc) {
   wc.on('before-input-event', (event, input) => {
+    if (input.type === 'keyUp') {
+      if (input.key === 'Escape' && !themePanelOpen) cancelExitHold()
+      if (!themePanelOpen) event.preventDefault()
+      return
+    }
     if (input.type !== 'keyDown') {
       if (!themePanelOpen) event.preventDefault()
       return
@@ -132,53 +136,70 @@ function swallowInput(wc) {
 
     const themeShortcut = (input.meta || input.control) && input.shift && input.code === 'Comma'
     if (themeShortcut) {
+      recentKeyTimes = []
       wc.send('wall:theme-toggle')
       event.preventDefault()
       return
     }
     if (input.key === 'Escape') {
       if (themePanelOpen) wc.send('wall:theme-close')
-      else onEscape()
+      else startExitHold()
       event.preventDefault()
       return
     }
     if (themePanelOpen) return
+    trackHelpKey(input)
     event.preventDefault()
   })
 }
 
-function onEscape() {
+function startExitHold() {
   if (!wall) return
   if (themePanelOpen) {
     wall.webContents.send('wall:theme-close')
     return
   }
-  const now = Date.now()
-  // One press, two delivery paths: collapse them into a single event.
-  if (now - lastEscAt < DEDUPE_MS) return
-  lastEscAt = now
+  if (escDown) return
+  escDown = true
+  clearTimeout(exitTimer)
+  hint('holding')
+  exitTimer = setTimeout(() => closeWall(), EXIT_HOLD_MS)
+}
 
-  if (armedAt && now - armedAt < DOUBLE_TAP_MS) {
-    closeWall()
-    return
-  }
-  armedAt = now
-  hint(true)
+function cancelExitHold(showHint = true) {
+  clearTimeout(exitTimer)
+  exitTimer = null
+  const wasHolding = escDown
+  escDown = false
+  if (wasHolding && showHint) hint('ready')
+}
+
+function trackHelpKey(input) {
+  // A deliberate shortcut is navigation, not evidence that the operator is
+  // searching for an exit. Exclude the entire chord, including its lead-in.
+  if (input.isAutoRepeat || input.meta || input.control || input.alt || input.shift) return
+  if (input.code === 'MetaLeft' || input.code === 'MetaRight' || input.code === 'ControlLeft' || input.code === 'ControlRight' || input.code === 'AltLeft' || input.code === 'AltRight' || input.code === 'ShiftLeft' || input.code === 'ShiftRight') return
+  const now = Date.now()
+  recentKeyTimes = recentKeyTimes.filter(time => now - time <= HELP_KEY_WINDOW_MS)
+  recentKeyTimes.push(now)
+  if (recentKeyTimes.length < HELP_KEY_COUNT) return
+  recentKeyTimes = []
+  hint('ready')
 }
 
 ipcMain.on('wall:theme-panel', (event, open) => {
   if (!wall || event.sender !== wall.webContents) return
   themePanelOpen = open === true
   if (themePanelOpen) {
-    armedAt = 0
-    lastEscAt = 0
+    cancelExitHold(false)
+    recentKeyTimes = []
   }
 })
 
 /** Ask the page to surface the exit hint. Purely cosmetic; exiting never depends on it. */
-function hint(armed) {
+function hint(state) {
   if (wall && !wall.webContents.isDestroyed()) {
-    wall.webContents.send('wall:hint', { armed, withinMs: DOUBLE_TAP_MS })
+    wall.webContents.send('wall:hint', { state, holdMs: EXIT_HOLD_MS })
   }
 }
 
@@ -225,7 +246,7 @@ function refreshTray() {
   if (!tray) return
   const s = getSettings()
   if (IS_MAC) tray.setImage(trayIcon())
-  tray.setToolTip(wall ? 'Fake Agent Wall — playing (double-tap esc to stop)' : 'Fake Agent Wall — click to play')
+  tray.setToolTip(wall ? 'Fake Agent Wall — playing (hold esc to stop)' : 'Fake Agent Wall — click to play')
 
   const minuteChoice = (m) => ({
     label: `${m} min`,
@@ -347,7 +368,6 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', (e) => e?.preventDefault?.())
 
   app.on('will-quit', () => {
-    globalShortcut.unregisterAll()
     clearInterval(idleTimer)
     if (blockerId !== null) powerSaveBlocker.stop(blockerId)
   })
