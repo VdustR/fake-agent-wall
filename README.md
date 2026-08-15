@@ -101,9 +101,7 @@ The palette collection is MIT; individual scheme rights belong to their original
 authors. See [Third-Party Notices](THIRD_PARTY_NOTICES.md). Fake Agent Wall does
 not import or export `.itermcolors` files.
 
-Stopping the wall takes Escape held for 1.2 seconds. Nothing else interrupts it.
-Moving the mouse or pressing several keys in quick succession raises a hint plate
-showing the way out. Holding Escape fills its progress bar; releasing early cancels
+Stopping the wall takes Escape held for 1.2 seconds; releasing it early cancels
 the exit. That gesture lives in the Electron main process, so holding Escape still
 quits even if the page has wedged.
 
