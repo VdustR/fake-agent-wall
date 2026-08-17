@@ -104,8 +104,9 @@ not import or export `.itermcolors` files.
 Stopping the wall takes Escape held for 1.2 seconds. Nothing else interrupts it.
 Moving the mouse or pressing several keys in quick succession raises a hint plate
 showing the way out. Holding Escape fills its progress bar; releasing early cancels
-the exit. That gesture lives in the Electron main process, so holding Escape still
-quits even if the page has wedged.
+the exit. Once the bar is full, the wall waits for Escape to be released before it
+closes, so the application underneath never receives the held key. That gesture
+lives in the Electron main process, so it still works if the page has wedged.
 
 ### Limits worth knowing before you file a bug
 

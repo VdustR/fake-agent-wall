@@ -13,7 +13,7 @@
   const MOVE_PX = 3
 
   let visible = $state(false)
-  let holding = $state(false)
+  let hintState = $state<'ready' | 'holding' | 'armed'>('ready')
   let holdMs = $state(1200)
   /** Bumped on every surfacing so the timebase animation restarts. */
   let shown = $state(0)
@@ -23,15 +23,16 @@
   let lastY = 0
   let seeded = false
 
-  function surface(state: 'ready' | 'holding') {
-    holding = state === 'holding'
+  function surface(nextState: 'ready' | 'holding' | 'armed') {
+    hintState = nextState
     visible = true
     shown += 1
     clearTimeout(timer)
-    timer = setTimeout(() => {
-      visible = false
-      holding = false
-    }, HOLD_MS)
+    if (hintState === 'ready') {
+      timer = setTimeout(() => {
+        visible = false
+      }, HOLD_MS)
+    }
   }
 
   onMount(() => {
@@ -51,7 +52,7 @@
       lastX = e.clientX
       lastY = e.clientY
       // A mouse move is a question, not a command: it asks how to get out.
-      if (!holding) surface('ready')
+      if (hintState === 'ready') surface('ready')
     }
 
     window.addEventListener('pointermove', onMove, { passive: true })
@@ -64,13 +65,13 @@
 </script>
 
 {#if visible}
-  <div class="slate" class:holding role="status">
-    <span class="tag umd-type">{holding ? 'hold' : 'exit'}</span>
+  <div class="slate" class:holding={hintState === 'holding'} class:armed={hintState === 'armed'} role="status">
+    <span class="tag umd-type">{hintState === 'armed' ? 'release' : hintState === 'holding' ? 'hold' : 'exit'}</span>
     <span class="body">
       <span class="line umd-type">
-        {holding ? 'keep holding ' : 'hold '}<b>esc</b> to stop
+        {hintState === 'armed' ? 'release ' : hintState === 'holding' ? 'keep holding ' : 'hold '}<b>esc</b> to stop
       </span>
-      {#if holding}
+      {#if hintState !== 'ready'}
         {#key shown}
           <span class="progress" aria-hidden="true">
             <span class="progress-fill" style="--ms:{holdMs}ms"></span>
@@ -109,7 +110,8 @@
       opacity: 1;
     }
   }
-  .slate.holding {
+  .slate.holding,
+  .slate.armed {
     border-color: var(--live);
     box-shadow:
       0 0 0 1px color-mix(in oklab, var(--live) 45%, transparent),
@@ -125,7 +127,8 @@
     font-weight: 700;
     letter-spacing: 0.18em;
   }
-  .slate.holding .tag {
+  .slate.holding .tag,
+  .slate.armed .tag {
     background: var(--live);
     color: var(--on-live);
   }
@@ -161,6 +164,10 @@
     background: var(--live);
     transform-origin: left;
     animation: charge var(--ms) linear forwards;
+  }
+  .slate.armed .progress-fill {
+    animation: none;
+    transform: scaleX(1);
   }
   .progress-mark {
     position: absolute;
