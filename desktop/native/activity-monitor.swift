@@ -108,10 +108,13 @@ func isFrontmostAppFullScreen() -> Bool {
     }
     for window in windows {
         guard (window[kCGWindowOwnerPID] as? NSNumber)?.int32Value == pid,
-              (window[kCGWindowLayer] as? NSNumber)?.intValue == 0,
               let rawBounds = window[kCGWindowBounds] as? NSDictionary,
               let bounds = CGRect(dictionaryRepresentation: rawBounds) else { continue }
 
+        // Full-screen windows can live above the normal layer. Electron's
+        // simple full-screen + screen-saver level combination is one example.
+        // The frontmost owner and exact display bounds identify the window;
+        // requiring layer 0 would reject otherwise valid full-screen apps.
         if screenBounds.contains(where: {
             nearlyEqual(bounds.minX, $0.minX) &&
             nearlyEqual(bounds.minY, $0.minY) &&
