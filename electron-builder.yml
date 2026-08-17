@@ -9,6 +9,11 @@ directories:
 files:
   - dist/**
   - desktop/**
+  - '!desktop/bin/**'
+  - '!desktop/native/**'
+  - '!desktop/*.test.js'
+  - '!desktop/after-pack.cjs'
+  - '!desktop/build-native.cjs'
   - package.json
 
 # Re-signs the macOS bundle ad-hoc. Without this the app inherits Electron's
