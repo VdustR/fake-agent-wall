@@ -12,6 +12,8 @@ import {
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { getSettings, setSettings } from './settings.js'
+import { getSystemActivity } from './activity-monitor.js'
+import { shouldDeferIdleStart } from './activity-guards.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DEV_URL = process.env.AGENT_WALL_DEV_URL
@@ -37,6 +39,7 @@ let exitArmed = false
 let exitTimer = null
 let recentKeyTimes = []
 let idleTimer = null
+let idleCheckRunning = false
 let themePanelOpen = false
 
 /* ------------------------------------------------------------------- window */
@@ -241,10 +244,19 @@ function applyPowerBlocker() {
 
 function startIdleWatch() {
   clearInterval(idleTimer)
-  idleTimer = setInterval(() => {
+  idleTimer = setInterval(async () => {
+    if (idleCheckRunning) return
     const s = getSettings()
     if (!s.idleStart || wall) return
-    if (powerMonitor.getSystemIdleTime() >= s.idleMinutes * 60) openWall()
+    if (powerMonitor.getSystemIdleTime() < s.idleMinutes * 60) return
+
+    idleCheckRunning = true
+    try {
+      const activity = await getSystemActivity()
+      if (!wall && !shouldDeferIdleStart(s, activity)) openWall()
+    } finally {
+      idleCheckRunning = false
+    }
   }, IDLE_POLL_MS)
 }
 
@@ -295,6 +307,30 @@ function refreshTray() {
       {
         label: 'Idle after',
         submenu: [1, 2, 3, 5, 10, 15, 30, 60].map(minuteChoice),
+      },
+      {
+        label: 'Delay automatic start while',
+        visible: IS_MAC,
+        submenu: [
+          {
+            label: 'Audio is playing',
+            type: 'checkbox',
+            checked: s.deferWhileAudioPlaying,
+            click: () => update({ deferWhileAudioPlaying: !s.deferWhileAudioPlaying }),
+          },
+          {
+            label: 'Camera is in use',
+            type: 'checkbox',
+            checked: s.deferWhileCameraInUse,
+            click: () => update({ deferWhileCameraInUse: !s.deferWhileCameraInUse }),
+          },
+          {
+            label: 'Another app is full screen',
+            type: 'checkbox',
+            checked: s.deferWhileFullScreen,
+            click: () => update({ deferWhileFullScreen: !s.deferWhileFullScreen }),
+          },
+        ],
       },
       {
         label: 'Keep display awake',

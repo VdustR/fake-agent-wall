@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { ACTIVITY_GUARD_DEFAULTS } from './activity-guards.js'
 
 /**
  * Settings live in one small JSON file under userData. There is no migration
@@ -14,6 +15,7 @@ const DEFAULTS = {
   /** 'playing' keeps the display awake only while the wall is up. */
   keepAwake: 'playing',
   launchAtLogin: false,
+  ...ACTIVITY_GUARD_DEFAULTS,
 }
 
 const FILE = () => join(app.getPath('userData'), 'settings.json')
@@ -49,6 +51,9 @@ function normalise(s) {
     idleMinutes: clamp(Math.round(Number(s.idleMinutes) || DEFAULTS.idleMinutes), 1, 120),
     keepAwake: ['playing', 'always', 'never'].includes(s.keepAwake) ? s.keepAwake : DEFAULTS.keepAwake,
     launchAtLogin: Boolean(s.launchAtLogin),
+    deferWhileAudioPlaying: Boolean(s.deferWhileAudioPlaying),
+    deferWhileCameraInUse: Boolean(s.deferWhileCameraInUse),
+    deferWhileFullScreen: Boolean(s.deferWhileFullScreen),
   }
 }
 

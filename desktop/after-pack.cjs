@@ -24,6 +24,25 @@ exports.default = async function afterPack(context) {
   if (context.electronPlatformName !== 'darwin') return
 
   const app = join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`)
+  const helper = join(app, 'Contents', 'Resources', 'activity-monitor')
+  const targets = new Map([
+    [1, 'x86_64-apple-macos12'],
+    [3, 'arm64-apple-macos12'],
+  ])
+  const target = targets.get(context.arch)
+  if (!target) throw new Error(`unsupported macOS helper architecture: ${context.arch}`)
+
+  execFileSync('xcrun', [
+    'swiftc',
+    '-O',
+    '-target', target,
+    '-framework', 'AppKit',
+    '-framework', 'CoreAudio',
+    '-framework', 'CoreGraphics',
+    '-framework', 'CoreMediaIO',
+    join(__dirname, 'native', 'activity-monitor.swift'),
+    '-o', helper,
+  ], { stdio: 'inherit' })
 
   execFileSync('codesign', ['--force', '--deep', '--sign', '-', app], { stdio: 'inherit' })
 
