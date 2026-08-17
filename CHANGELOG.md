@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.4](https://github.com/VdustR/fake-agent-wall/compare/v0.6.3...v0.6.4) (2026-08-17)
+
+
+### Bug Fixes
+
+* close wall after escape is released ([#23](https://github.com/VdustR/fake-agent-wall/issues/23)) ([a43f197](https://github.com/VdustR/fake-agent-wall/commit/a43f1975881ca4c56307bedd913423d2a97d09de))
+
 ## [0.6.3](https://github.com/VdustR/fake-agent-wall/compare/v0.6.2...v0.6.3) (2026-08-15)
 
 
