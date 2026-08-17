@@ -11,11 +11,12 @@
     "preview": "vite preview",
     "lint": "oxlint .",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "app": "pnpm build && electron .",
-    "app:dev": "AGENT_WALL_DEV_URL=http://localhost:5273 electron .",
+    "build:native": "node desktop/build-native.cjs",
+    "app": "pnpm build && pnpm build:native && electron .",
+    "app:dev": "pnpm build:native && AGENT_WALL_DEV_URL=http://localhost:5273 electron .",
     "app:pack": "pnpm build && electron-builder --mac --dir --publish never",
     "app:dmg": "pnpm build && electron-builder --mac --publish never",
-    "app:windowed": "AGENT_WALL_WINDOWED=1 AGENT_WALL_DEV_URL=http://localhost:5273 electron ."
+    "app:windowed": "pnpm build:native && AGENT_WALL_WINDOWED=1 AGENT_WALL_DEV_URL=http://localhost:5273 electron ."
   },
   "devDependencies": {
     "@fontsource/instrument-serif": "^5.3.0",

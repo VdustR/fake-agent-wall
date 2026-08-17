@@ -3,4 +3,5 @@ dist
 .DS_Store
 .impeccable/review
 release
+desktop/bin
 docs/.DS_Store
