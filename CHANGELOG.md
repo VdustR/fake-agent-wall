@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/VdustR/fake-agent-wall/compare/v0.7.0...v0.7.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* detect elevated full-screen windows ([#27](https://github.com/VdustR/fake-agent-wall/issues/27)) ([56b33e1](https://github.com/VdustR/fake-agent-wall/commit/56b33e1b5baec14f64f1ce60c4d4c6962c7a9565))
+
 ## [0.7.0](https://github.com/VdustR/fake-agent-wall/compare/v0.6.4...v0.7.0) (2026-08-17)
 
 
