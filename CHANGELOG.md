@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/VdustR/fake-agent-wall/compare/v0.6.4...v0.7.0) (2026-08-17)
+
+
+### Features
+
+* delay idle start during active sessions ([#25](https://github.com/VdustR/fake-agent-wall/issues/25)) ([d2c833f](https://github.com/VdustR/fake-agent-wall/commit/d2c833fe645c172d3a3c55f4d6ba8beee7de1772))
+
 ## [0.6.4](https://github.com/VdustR/fake-agent-wall/compare/v0.6.3...v0.6.4) (2026-08-17)
 
 
