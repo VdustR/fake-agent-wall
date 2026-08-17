@@ -33,6 +33,7 @@ let wall = null
 let tray = null
 let blockerId = null
 let escDown = false
+let exitArmed = false
 let exitTimer = null
 let recentKeyTimes = []
 let idleTimer = null
@@ -125,8 +126,8 @@ function closeWall() {
 function swallowInput(wc) {
   wc.on('before-input-event', (event, input) => {
     if (input.type === 'keyUp') {
-      if (input.key === 'Escape' && !themePanelOpen) cancelExitHold()
       if (!themePanelOpen) event.preventDefault()
+      if (input.key === 'Escape' && !themePanelOpen) finishExitHold()
       return
     }
     if (input.type !== 'keyDown') {
@@ -163,7 +164,24 @@ function startExitHold() {
   escDown = true
   clearTimeout(exitTimer)
   hint('holding')
-  exitTimer = setTimeout(() => closeWall(), EXIT_HOLD_MS)
+  exitTimer = setTimeout(() => {
+    exitTimer = null
+    if (!escDown) return
+    exitArmed = true
+    hint('armed')
+  }, EXIT_HOLD_MS)
+}
+
+function finishExitHold() {
+  if (!escDown) return
+  if (exitArmed) {
+    // Close only after Electron has received and consumed this physical keyup.
+    // The application revealed behind the wall never becomes the key target
+    // while Escape is still down.
+    closeWall()
+    return
+  }
+  cancelExitHold()
 }
 
 function cancelExitHold(showHint = true) {
@@ -171,6 +189,7 @@ function cancelExitHold(showHint = true) {
   exitTimer = null
   const wasHolding = escDown
   escDown = false
+  exitArmed = false
   if (wasHolding && showHint) hint('ready')
 }
 

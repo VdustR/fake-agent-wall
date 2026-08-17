@@ -1,6 +1,6 @@
 export interface HintPayload {
-  /** Whether Escape is currently being held or the gesture is only being taught. */
-  state: 'ready' | 'holding'
+  /** Whether the gesture is being taught, timed, or waiting for key release. */
+  state: 'ready' | 'holding' | 'armed'
   /** How long Escape must remain held, in milliseconds. */
   holdMs: number
 }
