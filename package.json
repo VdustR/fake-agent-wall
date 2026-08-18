@@ -16,7 +16,8 @@
     "app:dev": "pnpm build:native && AGENT_WALL_DEV_URL=http://localhost:5273 electron .",
     "app:pack": "pnpm build && electron-builder --mac --dir --publish never",
     "app:dmg": "pnpm build && electron-builder --mac --publish never",
-    "app:windowed": "pnpm build:native && AGENT_WALL_WINDOWED=1 AGENT_WALL_DEV_URL=http://localhost:5273 electron ."
+    "app:windowed": "pnpm build:native && AGENT_WALL_WINDOWED=1 AGENT_WALL_DEV_URL=http://localhost:5273 electron .",
+    "app:multi-display": "pnpm build:native && AGENT_WALL_WINDOWED=1 AGENT_WALL_SIMULATE_DISPLAYS=2 AGENT_WALL_DEV_URL=http://localhost:5273 electron ."
   },
   "devDependencies": {
     "@fontsource/instrument-serif": "^5.3.0",
