@@ -269,6 +269,11 @@ ipcMain.on('wall:theme-panel', (event, open) => {
   const isWall = [...walls.values()].some(record => record.webContentsId === event.sender.id)
   if (!isWall) return
   if (open === true) {
+    for (const { window, webContentsId } of walls.values()) {
+      if (webContentsId === event.sender.id || !themePanelWindows.has(webContentsId)) continue
+      themePanelWindows.delete(webContentsId)
+      if (!window.webContents.isDestroyed()) window.webContents.send('wall:theme-close')
+    }
     themePanelWindows.add(event.sender.id)
     cancelExitHold(false)
     recentKeyTimes = []
