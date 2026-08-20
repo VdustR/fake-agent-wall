@@ -46,6 +46,8 @@ dmg:
 
 win:
   icon: build/icon.png
+  # The release workflow forces BCJ because electron-builder 26.15's default
+  # BCJ2 stream is not decoded by the bundled NSIS extractor.
   target:
     - target: nsis
       arch: [x64, arm64]
