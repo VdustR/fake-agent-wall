@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/VdustR/fake-agent-wall/compare/v0.7.1...v0.7.2) (2026-08-20)
+
+
+### Bug Fixes
+
+* prevent menu on macOS tray left click ([#30](https://github.com/VdustR/fake-agent-wall/issues/30)) ([99994e9](https://github.com/VdustR/fake-agent-wall/commit/99994e9c9e2611b684fbefa65c58cb2b38111324))
+
 ## [0.7.1](https://github.com/VdustR/fake-agent-wall/compare/v0.7.0...v0.7.1) (2026-08-17)
 
 
