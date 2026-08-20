@@ -12,6 +12,7 @@ import {
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { getSettings, setSettings } from './settings.js'
+import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
 import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
 import {
@@ -43,6 +44,7 @@ const IS_MAC = process.platform === 'darwin'
 const walls = new Map()
 let playing = false
 let tray = null
+let trayMenu = null
 let blockerId = null
 let escDown = false
 let exitArmed = false
@@ -356,7 +358,8 @@ function refreshTray() {
     click: () => update({ keepAwake: value }),
   })
 
-  tray.setContextMenu(
+  trayMenu = updateTrayMenu(
+    tray,
     Menu.buildFromTemplate([
       playing
         ? { label: 'Stop', click: () => closeWalls() }
@@ -420,6 +423,7 @@ function refreshTray() {
         click: () => app.quit(),
       },
     ]),
+    IS_MAC,
   )
 }
 
@@ -461,11 +465,11 @@ if (!app.requestSingleInstanceLock()) {
     // "one click" path, and it is why no context menu is bound to plain click.
     if (IS_MAC) {
       tray.on('click', () => (playing ? closeWalls() : openWall()))
-      tray.on('right-click', () => tray.popUpContextMenu())
+      tray.on('right-click', () => openTrayMenu(tray, trayMenu))
     } else {
       // Windows and Linux expect a left click to open the menu, so the one-click
       // path there is launching the app itself.
-      tray.on('click', () => tray.popUpContextMenu())
+      tray.on('click', () => openTrayMenu(tray, trayMenu))
     }
     refreshTray()
 
