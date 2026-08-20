@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/VdustR/fake-agent-wall/compare/v0.7.2...v0.8.0) (2026-08-20)
+
+
+### Features
+
+* preserve Windows binaries in release installers ([#32](https://github.com/VdustR/fake-agent-wall/issues/32)) ([99c3d4d](https://github.com/VdustR/fake-agent-wall/commit/99c3d4d65b8bde431928a17de3453fb586c6328b))
+
 ## [0.7.2](https://github.com/VdustR/fake-agent-wall/compare/v0.7.1...v0.7.2) (2026-08-20)
 
 
