@@ -7,7 +7,7 @@ prop, or a screensaver-like display while your computer is idle.
 Its layout and source count adapt from compact windows to ultrawide screens.
 Every session, task, diff, provider route and metric is simulated.
 
-[Open the web version](https://vdustr.dev/fake-agent-wall/) ·
+[Open the web version](https://vdustr.github.io/fake-agent-wall/) ·
 [Download for macOS, Windows or Linux](https://github.com/VdustR/fake-agent-wall/releases/latest)
 
 ![The wall: a program monitor, dynamically packed agent sessions, task and usage panels, and a live swarm bus](docs/wall.png)
