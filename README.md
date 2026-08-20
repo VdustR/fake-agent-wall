@@ -117,8 +117,8 @@ lives in the Electron main process, so it still works if the page has wedged.
 
 - macOS gets both Apple silicon and Intel builds; Windows gets x64 and arm64;
   Linux is x64 only.
-- The wall opens on whichever display holds the pointer. Other displays are left
-  alone.
+- The desktop app opens one wall on every connected display. Each display runs
+  an independent simulation and adapts to its own resolution.
 - *Open at login* does nothing on Linux, where Electron does not implement it,
   and the menu hides it there.
 - Moving the mouse does not dismiss it. This is deliberate: the wall is meant to
@@ -133,6 +133,7 @@ pnpm app:dev      # Electron shell against the dev server
 pnpm app          # Electron shell against a production build
 pnpm app:dmg      # macOS disk image into release/
 pnpm app:windowed # the shell in a plain window, for debugging the kiosk
+pnpm app:multi-display # two tiled windows, for multi-display logic without extra hardware
 ```
 
 ```bash

@@ -15,6 +15,12 @@ import { getSettings, setSettings } from './settings.js'
 import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
 import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
+import {
+  parseSimulatedDisplayCount,
+  planDisplayReconciliation,
+  realDisplayTargets,
+  simulatedDisplayTargets,
+} from './display-layout.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DEV_URL = process.env.AGENT_WALL_DEV_URL
@@ -24,6 +30,9 @@ const DEV_URL = process.env.AGENT_WALL_DEV_URL
  * have to hand over their display to check a layout change.
  */
 const WINDOWED = process.env.AGENT_WALL_WINDOWED === '1'
+const SIMULATED_DISPLAY_COUNT = WINDOWED
+  ? parseSimulatedDisplayCount(process.env.AGENT_WALL_SIMULATE_DISPLAYS)
+  : 0
 /** Long enough to be intentional, short enough to remain a usable escape hatch. */
 const EXIT_HOLD_MS = 1200
 /** Repeated typing is treated as a sign that the operator is looking for an exit. */
@@ -32,7 +41,8 @@ const HELP_KEY_WINDOW_MS = 1800
 const IDLE_POLL_MS = 2000
 const IS_MAC = process.platform === 'darwin'
 
-let wall = null
+const walls = new Map()
+let playing = false
 let tray = null
 let trayMenu = null
 let blockerId = null
@@ -42,24 +52,52 @@ let exitTimer = null
 let recentKeyTimes = []
 let idleTimer = null
 let idleCheckRunning = false
-let themePanelOpen = false
+const themePanelWindows = new Set()
 
 /* ------------------------------------------------------------------- window */
 
 function openWall() {
-  if (wall) {
-    wall.show()
-    wall.focus()
+  if (playing) {
+    reconcileWalls()
+    focusPreferredWall()
     return
   }
+  playing = true
   cancelExitHold(false)
   recentKeyTimes = []
-  themePanelOpen = false
+  themePanelWindows.clear()
+  reconcileWalls()
+  focusPreferredWall()
+  applyPowerBlocker()
+  refreshTray()
+}
 
-  const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+function targetDisplays() {
+  if (!WINDOWED) return realDisplayTargets(screen.getAllDisplays())
+  if (SIMULATED_DISPLAY_COUNT) {
+    return simulatedDisplayTargets(screen.getPrimaryDisplay().workArea, SIMULATED_DISPLAY_COUNT)
+  }
+  return [{ key: 'windowed', bounds: { width: 1280, height: 800 } }]
+}
 
-  wall = new BrowserWindow({
-    ...(WINDOWED ? { width: 1280, height: 800, center: true } : display.bounds),
+function reconcileWalls() {
+  if (!playing) return
+  const targets = targetDisplays()
+  const existing = new Map([...walls].map(([key, record]) => [key, record.bounds]))
+  const { remove, create } = planDisplayReconciliation(existing, targets)
+  for (const key of remove) destroyWall(key)
+  for (const target of create) createWall(target)
+  applyPowerBlocker()
+  refreshTray()
+}
+
+function createWall(target) {
+  const windowBounds = WINDOWED && target.key === 'windowed'
+    ? { ...target.bounds, center: true }
+    : target.bounds
+
+  const wall = new BrowserWindow({
+    ...windowBounds,
     show: false,
     frame: WINDOWED,
     resizable: false,
@@ -81,6 +119,7 @@ function openWall() {
       backgroundThrottling: false,
     },
   })
+  const webContentsId = wall.webContents.id
 
   if (!WINDOWED) {
     // On macOS, simple fullscreen rather than native: no Space transition, no
@@ -90,38 +129,58 @@ function openWall() {
     else wall.setFullScreen(true)
     wall.setAlwaysOnTop(true, 'screen-saver')
     wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-    swallowInput(wall.webContents)
   }
+  if (!WINDOWED || SIMULATED_DISPLAY_COUNT) swallowInput(wall.webContents)
 
   wall.once('ready-to-show', () => {
-    wall.show()
-    wall.focus()
+    wall.showInactive()
   })
   wall.on('closed', () => {
-    wall = null
+    const record = walls.get(target.key)
+    if (record?.window === wall) walls.delete(target.key)
+    themePanelWindows.delete(webContentsId)
     applyPowerBlocker()
     refreshTray()
   })
   // A wedged renderer must not be able to trap the screen.
-  wall.webContents.on('render-process-gone', () => closeWall())
-  wall.webContents.on('unresponsive', () => closeWall())
+  wall.webContents.on('render-process-gone', () => closeWalls())
+  wall.webContents.on('unresponsive', () => closeWalls())
 
   if (DEV_URL) wall.loadURL(DEV_URL)
   else wall.loadFile(join(HERE, '..', 'dist', 'index.html'))
 
+  walls.set(target.key, { window: wall, bounds: target.bounds, webContentsId })
+}
+
+function closeWalls() {
+  if (!playing && walls.size === 0) return
+  playing = false
+  cancelExitHold(false)
+  themePanelWindows.clear()
+  for (const key of walls.keys()) destroyWall(key)
   applyPowerBlocker()
   refreshTray()
 }
 
-function closeWall() {
-  if (!wall) return
-  cancelExitHold(false)
-  const w = wall
-  wall = null
-  if (!WINDOWED && IS_MAC) w.setSimpleFullScreen(false)
-  w.destroy()
-  applyPowerBlocker()
-  refreshTray()
+function destroyWall(key) {
+  const record = walls.get(key)
+  if (!record) return
+  walls.delete(key)
+  const wall = record.window
+  themePanelWindows.delete(record.webContentsId)
+  if (!WINDOWED && IS_MAC) wall.setSimpleFullScreen(false)
+  wall.destroy()
+}
+
+function focusPreferredWall() {
+  if (walls.size === 0) return
+  let preferred = walls.values().next().value?.window
+  if (!WINDOWED) {
+    const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+    preferred = walls.get(String(display.id))?.window ?? preferred
+  }
+  preferred?.show()
+  preferred?.focus()
 }
 
 /**
@@ -130,6 +189,7 @@ function closeWall() {
  */
 function swallowInput(wc) {
   wc.on('before-input-event', (event, input) => {
+    const themePanelOpen = themePanelWindows.has(wc.id)
     if (input.type === 'keyUp') {
       if (!themePanelOpen) event.preventDefault()
       if (input.key === 'Escape' && !themePanelOpen) finishExitHold()
@@ -160,11 +220,7 @@ function swallowInput(wc) {
 }
 
 function startExitHold() {
-  if (!wall) return
-  if (themePanelOpen) {
-    wall.webContents.send('wall:theme-close')
-    return
-  }
+  if (!playing) return
   if (escDown) return
   escDown = true
   clearTimeout(exitTimer)
@@ -183,7 +239,7 @@ function finishExitHold() {
     // Close only after Electron has received and consumed this physical keyup.
     // The application revealed behind the wall never becomes the key target
     // while Escape is still down.
-    closeWall()
+    closeWalls()
     return
   }
   cancelExitHold()
@@ -212,18 +268,26 @@ function trackHelpKey(input) {
 }
 
 ipcMain.on('wall:theme-panel', (event, open) => {
-  if (!wall || event.sender !== wall.webContents) return
-  themePanelOpen = open === true
-  if (themePanelOpen) {
+  const isWall = [...walls.values()].some(record => record.webContentsId === event.sender.id)
+  if (!isWall) return
+  if (open === true) {
+    for (const { window, webContentsId } of walls.values()) {
+      if (webContentsId === event.sender.id || !themePanelWindows.has(webContentsId)) continue
+      themePanelWindows.delete(webContentsId)
+      if (!window.webContents.isDestroyed()) window.webContents.send('wall:theme-close')
+    }
+    themePanelWindows.add(event.sender.id)
     cancelExitHold(false)
     recentKeyTimes = []
-  }
+  } else themePanelWindows.delete(event.sender.id)
 })
 
 /** Ask the page to surface the exit hint. Purely cosmetic; exiting never depends on it. */
 function hint(state) {
-  if (wall && !wall.webContents.isDestroyed()) {
-    wall.webContents.send('wall:hint', { state, holdMs: EXIT_HOLD_MS })
+  for (const { window } of walls.values()) {
+    if (!window.webContents.isDestroyed()) {
+      window.webContents.send('wall:hint', { state, holdMs: EXIT_HOLD_MS })
+    }
   }
 }
 
@@ -231,7 +295,7 @@ function hint(state) {
 
 function applyPowerBlocker() {
   const { keepAwake } = getSettings()
-  const want = keepAwake === 'always' || (keepAwake === 'playing' && wall !== null)
+  const want = keepAwake === 'always' || (keepAwake === 'playing' && playing)
 
   if (want && blockerId === null) {
     // Also prevents system sleep, which is what "caffeine" means here.
@@ -249,13 +313,13 @@ function startIdleWatch() {
   idleTimer = setInterval(async () => {
     if (idleCheckRunning) return
     const s = getSettings()
-    if (!s.idleStart || wall) return
+    if (!s.idleStart || playing) return
     if (powerMonitor.getSystemIdleTime() < s.idleMinutes * 60) return
 
     idleCheckRunning = true
     try {
       const activity = await getSystemActivity()
-      if (!wall && !shouldDeferIdleStart(s, activity)) openWall()
+      if (!playing && !shouldDeferIdleStart(s, activity)) openWall()
     } finally {
       idleCheckRunning = false
     }
@@ -269,7 +333,7 @@ function trayIcon() {
   // Elsewhere a template renders as a black-on-black smudge, so those platforms
   // get the coloured icon instead.
   if (!IS_MAC) return nativeImage.createFromPath(join(HERE, 'assets', 'tray.png'))
-  const filename = wall ? 'trayPlayingTemplate.png' : 'trayTemplate.png'
+  const filename = playing ? 'trayPlayingTemplate.png' : 'trayTemplate.png'
   const img = nativeImage.createFromPath(join(HERE, 'assets', filename))
   img.setTemplateImage(true)
   return img
@@ -279,7 +343,7 @@ function refreshTray() {
   if (!tray) return
   const s = getSettings()
   if (IS_MAC) tray.setImage(trayIcon())
-  tray.setToolTip(wall ? 'Fake Agent Wall — playing (hold esc to stop)' : 'Fake Agent Wall — click to play')
+  tray.setToolTip(playing ? 'Fake Agent Wall — playing (hold esc to stop)' : 'Fake Agent Wall — click to play')
 
   const minuteChoice = (m) => ({
     label: `${m} min`,
@@ -297,8 +361,8 @@ function refreshTray() {
   trayMenu = updateTrayMenu(
     tray,
     Menu.buildFromTemplate([
-      wall
-        ? { label: 'Stop', click: () => closeWall() }
+      playing
+        ? { label: 'Stop', click: () => closeWalls() }
         : { label: 'Play now', click: () => openWall() },
       { type: 'separator' },
       {
@@ -400,7 +464,7 @@ if (!app.requestSingleInstanceLock()) {
     // Left click plays immediately; the menu is on right click. This is the
     // "one click" path, and it is why no context menu is bound to plain click.
     if (IS_MAC) {
-      tray.on('click', () => (wall ? closeWall() : openWall()))
+      tray.on('click', () => (playing ? closeWalls() : openWall()))
       tray.on('right-click', () => openTrayMenu(tray, trayMenu))
     } else {
       // Windows and Linux expect a left click to open the menu, so the one-click
@@ -413,6 +477,9 @@ if (!app.requestSingleInstanceLock()) {
     syncLoginItem(s.launchAtLogin)
     applyPowerBlocker()
     startIdleWatch()
+    screen.on('display-added', reconcileWalls)
+    screen.on('display-removed', reconcileWalls)
+    screen.on('display-metrics-changed', reconcileWalls)
 
     // Launching the app is itself the one click: it plays straight away, unless
     // macOS started it at login, where playing over the user's desktop would be

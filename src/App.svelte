@@ -11,7 +11,7 @@
   import Tile from './components/Tile.svelte'
   import { Swarm } from './lib/swarm.svelte'
   import { OperationsWorld } from './lib/operations.svelte'
-  import { applyTheme, clearThemeSettings, cloneTheme, defaultTheme, loadTheme, normalizeWallLabel, saveTheme, type ThemeSettings } from './lib/theme'
+  import { applyTheme, clearThemeSettings, cloneTheme, defaultTheme, loadTheme, normalizeWallLabel, saveTheme, THEME_STORAGE_KEY, type ThemeSettings } from './lib/theme'
 
   const swarm = new Swarm()
   const operations = new OperationsWorld(swarm)
@@ -53,6 +53,13 @@
       }
     }
     window.addEventListener('keydown', onKeydown, { capture: true })
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== THEME_STORAGE_KEY) return
+      committedTheme = loadTheme()
+      wallLabel = normalizeWallLabel(committedTheme.wallLabel)
+      applyTheme(committedTheme)
+    }
+    window.addEventListener('storage', onStorage)
     const offToggle = window.agentWall?.onThemeToggle(toggle)
     const offClose = window.agentWall?.onThemeClose(close)
 
@@ -63,6 +70,7 @@
       clearTimeout(resizeSettled)
       gridObserver.disconnect()
       window.removeEventListener('keydown', onKeydown, { capture: true })
+      window.removeEventListener('storage', onStorage)
       offToggle?.()
       offClose?.()
     }

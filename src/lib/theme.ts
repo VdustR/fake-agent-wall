@@ -44,7 +44,7 @@ export interface ThemeSettings {
   wallLabel: string
 }
 
-const STORAGE_KEY = 'fake-agent-wall.theme.v3'
+export const THEME_STORAGE_KEY = 'fake-agent-wall.theme.v3'
 const LEGACY_STORAGE_KEYS = ['fake-agent-wall.theme.v1', 'fake-agent-wall.theme.v2'] as const
 const HEX = /^#[0-9a-f]{6}$/i
 
@@ -92,7 +92,7 @@ export function loadTheme(): ThemeSettings {
     // v1 defaulted to the removed Swarmdeck palette. v2 stored the two original
     // font roles; migrate it below so color and font choices survive v3.
     localStorage.removeItem(LEGACY_STORAGE_KEYS[0])
-    const stored: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')
+    const stored: unknown = JSON.parse(localStorage.getItem(THEME_STORAGE_KEY) ?? 'null')
     if (isThemeSettings(stored)) return cloneTheme(stored)
     const previous: unknown = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEYS[1]) ?? 'null')
     if (isLegacyThemeSettings(previous)) {
@@ -106,7 +106,7 @@ export function loadTheme(): ThemeSettings {
 
 export function saveTheme(theme: ThemeSettings): boolean {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cloneTheme(theme)))
+    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(cloneTheme(theme)))
     return true
   } catch {
     return false
@@ -115,7 +115,7 @@ export function saveTheme(theme: ThemeSettings): boolean {
 
 export function clearThemeSettings(): boolean {
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(THEME_STORAGE_KEY)
     for (const key of LEGACY_STORAGE_KEYS) localStorage.removeItem(key)
     return true
   } catch {
