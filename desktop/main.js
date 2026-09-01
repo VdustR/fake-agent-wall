@@ -21,6 +21,7 @@ import {
   realDisplayTargets,
   simulatedDisplayTargets,
 } from './display-layout.js'
+import { showWallWhenReady, wallWindowPresentation } from './window-presentation.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DEV_URL = process.env.AGENT_WALL_DEV_URL
@@ -40,6 +41,7 @@ const HELP_KEY_COUNT = 4
 const HELP_KEY_WINDOW_MS = 1800
 const IDLE_POLL_MS = 2000
 const IS_MAC = process.platform === 'darwin'
+const PRESENTATION = wallWindowPresentation({ platform: process.platform, windowed: WINDOWED })
 
 const walls = new Map()
 let playing = false
@@ -98,6 +100,7 @@ function createWall(target) {
 
   const wall = new BrowserWindow({
     ...windowBounds,
+    ...PRESENTATION,
     show: false,
     frame: WINDOWED,
     resizable: false,
@@ -122,18 +125,15 @@ function createWall(target) {
   const webContentsId = wall.webContents.id
 
   if (!WINDOWED) {
-    // On macOS, simple fullscreen rather than native: no Space transition, no
-    // animation on show or hide, and no Esc-to-exit binding of its own to fight
-    // with ours. Other platforms have no such distinction.
-    if (IS_MAC) wall.setSimpleFullScreen(true)
-    else wall.setFullScreen(true)
+    // Windows kiosk mode owns the whole display, including the taskbar. macOS
+    // keeps simple fullscreen to avoid a Space transition and its Escape binding.
     wall.setAlwaysOnTop(true, 'screen-saver')
     wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   }
   if (!WINDOWED || SIMULATED_DISPLAY_COUNT) swallowInput(wall.webContents)
 
   wall.once('ready-to-show', () => {
-    wall.showInactive()
+    showWallWhenReady(wall, preferredWall() === wall)
   })
   wall.on('closed', () => {
     const record = walls.get(target.key)
@@ -173,14 +173,19 @@ function destroyWall(key) {
 }
 
 function focusPreferredWall() {
-  if (walls.size === 0) return
+  const preferred = preferredWall()
+  preferred?.show()
+  preferred?.focus()
+}
+
+function preferredWall() {
+  if (walls.size === 0) return null
   let preferred = walls.values().next().value?.window
   if (!WINDOWED) {
     const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
     preferred = walls.get(String(display.id))?.window ?? preferred
   }
-  preferred?.show()
-  preferred?.focus()
+  return preferred
 }
 
 /**
