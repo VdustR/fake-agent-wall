@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/VdustR/fake-agent-wall/compare/v0.8.0...v0.8.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* take focus in Windows kiosk mode ([#34](https://github.com/VdustR/fake-agent-wall/issues/34)) ([153a4ff](https://github.com/VdustR/fake-agent-wall/commit/153a4ff255416851b7c857c6deba2fdc58e9941c))
+
 ## [0.8.0](https://github.com/VdustR/fake-agent-wall/compare/v0.7.2...v0.8.0) (2026-08-20)
 
 
