@@ -69,7 +69,6 @@ function openWall() {
   recentKeyTimes = []
   themePanelWindows.clear()
   reconcileWalls()
-  focusPreferredWall()
   applyPowerBlocker()
   refreshTray()
 }
