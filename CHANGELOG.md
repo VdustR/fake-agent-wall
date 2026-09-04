@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/VdustR/fake-agent-wall/compare/v0.8.1...v0.8.2) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** patch vulnerable transitive packages ([#37](https://github.com/VdustR/fake-agent-wall/issues/37)) ([9d0b724](https://github.com/VdustR/fake-agent-wall/commit/9d0b7246d15b34d9ca747d132c63bafdfdcf3853))
+
 ## [0.8.1](https://github.com/VdustR/fake-agent-wall/compare/v0.8.0...v0.8.1) (2026-09-01)
 
 
