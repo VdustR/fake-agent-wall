@@ -15,6 +15,7 @@ import { getSettings, setSettings } from './settings.js'
 import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
 import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
+import { createFocusGuard } from './focus-guard.js'
 import {
   parseSimulatedDisplayCount,
   planDisplayReconciliation,
@@ -55,6 +56,13 @@ let recentKeyTimes = []
 let idleTimer = null
 let idleCheckRunning = false
 const themePanelWindows = new Set()
+const focusGuard = createFocusGuard({
+  active: () => playing && !WINDOWED,
+  preferredWindow: preferredWall,
+  focusApplication: () => {
+    if (IS_MAC) app.focus({ steal: true })
+  },
+})
 
 /* ------------------------------------------------------------------- window */
 
@@ -124,8 +132,8 @@ function createWall(target) {
   const webContentsId = wall.webContents.id
 
   if (!WINDOWED) {
-    // Windows kiosk mode owns the whole display, including the taskbar. macOS
-    // keeps simple fullscreen to avoid a Space transition and its Escape binding.
+    // Kiosk owns the whole display on macOS and Windows. Always-on-top keeps
+    // every wall above ordinary windows on the remaining platform.
     wall.setAlwaysOnTop(true, 'screen-saver')
     wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   }
@@ -134,6 +142,8 @@ function createWall(target) {
   wall.once('ready-to-show', () => {
     showWallWhenReady(wall, preferredWall() === wall)
   })
+  wall.on('focus', () => focusGuard.cancelRecovery())
+  wall.on('blur', () => focusGuard.recoverSoon())
   wall.on('closed', () => {
     const record = walls.get(target.key)
     if (record?.window === wall) walls.delete(target.key)
@@ -154,6 +164,7 @@ function createWall(target) {
 function closeWalls() {
   if (!playing && walls.size === 0) return
   playing = false
+  focusGuard.cancelRecovery()
   cancelExitHold(false)
   themePanelWindows.clear()
   for (const key of walls.keys()) destroyWall(key)
@@ -167,11 +178,15 @@ function destroyWall(key) {
   walls.delete(key)
   const wall = record.window
   themePanelWindows.delete(record.webContentsId)
-  if (!WINDOWED && IS_MAC) wall.setSimpleFullScreen(false)
+  if (!WINDOWED && IS_MAC) wall.setKiosk(false)
   wall.destroy()
 }
 
 function focusPreferredWall() {
+  if (!WINDOWED) {
+    focusGuard.focusNow()
+    return
+  }
   const preferred = preferredWall()
   preferred?.show()
   preferred?.focus()

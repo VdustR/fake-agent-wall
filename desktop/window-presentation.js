@@ -1,6 +1,6 @@
 export function wallWindowPresentation({ platform, windowed }) {
   if (windowed) return {}
-  if (platform === 'darwin') return { simpleFullscreen: true }
+  if (platform === 'darwin') return { kiosk: true }
   if (platform === 'win32') return { kiosk: true, skipTaskbar: true }
   return { fullscreen: true }
 }
