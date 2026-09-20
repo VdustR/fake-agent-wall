@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { showWallWhenReady, wallWindowPresentation } from './window-presentation.js'
+import {
+  applyWallPresentation,
+  showWallWhenReady,
+  wallWindowPresentation,
+} from './window-presentation.js'
 
 describe('wall window presentation', () => {
   it('uses kiosk mode and hides the taskbar entry on Windows', () => {
@@ -15,6 +19,23 @@ describe('wall window presentation', () => {
       fullscreen: true,
     })
     expect(wallWindowPresentation({ platform: 'win32', windowed: true })).toEqual({})
+  })
+
+  it('uses macOS simple fullscreen without creating a native fullscreen Space', () => {
+    const wall = { setSimpleFullScreen: vi.fn() }
+
+    applyWallPresentation(wall, { platform: 'darwin', windowed: false })
+
+    expect(wall.setSimpleFullScreen).toHaveBeenCalledWith(true)
+  })
+
+  it('does not apply simple fullscreen to windowed or non-macOS walls', () => {
+    const wall = { setSimpleFullScreen: vi.fn() }
+
+    applyWallPresentation(wall, { platform: 'darwin', windowed: true })
+    applyWallPresentation(wall, { platform: 'win32', windowed: false })
+
+    expect(wall.setSimpleFullScreen).not.toHaveBeenCalled()
   })
 
   it('shows and focuses the preferred wall after the renderer is ready', () => {
