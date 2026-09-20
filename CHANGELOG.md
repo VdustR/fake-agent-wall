@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.5](https://github.com/VdustR/fake-agent-wall/compare/v0.8.4...v0.8.5) (2026-09-20)
+
+
+### Bug Fixes
+
+* hide macOS chrome without changing Spaces ([#44](https://github.com/VdustR/fake-agent-wall/issues/44)) ([60a8a57](https://github.com/VdustR/fake-agent-wall/commit/60a8a5700e8f68292b0a27b1f71d056da00c0b2a))
+
 ## [0.8.4](https://github.com/VdustR/fake-agent-wall/compare/v0.8.3...v0.8.4) (2026-09-20)
 
 
