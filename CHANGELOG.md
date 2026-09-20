@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/VdustR/fake-agent-wall/compare/v0.8.2...v0.8.3) (2026-09-20)
+
+
+### Bug Fixes
+
+* keep fullscreen wall focused ([#40](https://github.com/VdustR/fake-agent-wall/issues/40)) ([9e8ef50](https://github.com/VdustR/fake-agent-wall/commit/9e8ef508c1ddb89fab5849707bfdd526200ddbee))
+
 ## [0.8.2](https://github.com/VdustR/fake-agent-wall/compare/v0.8.1...v0.8.2) (2026-09-04)
 
 
