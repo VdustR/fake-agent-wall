@@ -22,7 +22,11 @@ import {
   realDisplayTargets,
   simulatedDisplayTargets,
 } from './display-layout.js'
-import { showWallWhenReady, wallWindowPresentation } from './window-presentation.js'
+import {
+  applyWallPresentation,
+  showWallWhenReady,
+  wallWindowPresentation,
+} from './window-presentation.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DEV_URL = process.env.AGENT_WALL_DEV_URL
@@ -137,6 +141,7 @@ function createWall(target) {
     wall.setAlwaysOnTop(true, 'screen-saver')
     wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   }
+  applyWallPresentation(wall, { platform: process.platform, windowed: WINDOWED })
   if (!WINDOWED || SIMULATED_DISPLAY_COUNT) swallowInput(wall.webContents)
 
   wall.once('ready-to-show', () => {
