@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/VdustR/fake-agent-wall/compare/v0.8.3...v0.8.4) (2026-09-20)
+
+
+### Bug Fixes
+
+* keep macOS wall on current Space ([#42](https://github.com/VdustR/fake-agent-wall/issues/42)) ([e68b480](https://github.com/VdustR/fake-agent-wall/commit/e68b480b0706b51244fc31c281623581d06cd747))
+
 ## [0.8.3](https://github.com/VdustR/fake-agent-wall/compare/v0.8.2...v0.8.3) (2026-09-20)
 
 
