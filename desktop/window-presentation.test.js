@@ -9,9 +9,9 @@ describe('wall window presentation', () => {
     })
   })
 
-  it('keeps the existing platform-specific fullscreen modes', () => {
+  it('uses kiosk mode on macOS and fullscreen mode on Linux', () => {
     expect(wallWindowPresentation({ platform: 'darwin', windowed: false })).toEqual({
-      simpleFullscreen: true,
+      kiosk: true,
     })
     expect(wallWindowPresentation({ platform: 'linux', windowed: false })).toEqual({
       fullscreen: true,
