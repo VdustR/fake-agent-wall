@@ -9,10 +9,8 @@ describe('wall window presentation', () => {
     })
   })
 
-  it('uses kiosk mode on macOS and fullscreen mode on Linux', () => {
-    expect(wallWindowPresentation({ platform: 'darwin', windowed: false })).toEqual({
-      kiosk: true,
-    })
+  it('avoids native fullscreen Spaces on macOS and uses fullscreen on Linux', () => {
+    expect(wallWindowPresentation({ platform: 'darwin', windowed: false })).toEqual({})
     expect(wallWindowPresentation({ platform: 'linux', windowed: false })).toEqual({
       fullscreen: true,
     })

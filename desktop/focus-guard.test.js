@@ -13,15 +13,12 @@ function wall() {
 describe('wall focus guard', () => {
   it('raises and focuses the preferred wall', () => {
     const target = wall()
-    const focusApplication = vi.fn()
     const guard = createFocusGuard({
       active: () => true,
       preferredWindow: () => target,
-      focusApplication,
     })
 
     expect(guard.focusNow()).toBe(true)
-    expect(focusApplication).toHaveBeenCalledOnce()
     expect(target.show).toHaveBeenCalledOnce()
     expect(target.moveTop).toHaveBeenCalledOnce()
     expect(target.focus).toHaveBeenCalledOnce()

@@ -1,7 +1,6 @@
 export function createFocusGuard({
   active,
   preferredWindow,
-  focusApplication = () => {},
   schedule = setTimeout,
   cancel = clearTimeout,
   delayMs = 75,
@@ -19,7 +18,6 @@ export function createFocusGuard({
     if (!active()) return false
     const wall = preferredWindow()
     if (!wall || wall.isDestroyed?.()) return false
-    focusApplication()
     wall.show()
     wall.moveTop?.()
     wall.focus()
