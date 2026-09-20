@@ -59,9 +59,6 @@ const themePanelWindows = new Set()
 const focusGuard = createFocusGuard({
   active: () => playing && !WINDOWED,
   preferredWindow: preferredWall,
-  focusApplication: () => {
-    if (IS_MAC) app.focus({ steal: true })
-  },
 })
 
 /* ------------------------------------------------------------------- window */
@@ -114,7 +111,9 @@ function createWall(target) {
     movable: false,
     minimizable: false,
     maximizable: false,
-    fullscreenable: true,
+    // Native fullscreen creates a separate macOS Space. The production wall
+    // already covers the display bounds and must remain on the current Space.
+    fullscreenable: WINDOWED,
     backgroundColor: '#08090a',
     // The wall is the whole screen; there is nothing behind it to reveal.
     hasShadow: false,
@@ -132,8 +131,9 @@ function createWall(target) {
   const webContentsId = wall.webContents.id
 
   if (!WINDOWED) {
-    // Kiosk owns the whole display on macOS and Windows. Always-on-top keeps
-    // every wall above ordinary windows on the remaining platform.
+    // The display-sized borderless window stays on the current macOS Space.
+    // Windows kiosk owns its display; always-on-top covers system chrome on
+    // macOS and keeps every wall above ordinary windows elsewhere.
     wall.setAlwaysOnTop(true, 'screen-saver')
     wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   }
@@ -178,7 +178,6 @@ function destroyWall(key) {
   walls.delete(key)
   const wall = record.window
   themePanelWindows.delete(record.webContentsId)
-  if (!WINDOWED && IS_MAC) wall.setKiosk(false)
   wall.destroy()
 }
 
