@@ -175,6 +175,90 @@ function bashBlock(r: Rand): Emit[] {
   return out
 }
 
+/** Multi-line install and build output, kept together so a command and its
+ * progress cannot be interrupted by an unrelated transcript block. */
+export const LOADING_TEMPLATES = [
+  'gpt', 'brew', 'mise', 'pnpm', 'vite', 'rolldown', 'typescript', 'rust', 'go', 'docker',
+] as const
+export type LoadingTemplate = (typeof LOADING_TEMPLATES)[number]
+
+export function loadingBlock(r: Rand, template: LoadingTemplate = pick(r, LOADING_TEMPLATES)): Emit[] {
+  const seconds = () => (r() * 3 + 0.3).toFixed(2)
+  const files = () => int(r, 80, 620)
+  const size = () => (r() * 4 + 0.4).toFixed(2)
+  const packages = files()
+  const downloads = int(r, 0, 8)
+  const steps: Record<LoadingTemplate, [string, string, string, string]> = {
+    gpt: [
+      'ollama pull gpt-oss:20b',
+      'pulling manifest',
+      `pulling model layers  ${int(r, 18, 54)}%`,
+      'verifying sha256 digest · writing manifest · success',
+    ],
+    brew: [
+      'brew install ripgrep',
+      '==> Fetching downloads for: ripgrep',
+      `==> Pouring ripgrep--${int(r, 14, 16)}.0.arm64.bottle.tar.gz`,
+      `🍺  /opt/homebrew/Cellar/ripgrep: ${files()} files, ${size()}MB`,
+    ],
+    mise: [
+      'mise install node@24',
+      'mise node@24  download node-v24 archive',
+      `mise node@24  extracting  ${int(r, 38, 85)}%`,
+      'mise node@24  installed',
+    ],
+    pnpm: [
+      'pnpm install --frozen-lockfile',
+      'Lockfile is up to date, resolution step is skipped',
+      `Progress: resolved ${packages}, reused ${packages - downloads}, downloaded ${downloads}, added ${packages}`,
+      `Done in ${seconds()}s using pnpm`,
+    ],
+    vite: [
+      'pnpm vite build',
+      'vite building client environment for production...',
+      `✓ ${files()} modules transformed. · rendering chunks...`,
+      `✓ built in ${seconds()}s`,
+    ],
+    rolldown: [
+      'pnpm rolldown -c',
+      'rolldown bundling src/index.ts...',
+      `created dist/index.js  ${size()} kB`,
+      `finished in ${seconds()}s`,
+    ],
+    typescript: [
+      'pnpm tsc -p tsconfig.json',
+      'Project: tsconfig.json · resolving source files',
+      `Emitting ${files()} JavaScript and declaration files`,
+      'Found 0 errors. Build complete.',
+    ],
+    rust: [
+      'cargo build --release',
+      '   Compiling serde v1.0 · tokio v1.0',
+      '   Compiling kestrel-runtime v0.1.0',
+      `    Finished release profile [optimized] target(s) in ${seconds()}s`,
+    ],
+    go: [
+      'go build -o bin/worker ./cmd/worker',
+      'go: downloading golang.org/x/sync',
+      `go: compiling ${files()} packages`,
+      `build complete · bin/worker (${size()} MB)`,
+    ],
+    docker: [
+      'docker build -t harbor-ingest:local .',
+      '[+] Building · loading build context',
+      ` => [build ${int(r, 3, 8)}/8] RUN go build -o /out/ingest ./cmd/ingest`,
+      ` => exporting to image · naming harbor-ingest:local · ${seconds()}s`,
+    ],
+  }
+  const [command, start, progress, finish] = steps[template]
+  return [
+    t('tool', `● Bash(${command})`, true, 240),
+    t('gut', `  └  ${start}`, false, 240),
+    t('cont', `     ${progress}`, false, 360),
+    t('ok', `     ${finish}`, false, 520),
+  ]
+}
+
 function editBlock(r: Rand): Emit[] {
   const scene = pick(r, CODE_SCENES)
   const p = scene.path
@@ -323,6 +407,7 @@ const DECK: Array<[Maker, number, BlockFlavor]> = [
   [readBlock, 20, 'research'],
   [editBlock, 20, 'implementation'],
   [bashBlock, 16, 'validation'],
+  [r => loadingBlock(r), 12, 'validation'],
   [grepBlock, 11, 'research'],
   [proseBlock, 9, 'orchestration'],
   [globBlock, 6, 'research'],
