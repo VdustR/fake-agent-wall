@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/VdustR/fake-agent-wall/compare/v0.8.7...v0.9.0) (2026-09-23)
+
+
+### Features
+
+* simulate Jev decisions in agent workflows ([#52](https://github.com/VdustR/fake-agent-wall/issues/52)) ([0d125e1](https://github.com/VdustR/fake-agent-wall/commit/0d125e17723e715ec0727403a5d70101f73ccbfa))
+
 ## [0.8.7](https://github.com/VdustR/fake-agent-wall/compare/v0.8.6...v0.8.7) (2026-09-23)
 
 
