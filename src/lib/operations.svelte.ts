@@ -60,14 +60,14 @@ export const PULLS = [
 ] as const
 
 export const PROVIDERS = [
-  { name: 'Anthropic', model: 'opus', used: 78, resetSeconds: 6_138, tokens: 4.82, cost: 38.14 },
-  { name: 'OpenAI', model: 'gpt-5.6-sol', used: 61, resetSeconds: 31_847, tokens: 3.17, cost: 27.68 },
-  { name: 'Google', model: 'gemini-3.7-flash', used: 44, resetSeconds: 1_062, tokens: 2.91, cost: 16.03 },
-  { name: 'Alibaba', model: 'qwen3.7-max', used: 86, resetSeconds: 18_420, tokens: 5.44, cost: 21.72 },
+  { name: 'Anthropic', model: 'opus-5.5', used: 78, resetSeconds: 6_138, tokens: 4.82, cost: 38.14 },
+  { name: 'OpenAI', model: 'gpt-6-sol', used: 61, resetSeconds: 31_847, tokens: 3.17, cost: 27.68 },
+  { name: 'Google', model: 'gemini-3.8-flash', used: 44, resetSeconds: 1_062, tokens: 2.91, cost: 16.03 },
+  { name: 'Alibaba', model: 'qwen3.8-max', used: 86, resetSeconds: 18_420, tokens: 5.44, cost: 21.72 },
   { name: 'DeepSeek', model: 'deepseek-v4-pro', used: 37, resetSeconds: 42_955, tokens: 1.86, cost: 8.95 },
-  { name: 'Mistral', model: 'mistral-large-3', used: 52, resetSeconds: 12_704, tokens: 2.24, cost: 11.48 },
-  { name: 'Moonshot', model: 'kimi-k2.5', used: 29, resetSeconds: 25_190, tokens: 1.42, cost: 6.37 },
-  { name: 'Zhipu', model: 'glm-5-air', used: 68, resetSeconds: 8_611, tokens: 3.83, cost: 13.92 },
+  { name: 'Mistral', model: 'mistral-medium-3-5', used: 52, resetSeconds: 12_704, tokens: 2.24, cost: 11.48 },
+  { name: 'Moonshot', model: 'kimi-k3', used: 29, resetSeconds: 25_190, tokens: 1.42, cost: 6.37 },
+  { name: 'Zhipu', model: 'glm-5.3', used: 68, resetSeconds: 8_611, tokens: 3.83, cost: 13.92 },
 ] as const
 
 const CARD_CYCLES: OpsCardId[][] = [
