@@ -12,6 +12,12 @@ export function applyWallPresentation(wall, { platform, windowed }) {
   if (!windowed && platform === 'darwin') wall.setSimpleFullScreen(true)
 }
 
+export function releaseWallPresentation(wall, { platform, windowed }) {
+  if (!windowed && platform === 'darwin' && wall.isSimpleFullScreen()) {
+    wall.setSimpleFullScreen(false)
+  }
+}
+
 export function showWallWhenReady(wall, shouldFocus) {
   if (shouldFocus) {
     wall.show()
