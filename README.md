@@ -24,6 +24,9 @@ set across empty space.
 
 Each synthetic agent also varies its work profile, transcript density, typing
 tempo, todos, permission prompts, provider, model, token use and context state.
+Transcript blocks include simulated GPT model downloads, brew/mise/pnpm installs,
+and Vite, Rolldown, TypeScript, Rust, Go, and Docker builds. These commands and
+their results are display content; the wall does not run them.
 Resizing or browser zoom therefore changes both the composition and the amount
 of simulated activity while preserving the broadcast hierarchy.
 
