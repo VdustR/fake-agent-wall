@@ -47,6 +47,8 @@ export interface Emit {
   type: boolean
   /** Milliseconds of quiet after this line commits. */
   pause: number
+  /** Update the previous output row, like a terminal progress indicator. */
+  replacePrevious?: boolean
   /** Keep a bounded decision fast even when reduced motion slows ordinary lines. */
   fast?: boolean
   /** A completed decision may remain readable while the transcript continues. */
@@ -251,6 +253,22 @@ export function loadingBlock(r: Rand, template: LoadingTemplate = pick(r, LOADIN
     ],
   }
   const [command, start, progress, finish] = steps[template]
+  if (template === 'gpt' || template === 'brew' || template === 'mise' || template === 'pnpm') {
+    const label = { gpt: 'model', brew: 'bottle', mise: 'node@24', pnpm: 'packages' }[template]
+    const percentages = [int(r, 8, 19), int(r, 34, 49), int(r, 68, 83), 100]
+    const progressEmits = percentages.map((percent, index) => {
+      const filled = Math.round(percent / 10)
+      const emit = t('cont', `     [${'█'.repeat(filled)}${'░'.repeat(10 - filled)}] ${String(percent).padStart(3)}% ${label}`, false, 320)
+      emit.replacePrevious = index > 0
+      return emit
+    })
+    return [
+      t('tool', `● Bash(${command})`, true, 240),
+      t('gut', `  └  ${start}`, false, 240),
+      ...progressEmits,
+      t('ok', `     ${finish}`, false, 520),
+    ]
+  }
   return [
     t('tool', `● Bash(${command})`, true, 240),
     t('gut', `  └  ${start}`, false, 240),
