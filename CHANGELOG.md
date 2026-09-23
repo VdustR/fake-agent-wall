@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/VdustR/fake-agent-wall/compare/v0.9.0...v0.10.0) (2026-09-23)
+
+
+### Features
+
+* add simulated install and build loading transcripts ([#54](https://github.com/VdustR/fake-agent-wall/issues/54)) ([363af01](https://github.com/VdustR/fake-agent-wall/commit/363af0137b6a367e7574ef2926ac919e8d98e941))
+
 ## [0.9.0](https://github.com/VdustR/fake-agent-wall/compare/v0.8.7...v0.9.0) (2026-09-23)
 
 
