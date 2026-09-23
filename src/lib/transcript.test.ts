@@ -30,9 +30,20 @@ it('keeps each install and build transcript together with a command, progress, a
   ])
   for (const template of LOADING_TEMPLATES) {
     const block = loadingBlock(random, template)
-    expect(block.map(emit => emit.line.k)).toEqual(['tool', 'gut', 'cont', 'ok'])
+    const install = ['gpt', 'brew', 'mise', 'pnpm'].includes(template)
+    expect(block.map(emit => emit.line.k)).toEqual(install
+      ? ['tool', 'gut', 'cont', 'cont', 'cont', 'cont', 'ok']
+      : ['tool', 'gut', 'cont', 'ok'])
     expect(block[0]?.line.s).toMatch(/^● Bash\(.+\)$/)
     expect(block.every(emit => emit.line.s.length > 0 && emit.pause > 0)).toBe(true)
+    if (install) {
+      const progress = block.slice(2, -1)
+      const percents = progress.map(emit => Number(emit.line.s.match(/\] (\d+)%/)?.[1]))
+      expect(percents).toEqual(percents.toSorted((a, b) => a - b))
+      expect(percents.at(-1)).toBe(100)
+      expect(progress.map(emit => emit.replacePrevious)).toEqual([false, true, true, true])
+      expect(progress.every(emit => /\[[█░]{10}\]/.test(emit.line.s))).toBe(true)
+    }
   }
 })
 

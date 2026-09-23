@@ -9,6 +9,12 @@ export type Status = 'run' | 'cue' | 'hold' | 'done'
  * turning unused screen area into a dead field on high-resolution walls. */
 const KEEP = 112
 
+function appendEmit(lines: Line[], emit: Emit): Line[] {
+  return emit.replacePrevious && lines.length
+    ? [...lines.slice(0, -1), emit.line]
+    : [...lines, emit.line]
+}
+
 export class Agent {
   readonly slot: number
   readonly label: string
@@ -78,13 +84,17 @@ export class Agent {
   /** Commit whole blocks instantly to manufacture believable scrollback. */
   #prefill(blocks: number) {
     const out: Line[] = [...this.lines]
-    for (const e of this.#queue) out.push(e.line)
+    for (const e of this.#queue) {
+      if (e.replacePrevious && out.length) out[out.length - 1] = e.line
+      else out.push(e.line)
+    }
     this.#queue = []
     this.partial = null
 
     for (let i = 0; i < blocks; i++) {
       for (const e of nextBlock(this.#r, this.#todoDone, this.flavor, this.task)) {
-        out.push(e.line)
+        if (e.replacePrevious && out.length) out[out.length - 1] = e.line
+        else out.push(e.line)
         if (e.line.k === 'tool') {
           this.toolUses += 1
           this.lifeTools += 1
@@ -152,13 +162,13 @@ export class Agent {
     }
     this.#chars = e.type ? 0 : e.line.s.length
     this.#speed = range(this.#r, 260, 620) * this.#tempo
-    this.partial = e.type ? { k: e.line.k, s: '' } : { ...e.line }
+    this.partial = e.replacePrevious ? null : e.type ? { k: e.line.k, s: '' } : { ...e.line }
   }
 
   #commit(now: number) {
     const e = this.#queue.shift()
     if (!e) return
-    this.lines = [...this.lines, e.line].slice(-KEEP)
+    this.lines = appendEmit(this.lines, e).slice(-KEEP)
     if (e.recentDecision) this.recentDecision = { text: e.recentDecision, until: now + 8_000 }
     this.partial = null
     this.#waitUntil = now + e.pause
