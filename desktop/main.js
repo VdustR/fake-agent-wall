@@ -24,6 +24,7 @@ import {
 } from './display-layout.js'
 import {
   applyWallPresentation,
+  releaseWallPresentation,
   showWallWhenReady,
   wallWindowPresentation,
 } from './window-presentation.js'
@@ -183,6 +184,7 @@ function destroyWall(key) {
   walls.delete(key)
   const wall = record.window
   themePanelWindows.delete(record.webContentsId)
+  releaseWallPresentation(wall, { platform: process.platform, windowed: WINDOWED })
   wall.destroy()
 }
 

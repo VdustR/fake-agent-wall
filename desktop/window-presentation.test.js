@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   applyWallPresentation,
+  releaseWallPresentation,
   showWallWhenReady,
   wallWindowPresentation,
 } from './window-presentation.js'
@@ -21,19 +22,29 @@ describe('wall window presentation', () => {
     expect(wallWindowPresentation({ platform: 'win32', windowed: true })).toEqual({})
   })
 
-  it('uses macOS simple fullscreen without creating a native fullscreen Space', () => {
-    const wall = { setSimpleFullScreen: vi.fn() }
+  it('enters and leaves macOS simple fullscreen for a production wall', () => {
+    const wall = {
+      isSimpleFullScreen: vi.fn(() => true),
+      setSimpleFullScreen: vi.fn(),
+    }
 
     applyWallPresentation(wall, { platform: 'darwin', windowed: false })
+    releaseWallPresentation(wall, { platform: 'darwin', windowed: false })
 
-    expect(wall.setSimpleFullScreen).toHaveBeenCalledWith(true)
+    expect(wall.setSimpleFullScreen).toHaveBeenNthCalledWith(1, true)
+    expect(wall.setSimpleFullScreen).toHaveBeenNthCalledWith(2, false)
   })
 
-  it('does not apply simple fullscreen to windowed or non-macOS walls', () => {
-    const wall = { setSimpleFullScreen: vi.fn() }
+  it('does not change simple fullscreen for windowed or non-macOS walls', () => {
+    const wall = {
+      isSimpleFullScreen: vi.fn(() => true),
+      setSimpleFullScreen: vi.fn(),
+    }
 
     applyWallPresentation(wall, { platform: 'darwin', windowed: true })
+    releaseWallPresentation(wall, { platform: 'darwin', windowed: true })
     applyWallPresentation(wall, { platform: 'win32', windowed: false })
+    releaseWallPresentation(wall, { platform: 'win32', windowed: false })
 
     expect(wall.setSimpleFullScreen).not.toHaveBeenCalled()
   })
