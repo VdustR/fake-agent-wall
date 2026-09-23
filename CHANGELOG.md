@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.6](https://github.com/VdustR/fake-agent-wall/compare/v0.8.5...v0.8.6) (2026-09-23)
+
+
+### Bug Fixes
+
+* restore macOS chrome after closing wall ([#46](https://github.com/VdustR/fake-agent-wall/issues/46)) ([605f9d7](https://github.com/VdustR/fake-agent-wall/commit/605f9d79785bd4106eccf732b941465938ed7d25))
+
 ## [0.8.5](https://github.com/VdustR/fake-agent-wall/compare/v0.8.4...v0.8.5) (2026-09-20)
 
 
