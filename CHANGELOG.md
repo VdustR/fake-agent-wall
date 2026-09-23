@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/VdustR/fake-agent-wall/compare/v0.10.0...v0.11.0) (2026-09-23)
+
+
+### Features
+
+* animate simulated install progress in place ([#56](https://github.com/VdustR/fake-agent-wall/issues/56)) ([dcb6f4a](https://github.com/VdustR/fake-agent-wall/commit/dcb6f4a8fc205ea0e590e578553e469b2df1b3db))
+
 ## [0.10.0](https://github.com/VdustR/fake-agent-wall/compare/v0.9.0...v0.10.0) (2026-09-23)
 
 
