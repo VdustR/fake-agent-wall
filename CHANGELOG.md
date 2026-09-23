@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.7](https://github.com/VdustR/fake-agent-wall/compare/v0.8.6...v0.8.7) (2026-09-23)
+
+
+### Bug Fixes
+
+* refresh simulated model labels ([#51](https://github.com/VdustR/fake-agent-wall/issues/51)) ([86003a0](https://github.com/VdustR/fake-agent-wall/commit/86003a068bd854014f237c35a9d698bc1ff42857))
+
+
+### Documentation
+
+* add cross-agent model catalog research skill ([#48](https://github.com/VdustR/fake-agent-wall/issues/48)) ([3848483](https://github.com/VdustR/fake-agent-wall/commit/38484832c048d0a178de949091db6ee64b15177c))
+* check model launches across provider families ([#50](https://github.com/VdustR/fake-agent-wall/issues/50)) ([a2ebb8e](https://github.com/VdustR/fake-agent-wall/commit/a2ebb8ea36a35da0d6d419cef10b1eff33f62cb7))
+
 ## [0.8.6](https://github.com/VdustR/fake-agent-wall/compare/v0.8.5...v0.8.6) (2026-09-23)
 
 
