@@ -7,6 +7,8 @@ import {
   BASH,
   BASH_DESC,
   CODE_SCENES,
+  DECISION_MODELS,
+  DECISION_SCENES,
   DIRS,
   ERRORS,
   FILES,
@@ -45,6 +47,10 @@ export interface Emit {
   type: boolean
   /** Milliseconds of quiet after this line commits. */
   pause: number
+  /** Keep a bounded decision fast even when reduced motion slows ordinary lines. */
+  fast?: boolean
+  /** A completed decision may remain readable while the transcript continues. */
+  recentDecision?: string
 }
 
 export interface Prompt {
@@ -218,6 +224,20 @@ function taskBlock(r: Rand): Emit[] {
   ]
 }
 
+function decisionBlock(r: Rand, task: string): Emit[] {
+  const model = pick(r, DECISION_MODELS)
+  const scene = pick(r, DECISION_SCENES.filter(candidate => candidate.task === task))
+  const emits: Emit[] = [
+    t('tool', `● Decide(${model.provider} / ${model.name} · ${scene.latencyMs}ms)`, false, scene.latencyMs),
+    t('dim', `  state: ${scene.state}`),
+    t('gut', `  choice · ${scene.question}: ${scene.choices.join(' | ')}`),
+    t('gut', `  noul · ${scene.noul}: p(yes)=${scene.yesProbability}`),
+    { ...t('ok', `  └  ${scene.result}`, false, 120), recentDecision: `${model.name} · ${scene.result}` },
+  ]
+  for (const emit of emits) emit.fast = true
+  return emits
+}
+
 function webBlock(r: Rand): Emit[] {
   const q = pick(r, [
     'oxc oxlint rule severity config',
@@ -296,7 +316,7 @@ function hex(r: Rand, n: number) {
 
 /* ----------------------------------------------------------------- weights */
 
-type Maker = (r: Rand) => Emit[]
+type Maker = (r: Rand, task: string) => Emit[]
 export type BlockFlavor = 'implementation' | 'research' | 'validation' | 'orchestration'
 
 const DECK: Array<[Maker, number, BlockFlavor]> = [
@@ -308,6 +328,7 @@ const DECK: Array<[Maker, number, BlockFlavor]> = [
   [globBlock, 6, 'research'],
   [writeBlock, 6, 'implementation'],
   [taskBlock, 5, 'orchestration'],
+  [decisionBlock, 8, 'orchestration'],
   [webBlock, 3, 'research'],
   [rustBlock, 3, 'implementation'],
   [pythonBlock, 3, 'implementation'],
@@ -317,13 +338,15 @@ const DECK: Array<[Maker, number, BlockFlavor]> = [
   [securityBlock, 2, 'validation'],
 ]
 
-export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'implementation'): Emit[] {
+export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'implementation', task = ''): Emit[] {
   if (chance(r, flavor === 'orchestration' ? 0.2 : 0.07)) return todoBlock(r, todoDone)
-  const weighted = DECK.map(([make, weight, category]) => [make, weight * (category === flavor ? 2.7 : 0.72)] as const)
+  const hasDecisionScene = DECISION_SCENES.some(scene => scene.task === task)
+  const weighted = DECK.filter(([make]) => make !== decisionBlock || hasDecisionScene)
+    .map(([make, weight, category]) => [make, weight * (category === flavor ? 2.7 : 0.72)] as const)
   let n = r() * weighted.reduce((sum, [, weight]) => sum + weight, 0)
   for (const [make, weight] of weighted) {
     n -= weight
-    if (n <= 0) return make(r)
+    if (n <= 0) return make(r, task)
   }
   return readBlock(r)
 }

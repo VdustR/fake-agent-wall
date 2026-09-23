@@ -44,6 +44,7 @@ export class Agent {
   lifeTools = $state(0)
   /** Bumped on every committed tool bullet so the ticker can pick it up. */
   lastEvent = $state<{ n: number; text: string } | null>(null)
+  recentDecision = $state<{ text: string; until: number } | null>(null)
 
   #queue: Emit[] = []
   #chars = 0
@@ -82,7 +83,7 @@ export class Agent {
     this.partial = null
 
     for (let i = 0; i < blocks; i++) {
-      for (const e of nextBlock(this.#r, this.#todoDone, this.flavor)) {
+      for (const e of nextBlock(this.#r, this.#todoDone, this.flavor, this.task)) {
         out.push(e.line)
         if (e.line.k === 'tool') {
           this.toolUses += 1
@@ -124,6 +125,7 @@ export class Agent {
       : []
     this.partial = null
     this.prompt = null
+    this.recentDecision = null
     this.tokensUp = int(r, 800, 4200)
     this.tokensDown = 0
     this.toolUses = 0
@@ -157,6 +159,7 @@ export class Agent {
     const e = this.#queue.shift()
     if (!e) return
     this.lines = [...this.lines, e.line].slice(-KEEP)
+    if (e.recentDecision) this.recentDecision = { text: e.recentDecision, until: now + 8_000 }
     this.partial = null
     this.#waitUntil = now + e.pause
 
@@ -207,6 +210,7 @@ export class Agent {
   }
 
   tick(now: number, dt: number) {
+    if (this.recentDecision && now >= this.recentDecision.until) this.recentDecision = null
     this.sessionMs += dt
     this.level += -this.level * Math.min(1, dt / 700)
     this.levelPeak = Math.max(this.level, this.levelPeak - this.levelPeak * (dt / 2600))
@@ -234,7 +238,7 @@ export class Agent {
     if (this.status === 'cue') {
       if (now >= this.#verbUntil) this.#pickVerb(now)
       if (now >= this.#phaseUntil) {
-        this.#queue = nextBlock(this.#r, this.#todoDone, this.flavor)
+        this.#queue = nextBlock(this.#r, this.#todoDone, this.flavor, this.task)
         if (chance(this.#r, 0.3)) this.#todoDone = Math.min(6, this.#todoDone + 1)
         this.status = 'run'
         this.#beginLine()
@@ -260,7 +264,7 @@ export class Agent {
       this.#commit(now)
       // Whole lines at a reading pace. Without this floor the short inter-line
       // pauses would land twenty lines a second, which is more motion, not less.
-      this.#waitUntil = Math.max(this.#waitUntil, now + 520)
+      this.#waitUntil = Math.max(this.#waitUntil, now + (head.fast ? 0 : 520))
       this.level = Math.min(1, this.level + 0.25)
       return
     }

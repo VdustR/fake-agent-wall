@@ -197,6 +197,75 @@ export const MODELS = [
   { name: 'ernie-5.1', provider: 'baidu' },
 ] as const
 
+/** Models used for bounded decisions inside an agent's workflow. */
+export const DECISION_MODELS = [
+  { name: 'jev', provider: 'typesafe' },
+] as const
+
+/** Synthetic decisions with a fixed state, answer set, and follow-up action. */
+export const DECISION_SCENES = [
+  {
+    task: 'make webhook replay idempotent',
+    state: 'webhook replay failed after a retry',
+    question: 'next step',
+    choices: ['inspect replay guard 0.81', 'retry delivery 0.14', 'request review 0.05'],
+    noul: 'duplicate charge risk',
+    yesProbability: '0.87',
+    result: 'inspect replay guard',
+    latencyMs: 180,
+  },
+  {
+    task: 'rotate the signing keys without invalidating active sessions',
+    state: 'signing-key rotation has active sessions',
+    question: 'next step',
+    choices: ['check key overlap 0.76', 'rotate now 0.16', 'request review 0.08'],
+    noul: 'active sessions at risk',
+    yesProbability: '0.91',
+    result: 'check key overlap',
+    latencyMs: 240,
+  },
+  {
+    task: 'backfill tests for the jittered scheduler',
+    state: 'queue test failed on jittered backoff',
+    question: 'next step',
+    choices: ['inspect fake clock 0.72', 'rerun suite 0.19', 'request review 0.09'],
+    noul: 'test setup caused failure',
+    yesProbability: '0.84',
+    result: 'inspect fake clock',
+    latencyMs: 310,
+  },
+  {
+    task: 'trace the slow query through the Postgres execution plan',
+    state: 'tenant query regressed after a new index',
+    question: 'next step',
+    choices: ['inspect query plan 0.78', 'add another index 0.13', 'request review 0.09'],
+    noul: 'planner chose the old index',
+    yesProbability: '0.83',
+    result: 'inspect query plan',
+    latencyMs: 210,
+  },
+  {
+    task: 'close the keyboard trap in the billing modal',
+    state: 'focus cannot leave the billing modal',
+    question: 'next step',
+    choices: ['inspect focus trap 0.79', 'adjust z-index 0.12', 'request review 0.09'],
+    noul: 'keyboard navigation is blocked',
+    yesProbability: '0.94',
+    result: 'inspect focus trap',
+    latencyMs: 160,
+  },
+  {
+    task: 'audit every unbounded queue in the ingest path',
+    state: 'ingest queue grows during downstream retries',
+    question: 'next step',
+    choices: ['inspect queue bounds 0.84', 'increase workers 0.10', 'request review 0.06'],
+    noul: 'backpressure is missing',
+    yesProbability: '0.89',
+    result: 'inspect queue bounds',
+    latencyMs: 190,
+  },
+] as const
+
 /**
  * Fleet-level execution policies, not provider CLI flags. The duplication is
  * intentional weighting: unattended workers mostly run autonomously, while a
