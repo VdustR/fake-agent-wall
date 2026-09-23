@@ -65,6 +65,12 @@
     {/if}
   </div>
 
+  {#if agent.recentDecision}
+    <div class="recent-decision" title={agent.recentDecision.text}>
+      <span>decision</span><b>{agent.recentDecision.text}</b>
+    </div>
+  {/if}
+
   <div class="bar">
     <span class="mode">⏵⏵ {agent.executionPolicy}</span>
     <span class="left">
@@ -166,6 +172,29 @@
     font-size: 0.92em;
     white-space: nowrap;
     overflow: hidden;
+  }
+  .recent-decision {
+    flex: none;
+    display: flex;
+    gap: 0.8em;
+    padding: 0.25em 0.75em;
+    border-top: 1px solid var(--line);
+    color: var(--txt-dim);
+    background: color-mix(in oklab, var(--add) 6%, var(--ink-000));
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .recent-decision span {
+    color: var(--add);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .recent-decision b {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--txt-hi);
+    font-weight: 500;
   }
   .mode,
   .left {
