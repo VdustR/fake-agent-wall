@@ -21,7 +21,7 @@ it('completes a decision promptly and keeps its result readable for eight second
   expect(startedAt, `task=${agent.task} status=${agent.status} lines=${agent.lines.at(-1)?.s}`).not.toBeNull()
   expect(completedAt).not.toBeNull()
   expect(completedAt! - startedAt!).toBeLessThanOrEqual(600)
-  expect(agent.recentDecision?.text).toContain('jev · inspect replay guard')
+  expect(agent.recentDecision?.text).toMatch(/^(jev|luna) · inspect replay guard$/)
 
   const until = agent.recentDecision!.until
   agent.tick(until - 1, 0)

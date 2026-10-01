@@ -61,7 +61,7 @@ export const PULLS = [
 
 export const PROVIDERS = [
   { name: 'Anthropic', model: 'opus-5.5', used: 78, resetSeconds: 6_138, tokens: 4.82, cost: 38.14 },
-  { name: 'OpenAI', model: 'gpt-6-sol', used: 61, resetSeconds: 31_847, tokens: 3.17, cost: 27.68 },
+  { name: 'OpenAI', model: 'gpt-6.1-sol', used: 61, resetSeconds: 31_847, tokens: 3.17, cost: 27.68 },
   { name: 'Google', model: 'gemini-3.8-flash', used: 44, resetSeconds: 1_062, tokens: 2.91, cost: 16.03 },
   { name: 'Alibaba', model: 'qwen3.8-max', used: 86, resetSeconds: 18_420, tokens: 5.44, cost: 21.72 },
   { name: 'DeepSeek', model: 'deepseek-v4-pro', used: 37, resetSeconds: 42_955, tokens: 1.86, cost: 8.95 },
