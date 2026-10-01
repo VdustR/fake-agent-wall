@@ -197,9 +197,10 @@ export const MODELS = [
   { name: 'ernie-5.1', provider: 'baidu' },
 ] as const
 
-/** Models used for bounded decisions inside an agent's workflow. */
+/** Simulated bounded-decision routes; formats describe display capabilities. */
 export const DECISION_MODELS = [
-  { name: 'jev', provider: 'typesafe' },
+  { name: 'jev', provider: 'typesafe', format: 'jev', surface: null },
+  { name: 'luna', provider: 'openai', format: 'finite-choice', surface: 'Decisions API (preview)' },
 ] as const
 
 /** Synthetic decisions with a fixed state, answer set, and follow-up action. */

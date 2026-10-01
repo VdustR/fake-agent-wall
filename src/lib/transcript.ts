@@ -329,13 +329,19 @@ function taskBlock(r: Rand): Emit[] {
 function decisionBlock(r: Rand, task: string): Emit[] {
   const model = pick(r, DECISION_MODELS)
   const scene = pick(r, DECISION_SCENES.filter(candidate => candidate.task === task))
+  // OpenAI has announced finite answers, but not Jev's probability/Noul wire
+  // format. Keep the shared scene while showing only supported capabilities.
+  const route = model.surface ? `${model.surface} / ${model.name}` : model.name
+  const choices = model.format === 'jev'
+    ? scene.choices
+    : scene.choices.map(choice => choice.replace(/ \d+\.\d+$/, ''))
   const emits: Emit[] = [
-    t('tool', `● Decide(${model.provider} / ${model.name} · ${scene.latencyMs}ms)`, false, scene.latencyMs),
+    t('tool', `● Decide(${model.provider} / ${route} · ${scene.latencyMs}ms)`, false, scene.latencyMs),
     t('dim', `  state: ${scene.state}`),
-    t('gut', `  choice · ${scene.question}: ${scene.choices.join(' | ')}`),
-    t('gut', `  noul · ${scene.noul}: p(yes)=${scene.yesProbability}`),
-    { ...t('ok', `  └  ${scene.result}`, false, 120), recentDecision: `${model.name} · ${scene.result}` },
+    t('gut', `  choice · ${scene.question}: ${choices.join(' | ')}`),
   ]
+  if (model.format === 'jev') emits.push(t('gut', `  noul · ${scene.noul}: p(yes)=${scene.yesProbability}`))
+  emits.push({ ...t('ok', `  └  ${scene.result}`, false, 120), recentDecision: `${model.name} · ${scene.result}` })
   for (const emit of emits) emit.fast = true
   return emits
 }
