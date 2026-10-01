@@ -15,7 +15,7 @@ import { getSettings, setSettings } from './settings.js'
 import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
 import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
-import { createFocusGuard } from './focus-guard.js'
+import { createFocusGuard, observeSessionFocus } from './focus-guard.js'
 import {
   parseSimulatedDisplayCount,
   planDisplayReconciliation,
@@ -60,10 +60,14 @@ let exitTimer = null
 let recentKeyTimes = []
 let idleTimer = null
 let idleCheckRunning = false
+let stopSessionFocus = null
 const themePanelWindows = new Set()
 const focusGuard = createFocusGuard({
   active: () => playing && !WINDOWED,
   preferredWindow: preferredWall,
+  activateApp: () => {
+    if (IS_MAC) app.focus({ steal: true })
+  },
 })
 
 /* ------------------------------------------------------------------- window */
@@ -338,13 +342,13 @@ function startIdleWatch() {
   idleTimer = setInterval(async () => {
     if (idleCheckRunning) return
     const s = getSettings()
-    if (!s.idleStart || playing) return
+    if (!s.idleStart || playing || !focusGuard.isSessionActive()) return
     if (powerMonitor.getSystemIdleTime() < s.idleMinutes * 60) return
 
     idleCheckRunning = true
     try {
       const activity = await getSystemActivity()
-      if (!playing && !shouldDeferIdleStart(s, activity)) openWall()
+      if (!playing && focusGuard.isSessionActive() && !shouldDeferIdleStart(s, activity)) openWall()
     } finally {
       idleCheckRunning = false
     }
@@ -485,6 +489,9 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => openWall())
 
   app.whenReady().then(() => {
+    if (IS_MAC) {
+      stopSessionFocus = observeSessionFocus(powerMonitor, focusGuard, () => cancelExitHold(false))
+    }
     tray = new Tray(trayIcon())
     // Left click plays immediately; the menu is on right click. This is the
     // "one click" path, and it is why no context menu is bound to plain click.
@@ -519,6 +526,8 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', (e) => e?.preventDefault?.())
 
   app.on('will-quit', () => {
+    stopSessionFocus?.()
+    focusGuard.cancelRecovery()
     clearInterval(idleTimer)
     if (blockerId !== null) powerSaveBlocker.stop(blockerId)
   })
