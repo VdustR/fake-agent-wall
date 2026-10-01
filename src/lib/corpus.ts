@@ -177,10 +177,10 @@ export const TODOS = [
  */
 export const MODELS = [
   { name: 'opus-5.5', provider: 'anthropic' },
-  { name: 'sonnet-5', provider: 'anthropic' },
+  { name: 'sonnet-5.5', provider: 'anthropic' },
   { name: 'fable-5.1', provider: 'anthropic' },
   { name: 'gpt-6-astra', provider: 'openai' },
-  { name: 'gpt-6-sol', provider: 'openai' },
+  { name: 'gpt-6.1-sol', provider: 'openai' },
   { name: 'gpt-6-luna', provider: 'openai' },
   { name: 'gemini-3.1-pro', provider: 'google' },
   { name: 'gemini-3.8-flash', provider: 'google' },
