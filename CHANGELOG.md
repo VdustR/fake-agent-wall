@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.12.0](https://github.com/VdustR/fake-agent-wall/compare/v0.11.0...v0.12.0) (2026-10-02)
+
+
+### Features
+
+* add simulated Luna Decisions API route ([#59](https://github.com/VdustR/fake-agent-wall/issues/59)) ([a9b1054](https://github.com/VdustR/fake-agent-wall/commit/a9b10543fee80629a6ec490644ac9ba59d9ffaba))
+* refresh Sol and Sonnet model labels ([#58](https://github.com/VdustR/fake-agent-wall/issues/58)) ([d8df369](https://github.com/VdustR/fake-agent-wall/commit/d8df3691627f50008f457ab76140fd1813560227))
+
+
+### Bug Fixes
+
+* restore macOS wall focus and restrict app switching ([#60](https://github.com/VdustR/fake-agent-wall/issues/60)) ([489c61c](https://github.com/VdustR/fake-agent-wall/commit/489c61c609d1523efa342ccbf2072a88ff6077f5))
+
 ## [0.11.0](https://github.com/VdustR/fake-agent-wall/compare/v0.10.0...v0.11.0) (2026-09-23)
 
 
