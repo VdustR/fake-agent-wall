@@ -33,7 +33,16 @@ at 05:46:33 UTC, lock at 05:46:33, unlock at 05:46:34, then resume at 05:47:03
 on October 2, 2026. One second after unlock the visible wall was unfocused.
 Waiting for both independent lock and sleep blocks prevented recovery for about
 28 seconds. A regression test replays this order; unlock now supersedes the
-earlier sleep block. This fix still requires a new physical acceptance run.
+earlier sleep block.
+
+The operator reported the corrected acceptance run passed on October 2, 2026,
+and authorized merge, release, and installation. On macOS 26.6.2 (25G83), the
+corrected trace records suspend, lock, unlock, and window focus 112 ms after
+unlock; the one-second readback confirms both window and web-content focus.
+Another locked sleep/wake sequence keeps the wall unfocused until unlock, then
+receives Escape input and closes on a full hold and release. This evidence
+covers the operator's laptop acceptance; it does not establish multi-display,
+other macOS versions, or every authentication method.
 
 The macOS Node-API presentation guard uses AppKit's `disableProcessSwitching`
 and `disableHideApplication` with a hidden Dock and menu bar. It omits
