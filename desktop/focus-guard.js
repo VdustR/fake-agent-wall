@@ -55,7 +55,7 @@ export function createFocusGuard({
 }
 
 /** Register after Electron is ready. Screen lock and sleep can overlap. */
-export function observeSessionFocus(powerMonitor, guard, cancelInput) {
+export function observeSessionFocus(powerMonitor, guard, cancelInput, sessionChanged = () => {}) {
   const events = [
     ['lock-screen', 'locked', true],
     ['unlock-screen', 'locked', false],
@@ -68,6 +68,7 @@ export function observeSessionFocus(powerMonitor, guard, cancelInput) {
     const listener = () => {
       if (blocked) cancelInput()
       guard.setSessionBlocked(reason, blocked)
+      sessionChanged()
     }
     powerMonitor.on(event, listener)
     return [event, listener]

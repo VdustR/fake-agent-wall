@@ -6,6 +6,9 @@ if (process.platform === 'darwin') {
   const desktop = __dirname
   const outputDir = join(desktop, 'bin')
   mkdirSync(outputDir, { recursive: true })
+  require('./build-presentation-guard.cjs').buildPresentationGuard(
+    join(outputDir, 'presentation-guard.node'),
+  )
 
   execFileSync('xcrun', [
     'swiftc',

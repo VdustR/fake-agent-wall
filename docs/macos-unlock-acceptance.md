@@ -24,6 +24,33 @@ Spaces, physical displays, or Escape delivery after real authentication.
 
 ## Device procedure
 
+The macOS Node-API presentation guard uses AppKit's `disableProcessSwitching`
+and `disableHideApplication` with a hidden Dock and menu bar. It omits
+`disableForceQuit`, `disableSessionTermination`, and `disableAppleMenu`.
+Electron's kiosk preset includes the first two, so it cannot preserve the
+required emergency exit. See [AppKit presentation options](https://developer.apple.com/documentation/appkit/nsapplication/presentationoptions-swift.struct)
+and [Electron 43.3.0 implementation](https://github.com/electron/electron/blob/v43.3.0/shell/browser/native_window_mac.mm).
+The guard runs inside Electron's main process; a separate Swift process cannot
+set Electron's application presentation. It restores its snapshot before
+window teardown or display reconciliation, and releases it during lock, sleep,
+and inactive login sessions. No global shortcut registration, input monitoring,
+Accessibility permission, or persistent system setting is added.
+
+Run `pnpm build:native` followed by
+`pnpm exec electron desktop/presentation-guard-smoke.cjs` on macOS to verify
+the actual AppKit flags, repeated enable/disable, reacquisition after release,
+and restoration before and after simple-fullscreen teardown. The macOS CI job
+runs the same smoke test. It does not simulate hardware key behavior.
+
+Before the unlock checks, confirm Command-Tab and Command-H cannot leave the
+playing wall. Volume up/down, mute, and brightness must still work. Open the
+Force Quit panel with Command-Option-Escape, then cancel it without terminating
+another application. Lock and sleep must remain available. After stopping the
+wall, Command-Tab and Command-H must work again. Repeat start/stop twice to
+check restoration. Mission Control, Spaces gestures, Spotlight, and custom
+third-party shortcuts are not covered by `disableProcessSwitching`; record
+their behavior instead of assuming all system shortcuts are blocked.
+
 Use an unpackaged build from this PR, with its own `--user-data-dir`, so the
 installed app cannot intercept it via Electron's single-instance lock. Stop
 the installed wall first. Do not replace `/Applications/Fake Agent Wall.app`

@@ -14,6 +14,18 @@ function wall() {
 }
 
 describe('wall focus guard', () => {
+  it('updates presentation only after the combined session state changes', () => {
+    vi.useFakeTimers()
+    const powerMonitor = new EventEmitter()
+    const guard = createFocusGuard({ active: () => true, preferredWindow: wall })
+    const states = []
+    const stop = observeSessionFocus(powerMonitor, guard, vi.fn(), () => states.push(guard.isSessionActive()))
+    for (const event of ['lock-screen', 'suspend', 'unlock-screen', 'resume']) powerMonitor.emit(event)
+    expect(states).toEqual([false, false, false, true])
+    stop()
+    powerMonitor.emit('lock-screen')
+    expect(states).toHaveLength(4)
+  })
   it('raises and focuses the preferred wall', () => {
     const target = wall()
     const guard = createFocusGuard({
