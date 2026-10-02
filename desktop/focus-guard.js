@@ -67,6 +67,10 @@ export function observeSessionFocus(powerMonitor, guard, cancelInput, sessionCha
   const listeners = events.map(([event, reason, blocked]) => {
     const listener = () => {
       if (blocked) cancelInput()
+      // A real lid-open trace delivered unlock 28 seconds before resume.
+      // Authentication has completed and the machine is awake at unlock;
+      // waiting for its stale sleep block would leave the visible wall inert.
+      if (event === 'unlock-screen') guard.setSessionBlocked('sleeping', false)
       guard.setSessionBlocked(reason, blocked)
       sessionChanged()
     }

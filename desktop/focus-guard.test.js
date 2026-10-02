@@ -21,7 +21,7 @@ describe('wall focus guard', () => {
     const states = []
     const stop = observeSessionFocus(powerMonitor, guard, vi.fn(), () => states.push(guard.isSessionActive()))
     for (const event of ['lock-screen', 'suspend', 'unlock-screen', 'resume']) powerMonitor.emit(event)
-    expect(states).toEqual([false, false, false, true])
+    expect(states).toEqual([false, false, true, true])
     stop()
     powerMonitor.emit('lock-screen')
     expect(states).toHaveLength(4)
@@ -143,10 +143,7 @@ describe('wall focus guard', () => {
     stop()
   })
 
-  it.each([
-    ['resume', 'unlock-screen'],
-    ['unlock-screen', 'resume'],
-  ])('waits for both sleep and lock to clear: %s then %s', (first, second) => {
+  it('keeps resume blocked until the locked screen is unlocked', () => {
     vi.useFakeTimers()
     const target = wall()
     const powerMonitor = new EventEmitter()
@@ -154,10 +151,35 @@ describe('wall focus guard', () => {
     const stop = observeSessionFocus(powerMonitor, guard, vi.fn())
     powerMonitor.emit('lock-screen')
     powerMonitor.emit('suspend')
-    powerMonitor.emit(first)
+    powerMonitor.emit('resume')
     vi.runAllTimers()
     expect(target.focus).not.toHaveBeenCalled()
-    powerMonitor.emit(second)
+    powerMonitor.emit('unlock-screen')
+    vi.runAllTimers()
+    expect(target.focus).toHaveBeenCalledOnce()
+    stop()
+  })
+
+  it('recovers on the observed lid-open unlock without waiting for delayed resume', () => {
+    vi.useFakeTimers()
+    let playing = true
+    const target = wall()
+    const powerMonitor = new EventEmitter()
+    const guard = createFocusGuard({ active: () => playing, preferredWindow: () => target })
+    const states = []
+    const stop = observeSessionFocus(powerMonitor, guard, vi.fn(), () => states.push(guard.isSessionActive()))
+    powerMonitor.emit('suspend')
+    powerMonitor.emit('lock-screen')
+    vi.advanceTimersByTime(1500)
+    expect(target.focus).not.toHaveBeenCalled()
+    powerMonitor.emit('unlock-screen')
+    vi.advanceTimersByTime(1000)
+    expect(target.focus).toHaveBeenCalledOnce()
+    expect(states).toEqual([false, false, true])
+    // The observed resume arrives after the operator has already stopped playback.
+    playing = false
+    vi.advanceTimersByTime(27000)
+    powerMonitor.emit('resume')
     vi.runAllTimers()
     expect(target.focus).toHaveBeenCalledOnce()
     stop()

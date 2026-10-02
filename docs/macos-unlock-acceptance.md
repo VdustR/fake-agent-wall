@@ -13,16 +13,27 @@ provides lock/unlock, suspend/resume, and macOS login-session events.
 can activate a macOS application with `steal: true`. Use it only while the
 production wall is playing, before focusing the preferred display's window.
 Pause recovery during lock, sleep, and an inactive login session; reset pending
-Escape input. When all observed blocks clear, queue one delayed recovery. Idle
+Escape input. An unlock clears both lock and prior sleep blocks because it
+confirms the machine is awake and authentication has completed. An inactive
+login session remains independently blocked. Queue delayed recovery when the
+remaining blocks clear. Idle
 start also waits for an active session, including after its asynchronous check.
 
 A simulation reproduces the inactive-application mechanism and verifies the
 activation order. Event-driven tests cover lock/unlock without another blur,
-both sleep/unlock orders, session switching, cancellation, and observer cleanup.
+resume before unlock, unlock before delayed resume, session switching,
+cancellation, and observer cleanup.
 These tests do not prove macOS WindowServer behavior, event timing, Touch ID,
 Spaces, physical displays, or Escape delivery after real authentication.
 
 ## Device procedure
+
+The first lid-close/open acceptance failed. The recorded sequence was suspend
+at 05:46:33 UTC, lock at 05:46:33, unlock at 05:46:34, then resume at 05:47:03
+on October 2, 2026. One second after unlock the visible wall was unfocused.
+Waiting for both independent lock and sleep blocks prevented recovery for about
+28 seconds. A regression test replays this order; unlock now supersedes the
+earlier sleep block. This fix still requires a new physical acceptance run.
 
 The macOS Node-API presentation guard uses AppKit's `disableProcessSwitching`
 and `disableHideApplication` with a hidden Dock and menu bar. It omits
