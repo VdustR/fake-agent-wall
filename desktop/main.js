@@ -16,7 +16,8 @@ import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
 import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
 import { createFocusGuard, observeSessionFocus } from './focus-guard.js'
-import { setPresentationGuard } from './presentation-guard.js'
+import { getWallForegroundState, setPresentationGuard } from './presentation-guard.js'
+import { createPlaybackPolicy } from './playback-policy.js'
 import { isHardwareControl } from './system-controls.js'
 import {
   parseSimulatedDisplayCount,
@@ -52,6 +53,7 @@ const IS_MAC = process.platform === 'darwin'
 const PRESENTATION = wallWindowPresentation({ platform: process.platform, windowed: WINDOWED })
 
 const walls = new Map()
+const playbackPolicy = createPlaybackPolicy()
 let playing = false
 let tray = null
 let trayMenu = null
@@ -63,9 +65,16 @@ let recentKeyTimes = []
 let idleTimer = null
 let idleCheckRunning = false
 let stopSessionFocus = null
+let foregroundTimer = null
 const themePanelWindows = new Set()
 const focusGuard = createFocusGuard({
-  active: () => playing && !WINDOWED,
+  active: () => {
+    if (!playing || WINDOWED) return false
+    // A blur may precede the workspace's foreground change. Read it again
+    // when the recovery timer fires, before activating this application.
+    if (IS_MAC) updateForegroundPolicy()
+    return playing && (!IS_MAC || playbackPolicy.shouldRecover())
+  },
   preferredWindow: preferredWall,
   activateApp: () => {
     if (IS_MAC) app.focus({ steal: true })
@@ -74,13 +83,15 @@ const focusGuard = createFocusGuard({
 
 /* ------------------------------------------------------------------- window */
 
-function openWall() {
+function openWall(source = 'manual') {
   if (playing) {
+    playbackPolicy.start(source)
     reconcileWalls()
     focusPreferredWall()
     return
   }
   playing = true
+  playbackPolicy.start(source)
   cancelExitHold(false)
   recentKeyTimes = []
   themePanelWindows.clear()
@@ -159,8 +170,15 @@ function createWall(target) {
     showWallWhenReady(wall, preferredWall() === wall)
     updatePresentationGuard()
   })
-  wall.on('focus', () => focusGuard.cancelRecovery())
-  wall.on('blur', () => focusGuard.recoverSoon())
+  wall.on('focus', () => {
+    focusGuard.cancelRecovery()
+    updateForegroundPolicy()
+  })
+  wall.on('blur', () => {
+    cancelExitHold(false)
+    updateForegroundPolicy()
+    focusGuard.recoverSoon()
+  })
   wall.on('closed', () => {
     const record = walls.get(target.key)
     if (record?.window === wall) walls.delete(target.key)
@@ -181,6 +199,7 @@ function createWall(target) {
 function closeWalls() {
   if (!playing && walls.size === 0) return
   playing = false
+  playbackPolicy.stop()
   focusGuard.cancelRecovery()
   cancelExitHold(false)
   themePanelWindows.clear()
@@ -193,12 +212,36 @@ function closeWalls() {
 function updatePresentationGuard(layoutChanging = false) {
   if (!IS_MAC || WINDOWED) return
   try {
-    setPresentationGuard(!layoutChanging && playing && walls.size > 0 && focusGuard.isSessionActive())
+    setPresentationGuard(!layoutChanging && playing && walls.size > 0 && playbackPolicy.shouldGuard())
   } catch (error) {
     console.error('Cannot apply macOS presentation guard:', error)
     // Native failures must leave an ordinary, escapable desktop.
     if (playing) closeWalls()
   }
+}
+
+function updateForegroundPolicy() {
+  if (!IS_MAC || WINDOWED || !playing) return
+  try {
+    const shouldStop = playbackPolicy.update(getWallForegroundState(
+      [...walls.values()].map(record => record.window),
+    ))
+    if (!playbackPolicy.shouldRecover()) focusGuard.cancelRecovery()
+    if (!playbackPolicy.shouldAcceptInput()) cancelExitHold(false)
+    if (shouldStop) closeWalls()
+    else updatePresentationGuard()
+  } catch (error) {
+    console.error('Cannot read macOS wall foreground state:', error)
+    closeWalls()
+  }
+}
+
+function sessionChanged() {
+  playbackPolicy.setSessionActive(focusGuard.isSessionActive())
+  updateForegroundPolicy()
+  // Session observers update the focus guard before this policy. Schedule again
+  // after granting the unlock interval; the earlier call may still be blocked.
+  focusGuard.recoverSoon()
 }
 
 function destroyWall(key) {
@@ -238,6 +281,10 @@ function preferredWall() {
 function swallowInput(wc) {
   wc.on('before-input-event', (event, input) => {
     if (isHardwareControl(input)) return
+    if (IS_MAC && !WINDOWED) {
+      updateForegroundPolicy()
+      if (!playbackPolicy.shouldAcceptInput()) return
+    }
     const themePanelOpen = themePanelWindows.has(wc.id)
     if (input.type === 'keyUp') {
       if (!themePanelOpen) event.preventDefault()
@@ -363,12 +410,17 @@ function startIdleWatch() {
     if (idleCheckRunning) return
     const s = getSettings()
     if (!s.idleStart || playing || !focusGuard.isSessionActive()) return
-    if (powerMonitor.getSystemIdleTime() < s.idleMinutes * 60) return
+    if (playbackPolicy.idleSeconds(powerMonitor.getSystemIdleTime()) < s.idleMinutes * 60) return
 
     idleCheckRunning = true
     try {
       const activity = await getSystemActivity()
-      if (!playing && focusGuard.isSessionActive() && !shouldDeferIdleStart(s, activity)) openWall()
+      // Activity detection is asynchronous. Recheck settings and idle input
+      // after it returns so playback cannot start over a newly active operator.
+      const current = getSettings()
+      if (!playing && current.idleStart && focusGuard.isSessionActive() &&
+          playbackPolicy.idleSeconds(powerMonitor.getSystemIdleTime()) >= current.idleMinutes * 60 &&
+          !shouldDeferIdleStart(current, activity)) openWall('idle')
     } finally {
       idleCheckRunning = false
     }
@@ -511,8 +563,11 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     if (IS_MAC) {
       stopSessionFocus = observeSessionFocus(
-        powerMonitor, focusGuard, () => cancelExitHold(false), updatePresentationGuard,
+        powerMonitor, focusGuard, () => cancelExitHold(false), sessionChanged,
       )
+      // Occlusion can change without a blur (for example, a player above the
+      // wall). Chromium visibility stays visible with backgroundThrottling off.
+      if (!WINDOWED) foregroundTimer = setInterval(updateForegroundPolicy, 150)
     }
     tray = new Tray(trayIcon())
     // Left click plays immediately; the menu is on right click. This is the
@@ -542,7 +597,14 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   // Reopening from the Dock plays again rather than resurrecting a blank window.
-  app.on('activate', () => openWall())
+  app.on('activate', () => {
+    if (!playing) openWall()
+    else {
+      playbackPolicy.requestRecovery()
+      updateForegroundPolicy()
+      focusPreferredWall()
+    }
+  })
 
   // The tray is the app. Closing the wall must not quit.
   app.on('window-all-closed', (e) => e?.preventDefault?.())
@@ -552,6 +614,7 @@ if (!app.requestSingleInstanceLock()) {
     stopSessionFocus?.()
     focusGuard.cancelRecovery()
     clearInterval(idleTimer)
+    clearInterval(foregroundTimer)
     if (blockerId !== null) powerSaveBlocker.stop(blockerId)
   })
 }

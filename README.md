@@ -84,10 +84,20 @@ management alone.
 
 ### Wall settings
 
-On macOS, playback disables Command-Tab app switching and hiding the app.
+On macOS, manually started playback disables Command-Tab app switching and
+hiding the app while a visible wall has foreground input focus. If another
+application takes the foreground or fully covers the wall, these restrictions
+and focus recovery pause. Returning to the wall restores the restrictions.
 Volume, mute, brightness, screen locking, sleep, and the system Force Quit
 shortcut remain available. Stop playback to restore app switching. These
 restrictions do not apply to the windowed development mode.
+
+Automatically started playback permits Command-Tab. If another application
+takes the foreground or fully covers the wall for at least 300 milliseconds,
+the wall stops and waits a complete idle interval before starting again.
+Locking or sleeping pauses this check; unlocking restores the wall's focus.
+See the [foreground and player acceptance procedure](docs/macos-foreground-acceptance.md)
+for verification details and limits.
 
 Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on macOS or
 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on Windows and Linux to open
