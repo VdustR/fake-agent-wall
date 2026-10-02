@@ -15,7 +15,9 @@ import { getSettings, setSettings } from './settings.js'
 import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
 import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
-import { createFocusGuard } from './focus-guard.js'
+import { createFocusGuard, observeSessionFocus } from './focus-guard.js'
+import { setPresentationGuard } from './presentation-guard.js'
+import { isHardwareControl } from './system-controls.js'
 import {
   parseSimulatedDisplayCount,
   planDisplayReconciliation,
@@ -60,10 +62,14 @@ let exitTimer = null
 let recentKeyTimes = []
 let idleTimer = null
 let idleCheckRunning = false
+let stopSessionFocus = null
 const themePanelWindows = new Set()
 const focusGuard = createFocusGuard({
   active: () => playing && !WINDOWED,
   preferredWindow: preferredWall,
+  activateApp: () => {
+    if (IS_MAC) app.focus({ steal: true })
+  },
 })
 
 /* ------------------------------------------------------------------- window */
@@ -96,8 +102,12 @@ function reconcileWalls() {
   const targets = targetDisplays()
   const existing = new Map([...walls].map(([key, record]) => [key, record.bounds]))
   const { remove, create } = planDisplayReconciliation(existing, targets)
+  // Electron's simple fullscreen also owns presentation options. Restore our
+  // snapshot before it changes any windows, then acquire the new snapshot.
+  if (remove.length || create.length) updatePresentationGuard(true)
   for (const key of remove) destroyWall(key)
   for (const target of create) createWall(target)
+  updatePresentationGuard()
   applyPowerBlocker()
   refreshTray()
 }
@@ -147,6 +157,7 @@ function createWall(target) {
 
   wall.once('ready-to-show', () => {
     showWallWhenReady(wall, preferredWall() === wall)
+    updatePresentationGuard()
   })
   wall.on('focus', () => focusGuard.cancelRecovery())
   wall.on('blur', () => focusGuard.recoverSoon())
@@ -173,9 +184,21 @@ function closeWalls() {
   focusGuard.cancelRecovery()
   cancelExitHold(false)
   themePanelWindows.clear()
+  updatePresentationGuard()
   for (const key of walls.keys()) destroyWall(key)
   applyPowerBlocker()
   refreshTray()
+}
+
+function updatePresentationGuard(layoutChanging = false) {
+  if (!IS_MAC || WINDOWED) return
+  try {
+    setPresentationGuard(!layoutChanging && playing && walls.size > 0 && focusGuard.isSessionActive())
+  } catch (error) {
+    console.error('Cannot apply macOS presentation guard:', error)
+    // Native failures must leave an ordinary, escapable desktop.
+    if (playing) closeWalls()
+  }
 }
 
 function destroyWall(key) {
@@ -214,6 +237,7 @@ function preferredWall() {
  */
 function swallowInput(wc) {
   wc.on('before-input-event', (event, input) => {
+    if (isHardwareControl(input)) return
     const themePanelOpen = themePanelWindows.has(wc.id)
     if (input.type === 'keyUp') {
       if (!themePanelOpen) event.preventDefault()
@@ -338,13 +362,13 @@ function startIdleWatch() {
   idleTimer = setInterval(async () => {
     if (idleCheckRunning) return
     const s = getSettings()
-    if (!s.idleStart || playing) return
+    if (!s.idleStart || playing || !focusGuard.isSessionActive()) return
     if (powerMonitor.getSystemIdleTime() < s.idleMinutes * 60) return
 
     idleCheckRunning = true
     try {
       const activity = await getSystemActivity()
-      if (!playing && !shouldDeferIdleStart(s, activity)) openWall()
+      if (!playing && focusGuard.isSessionActive() && !shouldDeferIdleStart(s, activity)) openWall()
     } finally {
       idleCheckRunning = false
     }
@@ -485,6 +509,11 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => openWall())
 
   app.whenReady().then(() => {
+    if (IS_MAC) {
+      stopSessionFocus = observeSessionFocus(
+        powerMonitor, focusGuard, () => cancelExitHold(false), updatePresentationGuard,
+      )
+    }
     tray = new Tray(trayIcon())
     // Left click plays immediately; the menu is on right click. This is the
     // "one click" path, and it is why no context menu is bound to plain click.
@@ -519,6 +548,9 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', (e) => e?.preventDefault?.())
 
   app.on('will-quit', () => {
+    closeWalls()
+    stopSessionFocus?.()
+    focusGuard.cancelRecovery()
     clearInterval(idleTimer)
     if (blockerId !== null) powerSaveBlocker.stop(blockerId)
   })

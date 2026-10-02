@@ -84,6 +84,11 @@ management alone.
 
 ### Wall settings
 
+On macOS, playback disables Command-Tab app switching and hiding the app.
+Volume, mute, brightness, screen locking, sleep, and the system Force Quit
+shortcut remain available. Stop playback to restore app switching. These
+restrictions do not apply to the windowed development mode.
+
 Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on macOS or
 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on Windows and Linux to open
 the settings panel. The shortcut works in both the desktop app and the web version.
