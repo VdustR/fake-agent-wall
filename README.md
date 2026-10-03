@@ -73,10 +73,8 @@ It can also start itself once you walk away. Turn on *Start when idle* and pick
 an interval between 1 and 60 minutes. The app reads the system-wide idle time,
 so it counts the whole Mac sitting untouched rather than just this app.
 
-On macOS, *Delay automatic start while* can keep the wall out of the way while
-the camera is in use or another app is full screen. Both safeguards are on by
-default. Audio playback is available as a separate opt-in safeguard, so music
-can continue behind the wall without preventing it from starting.
+On macOS, *Delay automatic start while camera is in use* is on by default.
+Audio playback and fullscreen applications do not delay automatic startup.
 
 *Keep display awake* runs *While playing* by default. Set it to *Always* and the
 app becomes a plain caffeine switch. Set it to *Never* and it leaves power
@@ -84,10 +82,25 @@ management alone.
 
 ### Wall settings
 
-On macOS, playback disables Command-Tab app switching and hiding the app.
+On macOS, manual and automatic playback disable Command-Tab app switching and
+hiding the app while a visible wall has foreground input focus. If another
+application takes the foreground or fully covers the wall, these restrictions
+and focus recovery pause. Returning to the wall restores the restrictions.
 Volume, mute, brightness, screen locking, sleep, and the system Force Quit
 shortcut remain available. Stop playback to restore app switching. These
 restrictions do not apply to the windowed development mode.
+
+Hold Escape for at least 1.2 seconds, then release it to stop the wall and
+return to the player or desktop. Audio and fullscreen playback do not prevent
+automatic startup, so watching a video may require this exit gesture.
+
+If another application takes the foreground or fully covers an automatic wall
+for at least 300 milliseconds, the wall stops and waits a complete idle
+interval before starting again. A manual wall stays open with its restrictions
+paused until it returns to the foreground.
+Locking or sleeping pauses this check; unlocking restores the wall's focus.
+See the [foreground and player acceptance procedure](docs/macos-foreground-acceptance.md)
+for verification details and limits.
 
 Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on macOS or
 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> on Windows and Linux to open
