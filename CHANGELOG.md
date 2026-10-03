@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/VdustR/fake-agent-wall/compare/v0.12.0...v0.12.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* **deps:** patch transitive security resolutions ([#64](https://github.com/VdustR/fake-agent-wall/issues/64)) ([ff0a92c](https://github.com/VdustR/fake-agent-wall/commit/ff0a92c0c7d658162ed5ded3ba2fa9d1dbc290e9))
+
 ## [0.12.0](https://github.com/VdustR/fake-agent-wall/compare/v0.11.0...v0.12.0) (2026-10-02)
 
 
