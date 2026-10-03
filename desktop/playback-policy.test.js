@@ -16,23 +16,17 @@ function fixture(source = 'manual') {
 }
 
 describe('macOS playback foreground policy', () => {
-  it('allows app switching during automatic playback', () => {
-    const { policy } = fixture('idle')
-    policy.update(front)
-    expect(policy.shouldGuard()).toBe(false)
-    expect(policy.shouldAcceptInput()).toBe(true)
-    policy.update(occluded)
-    expect(policy.shouldAcceptInput()).toBe(false)
-  })
-  it('restricts input only while a visible wall is the foreground key window', () => {
-    const { policy, at } = fixture()
+  it.each(['idle', 'manual'])('restricts %s playback only while a visible wall has foreground input focus', source => {
+    const { policy, at } = fixture(source)
     expect(policy.shouldGuard()).toBe(false)
     policy.update(front)
     expect(policy.shouldGuard()).toBe(true)
+    expect(policy.shouldAcceptInput()).toBe(true)
     at(1500)
     for (const state of [background, occluded, { ...front, focused: false }]) {
       policy.update(state)
       expect(policy.shouldGuard()).toBe(false)
+      expect(policy.shouldAcceptInput()).toBe(false)
     }
     policy.update(front)
     expect(policy.shouldGuard()).toBe(true)
@@ -110,7 +104,7 @@ describe('macOS playback foreground policy', () => {
     expect(policy.shouldGuard()).toBe(false)
     at(30100)
     policy.update(front)
-    expect(policy.shouldGuard()).toBe(source === 'manual')
+    expect(policy.shouldGuard()).toBe(true)
     // A delayed resume notification must not grant another recovery interval.
     at(32000)
     policy.setSessionActive(true)

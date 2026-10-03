@@ -52,7 +52,7 @@ export function createPlaybackPolicy({ now = () => performance.now(), recoveryMs
     requestRecovery: () => { recoveryUntil = now() + recoveryMs },
     update,
     // A background window must never restrict the application the operator sees.
-    shouldGuard: () => source === 'manual' && shouldAcceptInput(),
+    shouldGuard: shouldAcceptInput,
     shouldAcceptInput,
     // Allow startup/unlock recovery, or recovery within this app. Never fight
     // another foreground app after the bounded startup/unlock interval.

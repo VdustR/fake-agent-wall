@@ -15,7 +15,7 @@ app.whenReady().then(() => {
       assert.equal(typeof state.foreground, 'boolean', 'reads actual application foreground state')
       wall.setSimpleFullScreen(true)
       const fullscreen = native.getOptions()
-      assert.equal(fullscreen & (32 | 256), 0, 'automatic fullscreen permits switching and hiding')
+      assert.equal(fullscreen & (32 | 256), 0, 'fullscreen alone does not impose foreground restrictions')
       native.setEnabled(true)
       native.setEnabled(true)
       const guarded = native.getOptions()

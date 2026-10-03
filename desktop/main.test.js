@@ -99,7 +99,7 @@ describe('desktop main foreground integration', () => {
     Object.assign(harness.settings, { deferWhileAudioPlaying: true, deferWhileFullScreen: true })
     harness.activity = { cameraInUse: false, audioPlaying: true, fullScreen: true }
     await launch(true)
-    expect(harness.presentation).toHaveBeenLastCalledWith(false)
+    expect(harness.presentation).toHaveBeenLastCalledWith(true)
   })
 
   it('retains camera deferral and its opt-out', async () => {
@@ -133,6 +133,7 @@ describe('desktop main foreground integration', () => {
   })
   it.each([false, true])('keeps a full Escape hold usable across foreground samples (idle=%s)', async idle => {
     const wall = await launch(idle)
+    expect(harness.presentation).toHaveBeenLastCalledWith(true)
     expect(key(wall, 'keyDown').preventDefault).toHaveBeenCalledOnce()
     await vi.advanceTimersByTimeAsync(1250)
     expect(wall.destroyed).not.toBe(true)
@@ -161,7 +162,7 @@ describe('desktop main foreground integration', () => {
 
   it('closes idle playback after foreground takeover and waits a fresh idle interval', async () => {
     const wall = await launch(true)
-    expect(harness.presentation).toHaveBeenLastCalledWith(false)
+    expect(harness.presentation).toHaveBeenLastCalledWith(true)
     harness.app.focus.mockClear()
     harness.state = { foreground: false, visible: true, focused: false }
     wall.emit('blur')
@@ -175,8 +176,8 @@ describe('desktop main foreground integration', () => {
     expect(harness.windows).toHaveLength(2)
   })
 
-  it('restores manual focus after unlock even when resume is late', async () => {
-    const wall = await launch()
+  it.each([false, true])('restores focus after unlock before delayed resume (idle=%s)', async idle => {
+    const wall = await launch(idle)
     harness.powerMonitor.emit('suspend')
     harness.powerMonitor.emit('lock-screen')
     harness.state = { foreground: false, visible: false, focused: false }
