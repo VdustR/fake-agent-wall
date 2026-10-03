@@ -1,9 +1,40 @@
 #import <AppKit/AppKit.h>
+#import <CoreGraphics/CoreGraphics.h>
 #include <node_api.h>
 #include <cstring>
 
 static bool enabled = false;
 static NSApplicationPresentationOptions originalOptions;
+
+static bool IsWindowUncovered(NSWindow *window) {
+  // AppKit can keep an accelerated Electron window unoccluded even when
+  // WindowServer orders a full-screen window above it. Read geometry only;
+  // no window names, pixels, or screen-recording permission are needed.
+  NSArray *windows = CFBridgingRelease(CGWindowListCopyWindowInfo(
+      kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements,
+      kCGNullWindowID));
+  CGRect wallBounds = CGRectZero;
+  NSUInteger wallIndex = NSNotFound;
+  for (NSUInteger index = 0; index < [windows count]; index++) {
+    NSDictionary *entry = windows[index];
+    if ([entry[(__bridge NSString *)kCGWindowNumber] integerValue] != [window windowNumber]) continue;
+    NSDictionary *bounds = entry[(__bridge NSString *)kCGWindowBounds];
+    if (!bounds || !CGRectMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)bounds, &wallBounds)) return false;
+    wallIndex = index;
+    break;
+  }
+  if (wallIndex == NSNotFound || CGRectIsEmpty(wallBounds)) return false;
+  for (NSUInteger index = 0; index < wallIndex; index++) {
+    NSDictionary *entry = windows[index];
+    NSNumber *alpha = entry[(__bridge NSString *)kCGWindowAlpha];
+    if (!alpha || [alpha doubleValue] < 1.0) continue;
+    NSDictionary *bounds = entry[(__bridge NSString *)kCGWindowBounds];
+    CGRect candidate;
+    if (bounds && CGRectMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)bounds, &candidate) &&
+        CGRectContainsRect(candidate, wallBounds)) return false;
+  }
+  return true;
+}
 
 static napi_value SetEnabled(napi_env env, napi_callback_info info) {
   size_t count = 1;
@@ -72,7 +103,8 @@ static napi_value GetWindowState(napi_env env, napi_callback_info info) {
       [[[NSWorkspace sharedWorkspace] frontmostApplication] processIdentifier] ==
           [[NSProcessInfo processInfo] processIdentifier];
   const bool visible = [window isVisible] &&
-      ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
+      ([window occlusionState] & NSWindowOcclusionStateVisible) != 0 &&
+      IsWindowUncovered(window);
   napi_value result, value;
   napi_create_object(env, &result);
   napi_get_boolean(env, foreground, &value);

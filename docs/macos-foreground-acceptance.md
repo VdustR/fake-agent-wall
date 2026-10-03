@@ -34,7 +34,11 @@ available. Windowed development mode does not impose these restrictions.
 
 The native addon reads the live BrowserWindow's `NSWindow.occlusionState`, key
 status, `NSApplication.isActive`, and `NSWorkspace.frontmostApplication` in the
-main process. No input monitoring or screen recording permission is added.
+main process. It also reads WindowServer window order, bounds, and window alpha.
+A window alpha of one and bounds containing the entire wall mark it as
+covered. Missing wall metadata also releases restrictions. No window names or
+pixels are inspected, and no input monitoring or screen recording permission
+is added.
 
 Samples run every 150 ms while playing and on focus, blur, key input, and
 session changes. Recovery rechecks native state immediately before activation
@@ -43,14 +47,19 @@ release when the changed state is detected; the 300 ms background duration is
 a minimum, with additional sampling latency.
 
 Chromium visibility is unsuitable because `backgroundThrottling: false` can
-keep an occluded renderer's visibility state at visible. Partial overlays
-remain outside full-occlusion detection. Mission Control, Spaces gestures,
+keep an occluded renderer's visibility state at visible. On the test device,
+AppKit also reported a visible wall beneath a full-display window. WindowServer
+metadata therefore supplements AppKit. This detects one window covering the
+entire wall; it does not combine partial windows or inspect per-pixel opacity.
+A full-display window with transparent content and window alpha of one also
+releases restrictions. Partial overlays remain outside this coverage check. Mission Control, Spaces gestures,
 Spotlight, and custom shortcuts are outside the presentation guard's scope.
 
 Sources: [Electron native window handles](https://www.electronjs.org/docs/latest/api/base-window#wingetnativewindowhandle),
 [Apple window occlusion](https://developer.apple.com/documentation/appkit/nswindow/occlusionstate-swift.property),
 [Apple foreground application](https://developer.apple.com/documentation/appkit/nsworkspace/frontmostapplication),
-and [Electron page visibility](https://www.electronjs.org/docs/latest/api/browser-window#page-visibility).
+[Electron page visibility](https://www.electronjs.org/docs/latest/api/browser-window#page-visibility),
+and [Apple window metadata](https://developer.apple.com/documentation/coregraphics/cgwindowlistcopywindowinfo(_:_:)).
 
 ## Automated verification
 
@@ -61,10 +70,37 @@ They also cover camera deferral/opt-out and obsolete media settings. Electron
 and native surfaces are mocked in the integration tests.
 
 The macOS Electron smoke checks real presentation flags, hidden-window state,
-reacquisition, and restoration after fullscreen teardown. It does not establish
-physical key behavior or post-authentication focus. Earlier development traces
+reacquisition, full-display coverage, partial overlays, and restoration after
+fullscreen teardown. It does not establish physical key behavior or post-authentication focus. Earlier development traces
 used different automatic switching behavior and do not establish acceptance
 for this design.
+
+## Device verification completed by the agent
+
+On 2026-10-03, the production entrypoint ran with isolated manual and automatic
+profiles on the operator's Mac. Native samples and real system idle time were
+recorded. No idle clock or production foreground policy was mocked.
+
+- Both startup origins enabled native process-switching and hiding restrictions
+  while the wall had visible foreground input focus.
+- Chrome foreground activation released manual restrictions without closing the
+  wall or recovering focus over Chrome. The automatic wall closed about half a
+  second after Chrome activation. A looping HTML5 sample video continued playing.
+- A separate nonactivating full-display window reproduced an AppKit visibility
+  failure. Before the WindowServer check, a covered wall could remain guarded after startup.
+  With the fix, the same foreground key wall released restrictions when covered.
+  Manual playback stayed open and restored restrictions after cover removal.
+  Automatic playback released restrictions and closed after sustained coverage.
+- A real one-minute interval passed after automatic background teardown before
+  restart. The native smoke also verified that a small overlay preserves wall
+  visibility and that removing full coverage restores it.
+
+Chrome activation used the browser developer interface. Browser accessibility
+controls can operate behind the wall, and tool-generated shortcuts did not reset
+the system idle clock. These results prove native state transitions, not physical
+keyboard routing, pointer reachability, or the operator's original player case.
+The sample video does not establish audible-media behavior. Physical Command-Tab,
+held Escape, hardware overlays, lid wake, and authenticated unlock remain pending.
 
 ## Physical acceptance
 
@@ -84,8 +120,8 @@ and its settings unchanged. Record the player, fullscreen mode, and each result.
    after closing and reopening the lid. Escape must not reach the revealed player.
 4. **Hardware controls:** test both startup origins. Volume/mute must work;
    their overlay must not permanently stop playback or leave input blocked.
-   Stopping the wall must restore app switching. After automatic background
-   teardown, verify another full idle interval passes before restart.
+   Stopping the wall must restore app switching. The agent has verified the complete idle interval after automatic
+   background teardown; the operator does not need to time it again.
 
 Physical acceptance remains pending, including multi-display behavior. Keep the
 PR Draft until the operator's player and wake tests pass. CI and native flag

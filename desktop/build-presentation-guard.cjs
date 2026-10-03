@@ -11,7 +11,7 @@ exports.buildPresentationGuard = function (output, target) {
   }
   execFileSync('xcrun', [
     'clang++', '-std=c++17', '-O2', '-bundle', '-undefined', 'dynamic_lookup',
-    '-fobjc-arc', '-framework', 'AppKit', '-I', include,
+    '-fobjc-arc', '-framework', 'AppKit', '-framework', 'CoreGraphics', '-I', include,
     ...(target ? ['-target', target] : []),
     join(__dirname, 'native', 'presentation-guard.mm'), '-o', output,
   ], { stdio: 'inherit' })
