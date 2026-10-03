@@ -51,9 +51,7 @@ function normalise(s) {
     idleMinutes: clamp(Math.round(Number(s.idleMinutes) || DEFAULTS.idleMinutes), 1, 120),
     keepAwake: ['playing', 'always', 'never'].includes(s.keepAwake) ? s.keepAwake : DEFAULTS.keepAwake,
     launchAtLogin: Boolean(s.launchAtLogin),
-    deferWhileAudioPlaying: Boolean(s.deferWhileAudioPlaying),
     deferWhileCameraInUse: Boolean(s.deferWhileCameraInUse),
-    deferWhileFullScreen: Boolean(s.deferWhileFullScreen),
   }
 }
 

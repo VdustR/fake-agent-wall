@@ -12,9 +12,11 @@ recovery without checking the foreground application or occlusion. Idle
 activity safeguards ran only before automatic startup.
 
 This change separates automatic and manual playback and checks actual AppKit
-state before imposing restrictions or recovering focus. Audio detection still
-cannot distinguish music, video, and other sound. Its existing opt-in setting
-is preserved; this change does not add media controls or pause a player.
+state before imposing restrictions or recovering focus. Audio and fullscreen
+deferral are removed at the operator's request. The native helper now checks
+only camera use; the existing camera opt-out is preserved. Legacy audio and
+fullscreen settings are ignored and removed from normalized settings. This
+change does not add media controls or pause a player.
 
 ## Behavior
 
@@ -56,13 +58,16 @@ outside the presentation guard's scope.
 
 ## Automated evidence
 
+- Camera-guard tests verify camera deferral/opt-out and that obsolete audio and
+  fullscreen settings cannot delay startup.
 - Policy tests cover foreground restrictions, automatic app switching,
   persistent and transient background states, restart timing, and session
   recovery.
 - Main-process integration tests execute the production entrypoint with mocked
   Electron/native surfaces. They verify Escape holds across sampling, background
   input release, automatic teardown and restart, a foreground transition between
-  blur and recovery, Dock activation, and unlock before delayed resume.
+  blur and recovery, Dock activation, unlock before delayed resume, camera
+  deferral, and automatic startup with obsolete media settings enabled.
 - The Electron macOS smoke reads real AppKit presentation flags and hidden
   window state, validates automatic switching, and verifies restoration across
   fullscreen teardown. It does not verify physical keys or authentication.
@@ -86,8 +91,9 @@ playback. Do not use the synthetic dashboard's output as verification evidence.
    wall, pause/play, seeking, and normal player shortcuts must work. The wall
    must not pull focus back over the player. Record the player and fullscreen
    mode; a different player alone does not establish the reported case passed.
-3. **Automatic playback:** set the isolated profile to one-minute idle and
-   temporarily disable audio/fullscreen deferral. Wait for actual idle startup,
+3. **Automatic playback:** set the isolated profile to one-minute idle with
+   the camera inactive. Audio/fullscreen settings no longer exist. Wait for
+   actual idle startup while video is playing,
    use Command-Tab to return to the player, and verify the wall stops and player
    interaction works. It must wait another full minute before restarting.
 4. **Manual restrictions and hardware controls:** start manually again. Confirm

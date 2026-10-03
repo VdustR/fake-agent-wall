@@ -477,28 +477,11 @@ function refreshTray() {
         submenu: [1, 2, 3, 5, 10, 15, 30, 60].map(minuteChoice),
       },
       {
-        label: 'Delay automatic start while',
+        label: 'Delay automatic start while camera is in use',
         visible: IS_MAC,
-        submenu: [
-          {
-            label: 'Audio is playing',
-            type: 'checkbox',
-            checked: s.deferWhileAudioPlaying,
-            click: () => update({ deferWhileAudioPlaying: !s.deferWhileAudioPlaying }),
-          },
-          {
-            label: 'Camera is in use',
-            type: 'checkbox',
-            checked: s.deferWhileCameraInUse,
-            click: () => update({ deferWhileCameraInUse: !s.deferWhileCameraInUse }),
-          },
-          {
-            label: 'Another app is full screen',
-            type: 'checkbox',
-            checked: s.deferWhileFullScreen,
-            click: () => update({ deferWhileFullScreen: !s.deferWhileFullScreen }),
-          },
-        ],
+        type: 'checkbox',
+        checked: s.deferWhileCameraInUse,
+        click: () => update({ deferWhileCameraInUse: !s.deferWhileCameraInUse }),
       },
       {
         label: 'Keep display awake',

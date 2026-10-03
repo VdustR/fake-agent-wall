@@ -53,6 +53,7 @@ beforeEach(() => {
     app, powerMonitor, windows: [], idle: false,
     state: { foreground: true, visible: true, focused: true },
     settings: { idleStart: true, idleMinutes: 1, keepAwake: 'never', launchAtLogin: false },
+    activity: { cameraInUse: false },
     presentation: vi.fn(),
   }
   vi.doMock('electron', () => ({
@@ -66,7 +67,7 @@ beforeEach(() => {
     getWallForegroundState: () => harness.state,
     setPresentationGuard: harness.presentation,
   }))
-  vi.doMock('./activity-monitor.js', () => ({ getSystemActivity: async () => ({}) }))
+  vi.doMock('./activity-monitor.js', () => ({ getSystemActivity: async () => harness.activity }))
 })
 
 afterEach(() => {
@@ -94,6 +95,24 @@ function key(window, type) {
 }
 
 describe('desktop main foreground integration', () => {
+  it('starts automatically despite enabled obsolete audio/fullscreen settings', async () => {
+    Object.assign(harness.settings, { deferWhileAudioPlaying: true, deferWhileFullScreen: true })
+    harness.activity = { cameraInUse: false, audioPlaying: true, fullScreen: true }
+    await launch(true)
+    expect(harness.presentation).toHaveBeenLastCalledWith(false)
+  })
+
+  it('retains camera deferral and its opt-out', async () => {
+    harness.idle = true
+    harness.settings.deferWhileCameraInUse = true
+    harness.activity = { cameraInUse: true }
+    await import('./main.js')
+    await vi.advanceTimersByTimeAsync(2500)
+    expect(harness.windows).toHaveLength(0)
+    harness.settings.deferWhileCameraInUse = false
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(harness.windows).toHaveLength(1)
+  })
   it('rechecks the foreground when a previously scheduled blur recovery fires', async () => {
     const wall = await launch()
     harness.app.focus.mockClear()

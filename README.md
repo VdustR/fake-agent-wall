@@ -73,10 +73,8 @@ It can also start itself once you walk away. Turn on *Start when idle* and pick
 an interval between 1 and 60 minutes. The app reads the system-wide idle time,
 so it counts the whole Mac sitting untouched rather than just this app.
 
-On macOS, *Delay automatic start while* can keep the wall out of the way while
-the camera is in use or another app is full screen. Both safeguards are on by
-default. Audio playback is available as a separate opt-in safeguard, so music
-can continue behind the wall without preventing it from starting.
+On macOS, *Delay automatic start while camera is in use* is on by default.
+Audio playback and fullscreen applications do not delay automatic startup.
 
 *Keep display awake* runs *While playing* by default. Set it to *Always* and the
 app becomes a plain caffeine switch. Set it to *Never* and it leaves power
