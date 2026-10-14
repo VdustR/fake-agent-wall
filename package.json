@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
+    "test:electron-security": "node tools/electron-security-contracts/run.cjs",
     "preview": "vite preview",
     "lint": "oxlint .",
     "check": "svelte-check --tsconfig ./tsconfig.json",
