@@ -176,22 +176,95 @@ export const TODOS = [
  * provider instead of presenting the fleet as one vendor's client.
  */
 export const MODELS = [
-  { name: 'opus', provider: 'anthropic' },
-  { name: 'sonnet', provider: 'anthropic' },
-  { name: 'gpt-5.6-sol', provider: 'openai' },
-  { name: 'gpt-5.6-terra', provider: 'openai' },
-  { name: 'gpt-5.6-luna', provider: 'openai' },
+  { name: 'opus-5.5', provider: 'anthropic' },
+  { name: 'sonnet-5.5', provider: 'anthropic' },
+  { name: 'fable-5.1', provider: 'anthropic' },
+  { name: 'gpt-6-astra', provider: 'openai' },
+  { name: 'gpt-6.1-sol', provider: 'openai' },
+  { name: 'gpt-6-luna', provider: 'openai' },
   { name: 'gemini-3.1-pro', provider: 'google' },
-  { name: 'gemini-3.7-flash', provider: 'google' },
-  { name: 'grok-4.5', provider: 'xai' },
+  { name: 'gemini-3.8-flash', provider: 'google' },
+  { name: 'grok-4.7', provider: 'xai' },
+  { name: 'mistral-medium-3-5', provider: 'mistral' },
   { name: 'deepseek-v4-pro', provider: 'deepseek' },
-  { name: 'deepseek-v4-flash', provider: 'deepseek' },
-  { name: 'qwen3.7-max', provider: 'alibaba' },
-  { name: 'qwen3.7-plus', provider: 'alibaba' },
-  { name: 'kimi-k2.6', provider: 'moonshot' },
-  { name: 'glm-5.1', provider: 'zai' },
-  { name: 'minimax-m2.7', provider: 'minimax' },
+  { name: 'deepseek-v4.1-flash', provider: 'deepseek' },
+  { name: 'qwen3.8-max', provider: 'alibaba' },
+  { name: 'qwen3.8-flash', provider: 'alibaba' },
+  { name: 'kimi-k2.7-code', provider: 'moonshot' },
+  { name: 'kimi-k3', provider: 'moonshot' },
+  { name: 'glm-5.3', provider: 'zai' },
+  { name: 'minimax-m3', provider: 'minimax' },
   { name: 'ernie-5.1', provider: 'baidu' },
+] as const
+
+/** Simulated bounded-decision routes; formats describe display capabilities. */
+export const DECISION_MODELS = [
+  { name: 'jev', provider: 'typesafe', format: 'jev', surface: null },
+  { name: 'luna', provider: 'openai', format: 'finite-choice', surface: 'Decisions API (preview)' },
+] as const
+
+/** Synthetic decisions with a fixed state, answer set, and follow-up action. */
+export const DECISION_SCENES = [
+  {
+    task: 'make webhook replay idempotent',
+    state: 'webhook replay failed after a retry',
+    question: 'next step',
+    choices: ['inspect replay guard 0.81', 'retry delivery 0.14', 'request review 0.05'],
+    noul: 'duplicate charge risk',
+    yesProbability: '0.87',
+    result: 'inspect replay guard',
+    latencyMs: 180,
+  },
+  {
+    task: 'rotate the signing keys without invalidating active sessions',
+    state: 'signing-key rotation has active sessions',
+    question: 'next step',
+    choices: ['check key overlap 0.76', 'rotate now 0.16', 'request review 0.08'],
+    noul: 'active sessions at risk',
+    yesProbability: '0.91',
+    result: 'check key overlap',
+    latencyMs: 240,
+  },
+  {
+    task: 'backfill tests for the jittered scheduler',
+    state: 'queue test failed on jittered backoff',
+    question: 'next step',
+    choices: ['inspect fake clock 0.72', 'rerun suite 0.19', 'request review 0.09'],
+    noul: 'test setup caused failure',
+    yesProbability: '0.84',
+    result: 'inspect fake clock',
+    latencyMs: 310,
+  },
+  {
+    task: 'trace the slow query through the Postgres execution plan',
+    state: 'tenant query regressed after a new index',
+    question: 'next step',
+    choices: ['inspect query plan 0.78', 'add another index 0.13', 'request review 0.09'],
+    noul: 'planner chose the old index',
+    yesProbability: '0.83',
+    result: 'inspect query plan',
+    latencyMs: 210,
+  },
+  {
+    task: 'close the keyboard trap in the billing modal',
+    state: 'focus cannot leave the billing modal',
+    question: 'next step',
+    choices: ['inspect focus trap 0.79', 'adjust z-index 0.12', 'request review 0.09'],
+    noul: 'keyboard navigation is blocked',
+    yesProbability: '0.94',
+    result: 'inspect focus trap',
+    latencyMs: 160,
+  },
+  {
+    task: 'audit every unbounded queue in the ingest path',
+    state: 'ingest queue grows during downstream retries',
+    question: 'next step',
+    choices: ['inspect queue bounds 0.84', 'increase workers 0.10', 'request review 0.06'],
+    noul: 'backpressure is missing',
+    yesProbability: '0.89',
+    result: 'inspect queue bounds',
+    latencyMs: 190,
+  },
 ] as const
 
 /**

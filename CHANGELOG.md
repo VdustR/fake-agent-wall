@@ -1,5 +1,87 @@
 # Changelog
 
+## [0.12.1](https://github.com/VdustR/fake-agent-wall/compare/v0.12.0...v0.12.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* **deps:** patch transitive security resolutions ([#64](https://github.com/VdustR/fake-agent-wall/issues/64)) ([ff0a92c](https://github.com/VdustR/fake-agent-wall/commit/ff0a92c0c7d658162ed5ded3ba2fa9d1dbc290e9))
+
+## [0.12.0](https://github.com/VdustR/fake-agent-wall/compare/v0.11.0...v0.12.0) (2026-10-02)
+
+
+### Features
+
+* add simulated Luna Decisions API route ([#59](https://github.com/VdustR/fake-agent-wall/issues/59)) ([a9b1054](https://github.com/VdustR/fake-agent-wall/commit/a9b10543fee80629a6ec490644ac9ba59d9ffaba))
+* refresh Sol and Sonnet model labels ([#58](https://github.com/VdustR/fake-agent-wall/issues/58)) ([d8df369](https://github.com/VdustR/fake-agent-wall/commit/d8df3691627f50008f457ab76140fd1813560227))
+
+
+### Bug Fixes
+
+* restore macOS wall focus and restrict app switching ([#60](https://github.com/VdustR/fake-agent-wall/issues/60)) ([489c61c](https://github.com/VdustR/fake-agent-wall/commit/489c61c609d1523efa342ccbf2072a88ff6077f5))
+
+## [0.11.0](https://github.com/VdustR/fake-agent-wall/compare/v0.10.0...v0.11.0) (2026-09-23)
+
+
+### Features
+
+* animate simulated install progress in place ([#56](https://github.com/VdustR/fake-agent-wall/issues/56)) ([dcb6f4a](https://github.com/VdustR/fake-agent-wall/commit/dcb6f4a8fc205ea0e590e578553e469b2df1b3db))
+
+## [0.10.0](https://github.com/VdustR/fake-agent-wall/compare/v0.9.0...v0.10.0) (2026-09-23)
+
+
+### Features
+
+* add simulated install and build loading transcripts ([#54](https://github.com/VdustR/fake-agent-wall/issues/54)) ([363af01](https://github.com/VdustR/fake-agent-wall/commit/363af0137b6a367e7574ef2926ac919e8d98e941))
+
+## [0.9.0](https://github.com/VdustR/fake-agent-wall/compare/v0.8.7...v0.9.0) (2026-09-23)
+
+
+### Features
+
+* simulate Jev decisions in agent workflows ([#52](https://github.com/VdustR/fake-agent-wall/issues/52)) ([0d125e1](https://github.com/VdustR/fake-agent-wall/commit/0d125e17723e715ec0727403a5d70101f73ccbfa))
+
+## [0.8.7](https://github.com/VdustR/fake-agent-wall/compare/v0.8.6...v0.8.7) (2026-09-23)
+
+
+### Bug Fixes
+
+* refresh simulated model labels ([#51](https://github.com/VdustR/fake-agent-wall/issues/51)) ([86003a0](https://github.com/VdustR/fake-agent-wall/commit/86003a068bd854014f237c35a9d698bc1ff42857))
+
+
+### Documentation
+
+* add cross-agent model catalog research skill ([#48](https://github.com/VdustR/fake-agent-wall/issues/48)) ([3848483](https://github.com/VdustR/fake-agent-wall/commit/38484832c048d0a178de949091db6ee64b15177c))
+* check model launches across provider families ([#50](https://github.com/VdustR/fake-agent-wall/issues/50)) ([a2ebb8e](https://github.com/VdustR/fake-agent-wall/commit/a2ebb8ea36a35da0d6d419cef10b1eff33f62cb7))
+
+## [0.8.6](https://github.com/VdustR/fake-agent-wall/compare/v0.8.5...v0.8.6) (2026-09-23)
+
+
+### Bug Fixes
+
+* restore macOS chrome after closing wall ([#46](https://github.com/VdustR/fake-agent-wall/issues/46)) ([605f9d7](https://github.com/VdustR/fake-agent-wall/commit/605f9d79785bd4106eccf732b941465938ed7d25))
+
+## [0.8.5](https://github.com/VdustR/fake-agent-wall/compare/v0.8.4...v0.8.5) (2026-09-20)
+
+
+### Bug Fixes
+
+* hide macOS chrome without changing Spaces ([#44](https://github.com/VdustR/fake-agent-wall/issues/44)) ([60a8a57](https://github.com/VdustR/fake-agent-wall/commit/60a8a5700e8f68292b0a27b1f71d056da00c0b2a))
+
+## [0.8.4](https://github.com/VdustR/fake-agent-wall/compare/v0.8.3...v0.8.4) (2026-09-20)
+
+
+### Bug Fixes
+
+* keep macOS wall on current Space ([#42](https://github.com/VdustR/fake-agent-wall/issues/42)) ([e68b480](https://github.com/VdustR/fake-agent-wall/commit/e68b480b0706b51244fc31c281623581d06cd747))
+
+## [0.8.3](https://github.com/VdustR/fake-agent-wall/compare/v0.8.2...v0.8.3) (2026-09-20)
+
+
+### Bug Fixes
+
+* keep fullscreen wall focused ([#40](https://github.com/VdustR/fake-agent-wall/issues/40)) ([9e8ef50](https://github.com/VdustR/fake-agent-wall/commit/9e8ef508c1ddb89fab5849707bfdd526200ddbee))
+
 ## [0.8.2](https://github.com/VdustR/fake-agent-wall/compare/v0.8.1...v0.8.2) (2026-09-04)
 
 

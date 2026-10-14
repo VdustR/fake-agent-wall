@@ -9,6 +9,12 @@ export type Status = 'run' | 'cue' | 'hold' | 'done'
  * turning unused screen area into a dead field on high-resolution walls. */
 const KEEP = 112
 
+function appendEmit(lines: Line[], emit: Emit): Line[] {
+  return emit.replacePrevious && lines.length
+    ? [...lines.slice(0, -1), emit.line]
+    : [...lines, emit.line]
+}
+
 export class Agent {
   readonly slot: number
   readonly label: string
@@ -44,6 +50,7 @@ export class Agent {
   lifeTools = $state(0)
   /** Bumped on every committed tool bullet so the ticker can pick it up. */
   lastEvent = $state<{ n: number; text: string } | null>(null)
+  recentDecision = $state<{ text: string; until: number } | null>(null)
 
   #queue: Emit[] = []
   #chars = 0
@@ -77,13 +84,17 @@ export class Agent {
   /** Commit whole blocks instantly to manufacture believable scrollback. */
   #prefill(blocks: number) {
     const out: Line[] = [...this.lines]
-    for (const e of this.#queue) out.push(e.line)
+    for (const e of this.#queue) {
+      if (e.replacePrevious && out.length) out[out.length - 1] = e.line
+      else out.push(e.line)
+    }
     this.#queue = []
     this.partial = null
 
     for (let i = 0; i < blocks; i++) {
-      for (const e of nextBlock(this.#r, this.#todoDone, this.flavor)) {
-        out.push(e.line)
+      for (const e of nextBlock(this.#r, this.#todoDone, this.flavor, this.task)) {
+        if (e.replacePrevious && out.length) out[out.length - 1] = e.line
+        else out.push(e.line)
         if (e.line.k === 'tool') {
           this.toolUses += 1
           this.lifeTools += 1
@@ -124,6 +135,7 @@ export class Agent {
       : []
     this.partial = null
     this.prompt = null
+    this.recentDecision = null
     this.tokensUp = int(r, 800, 4200)
     this.tokensDown = 0
     this.toolUses = 0
@@ -150,13 +162,14 @@ export class Agent {
     }
     this.#chars = e.type ? 0 : e.line.s.length
     this.#speed = range(this.#r, 260, 620) * this.#tempo
-    this.partial = e.type ? { k: e.line.k, s: '' } : { ...e.line }
+    this.partial = e.replacePrevious ? null : e.type ? { k: e.line.k, s: '' } : { ...e.line }
   }
 
   #commit(now: number) {
     const e = this.#queue.shift()
     if (!e) return
-    this.lines = [...this.lines, e.line].slice(-KEEP)
+    this.lines = appendEmit(this.lines, e).slice(-KEEP)
+    if (e.recentDecision) this.recentDecision = { text: e.recentDecision, until: now + 8_000 }
     this.partial = null
     this.#waitUntil = now + e.pause
 
@@ -207,6 +220,7 @@ export class Agent {
   }
 
   tick(now: number, dt: number) {
+    if (this.recentDecision && now >= this.recentDecision.until) this.recentDecision = null
     this.sessionMs += dt
     this.level += -this.level * Math.min(1, dt / 700)
     this.levelPeak = Math.max(this.level, this.levelPeak - this.levelPeak * (dt / 2600))
@@ -234,7 +248,7 @@ export class Agent {
     if (this.status === 'cue') {
       if (now >= this.#verbUntil) this.#pickVerb(now)
       if (now >= this.#phaseUntil) {
-        this.#queue = nextBlock(this.#r, this.#todoDone, this.flavor)
+        this.#queue = nextBlock(this.#r, this.#todoDone, this.flavor, this.task)
         if (chance(this.#r, 0.3)) this.#todoDone = Math.min(6, this.#todoDone + 1)
         this.status = 'run'
         this.#beginLine()
@@ -260,7 +274,7 @@ export class Agent {
       this.#commit(now)
       // Whole lines at a reading pace. Without this floor the short inter-line
       // pauses would land twenty lines a second, which is more motion, not less.
-      this.#waitUntil = Math.max(this.#waitUntil, now + 520)
+      this.#waitUntil = Math.max(this.#waitUntil, now + (head.fast ? 0 : 520))
       this.level = Math.min(1, this.level + 0.25)
       return
     }

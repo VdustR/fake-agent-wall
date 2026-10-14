@@ -31,6 +31,9 @@ exports.default = async function afterPack(context) {
   ])
   const target = targets.get(context.arch)
   if (!target) throw new Error(`unsupported macOS helper architecture: ${context.arch}`)
+  require('./build-presentation-guard.cjs').buildPresentationGuard(
+    join(app, 'Contents', 'Resources', 'presentation-guard.node'), target,
+  )
 
   execFileSync('xcrun', [
     'swiftc',

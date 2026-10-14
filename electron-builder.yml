@@ -14,6 +14,8 @@ files:
   - '!desktop/*.test.js'
   - '!desktop/after-pack.cjs'
   - '!desktop/build-native.cjs'
+  - '!desktop/build-presentation-guard.cjs'
+  - '!desktop/presentation-guard-smoke.cjs'
   - package.json
 
 # Re-signs the macOS bundle ad-hoc. Without this the app inherits Electron's

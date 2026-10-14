@@ -7,6 +7,8 @@ import {
   BASH,
   BASH_DESC,
   CODE_SCENES,
+  DECISION_MODELS,
+  DECISION_SCENES,
   DIRS,
   ERRORS,
   FILES,
@@ -45,6 +47,12 @@ export interface Emit {
   type: boolean
   /** Milliseconds of quiet after this line commits. */
   pause: number
+  /** Update the previous output row, like a terminal progress indicator. */
+  replacePrevious?: boolean
+  /** Keep a bounded decision fast even when reduced motion slows ordinary lines. */
+  fast?: boolean
+  /** A completed decision may remain readable while the transcript continues. */
+  recentDecision?: string
 }
 
 export interface Prompt {
@@ -169,6 +177,106 @@ function bashBlock(r: Rand): Emit[] {
   return out
 }
 
+/** Multi-line install and build output, kept together so a command and its
+ * progress cannot be interrupted by an unrelated transcript block. */
+export const LOADING_TEMPLATES = [
+  'gpt', 'brew', 'mise', 'pnpm', 'vite', 'rolldown', 'typescript', 'rust', 'go', 'docker',
+] as const
+export type LoadingTemplate = (typeof LOADING_TEMPLATES)[number]
+
+export function loadingBlock(r: Rand, template: LoadingTemplate = pick(r, LOADING_TEMPLATES)): Emit[] {
+  const seconds = () => (r() * 3 + 0.3).toFixed(2)
+  const files = () => int(r, 80, 620)
+  const size = () => (r() * 4 + 0.4).toFixed(2)
+  const packages = files()
+  const downloads = int(r, 0, 8)
+  const steps: Record<LoadingTemplate, [string, string, string, string]> = {
+    gpt: [
+      'ollama pull gpt-oss:20b',
+      'pulling manifest',
+      `pulling model layers  ${int(r, 18, 54)}%`,
+      'verifying sha256 digest · writing manifest · success',
+    ],
+    brew: [
+      'brew install ripgrep',
+      '==> Fetching downloads for: ripgrep',
+      `==> Pouring ripgrep--${int(r, 14, 16)}.0.arm64.bottle.tar.gz`,
+      `🍺  /opt/homebrew/Cellar/ripgrep: ${files()} files, ${size()}MB`,
+    ],
+    mise: [
+      'mise install node@24',
+      'mise node@24  download node-v24 archive',
+      `mise node@24  extracting  ${int(r, 38, 85)}%`,
+      'mise node@24  installed',
+    ],
+    pnpm: [
+      'pnpm install --frozen-lockfile',
+      'Lockfile is up to date, resolution step is skipped',
+      `Progress: resolved ${packages}, reused ${packages - downloads}, downloaded ${downloads}, added ${packages}`,
+      `Done in ${seconds()}s using pnpm`,
+    ],
+    vite: [
+      'pnpm vite build',
+      'vite building client environment for production...',
+      `✓ ${files()} modules transformed. · rendering chunks...`,
+      `✓ built in ${seconds()}s`,
+    ],
+    rolldown: [
+      'pnpm rolldown -c',
+      'rolldown bundling src/index.ts...',
+      `created dist/index.js  ${size()} kB`,
+      `finished in ${seconds()}s`,
+    ],
+    typescript: [
+      'pnpm tsc -p tsconfig.json',
+      'Project: tsconfig.json · resolving source files',
+      `Emitting ${files()} JavaScript and declaration files`,
+      'Found 0 errors. Build complete.',
+    ],
+    rust: [
+      'cargo build --release',
+      '   Compiling serde v1.0 · tokio v1.0',
+      '   Compiling kestrel-runtime v0.1.0',
+      `    Finished release profile [optimized] target(s) in ${seconds()}s`,
+    ],
+    go: [
+      'go build -o bin/worker ./cmd/worker',
+      'go: downloading golang.org/x/sync',
+      `go: compiling ${files()} packages`,
+      `build complete · bin/worker (${size()} MB)`,
+    ],
+    docker: [
+      'docker build -t harbor-ingest:local .',
+      '[+] Building · loading build context',
+      ` => [build ${int(r, 3, 8)}/8] RUN go build -o /out/ingest ./cmd/ingest`,
+      ` => exporting to image · naming harbor-ingest:local · ${seconds()}s`,
+    ],
+  }
+  const [command, start, progress, finish] = steps[template]
+  if (template === 'gpt' || template === 'brew' || template === 'mise' || template === 'pnpm') {
+    const label = { gpt: 'model', brew: 'bottle', mise: 'node@24', pnpm: 'packages' }[template]
+    const percentages = [int(r, 8, 19), int(r, 34, 49), int(r, 68, 83), 100]
+    const progressEmits = percentages.map((percent, index) => {
+      const filled = Math.round(percent / 10)
+      const emit = t('cont', `     [${'█'.repeat(filled)}${'░'.repeat(10 - filled)}] ${String(percent).padStart(3)}% ${label}`, false, 320)
+      emit.replacePrevious = index > 0
+      return emit
+    })
+    return [
+      t('tool', `● Bash(${command})`, true, 240),
+      t('gut', `  └  ${start}`, false, 240),
+      ...progressEmits,
+      t('ok', `     ${finish}`, false, 520),
+    ]
+  }
+  return [
+    t('tool', `● Bash(${command})`, true, 240),
+    t('gut', `  └  ${start}`, false, 240),
+    t('cont', `     ${progress}`, false, 360),
+    t('ok', `     ${finish}`, false, 520),
+  ]
+}
+
 function editBlock(r: Rand): Emit[] {
   const scene = pick(r, CODE_SCENES)
   const p = scene.path
@@ -216,6 +324,26 @@ function taskBlock(r: Rand): Emit[] {
     t('tool', `● Task(${agent}: ${goal})`, true, 900),
     t('gut', `  └  Done (${int(r, 6, 34)} tool uses · ${k(r, 8, 96)} tokens · ${int(r, 0, 4)}m ${int(r, 3, 59)}s)`, false, 520),
   ]
+}
+
+function decisionBlock(r: Rand, task: string): Emit[] {
+  const model = pick(r, DECISION_MODELS)
+  const scene = pick(r, DECISION_SCENES.filter(candidate => candidate.task === task))
+  // OpenAI has announced finite answers, but not Jev's probability/Noul wire
+  // format. Keep the shared scene while showing only supported capabilities.
+  const route = model.surface ? `${model.surface} / ${model.name}` : model.name
+  const choices = model.format === 'jev'
+    ? scene.choices
+    : scene.choices.map(choice => choice.replace(/ \d+\.\d+$/, ''))
+  const emits: Emit[] = [
+    t('tool', `● Decide(${model.provider} / ${route} · ${scene.latencyMs}ms)`, false, scene.latencyMs),
+    t('dim', `  state: ${scene.state}`),
+    t('gut', `  choice · ${scene.question}: ${choices.join(' | ')}`),
+  ]
+  if (model.format === 'jev') emits.push(t('gut', `  noul · ${scene.noul}: p(yes)=${scene.yesProbability}`))
+  emits.push({ ...t('ok', `  └  ${scene.result}`, false, 120), recentDecision: `${model.name} · ${scene.result}` })
+  for (const emit of emits) emit.fast = true
+  return emits
 }
 
 function webBlock(r: Rand): Emit[] {
@@ -296,18 +424,20 @@ function hex(r: Rand, n: number) {
 
 /* ----------------------------------------------------------------- weights */
 
-type Maker = (r: Rand) => Emit[]
+type Maker = (r: Rand, task: string) => Emit[]
 export type BlockFlavor = 'implementation' | 'research' | 'validation' | 'orchestration'
 
 const DECK: Array<[Maker, number, BlockFlavor]> = [
   [readBlock, 20, 'research'],
   [editBlock, 20, 'implementation'],
   [bashBlock, 16, 'validation'],
+  [r => loadingBlock(r), 12, 'validation'],
   [grepBlock, 11, 'research'],
   [proseBlock, 9, 'orchestration'],
   [globBlock, 6, 'research'],
   [writeBlock, 6, 'implementation'],
   [taskBlock, 5, 'orchestration'],
+  [decisionBlock, 8, 'orchestration'],
   [webBlock, 3, 'research'],
   [rustBlock, 3, 'implementation'],
   [pythonBlock, 3, 'implementation'],
@@ -317,13 +447,15 @@ const DECK: Array<[Maker, number, BlockFlavor]> = [
   [securityBlock, 2, 'validation'],
 ]
 
-export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'implementation'): Emit[] {
+export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'implementation', task = ''): Emit[] {
   if (chance(r, flavor === 'orchestration' ? 0.2 : 0.07)) return todoBlock(r, todoDone)
-  const weighted = DECK.map(([make, weight, category]) => [make, weight * (category === flavor ? 2.7 : 0.72)] as const)
+  const hasDecisionScene = DECISION_SCENES.some(scene => scene.task === task)
+  const weighted = DECK.filter(([make]) => make !== decisionBlock || hasDecisionScene)
+    .map(([make, weight, category]) => [make, weight * (category === flavor ? 2.7 : 0.72)] as const)
   let n = r() * weighted.reduce((sum, [, weight]) => sum + weight, 0)
   for (const [make, weight] of weighted) {
     n -= weight
-    if (n <= 0) return make(r)
+    if (n <= 0) return make(r, task)
   }
   return readBlock(r)
 }
