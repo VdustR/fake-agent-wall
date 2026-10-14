@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.2](https://github.com/VdustR/fake-agent-wall/compare/v0.12.1...v0.12.2) (2026-10-14)
+
+
+### Bug Fixes
+
+* **deps:** patch Electron security contracts ([e366c76](https://github.com/VdustR/fake-agent-wall/commit/e366c768a18b552c06e571bf0436e5fad02cc54b))
+* **deps:** patch YAML and mocker security resolutions ([6f1e494](https://github.com/VdustR/fake-agent-wall/commit/6f1e49445540712779683801afefa7e9a9e42c03))
+
 ## [0.12.1](https://github.com/VdustR/fake-agent-wall/compare/v0.12.0...v0.12.1) (2026-10-03)
 
 
