@@ -9,3 +9,7 @@ onlyBuiltDependencies:
 # electron-builder pulls in electron-winstaller, a Windows-installer builder this
 # macOS-only app never needs. Its skipped build is expected, not a failure.
 strictDepBuilds: false
+
+# electron-builder's YAML consumers accept v4; keep their merge-budget fix.
+overrides:
+  'js-yaml@>=4.0.0 <4.3.2': 4.3.2
