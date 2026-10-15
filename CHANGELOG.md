@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.3](https://github.com/VdustR/fake-agent-wall/compare/v0.12.2...v0.12.3) (2026-10-15)
+
+
+### Bug Fixes
+
+* **deps:** patch source-map-js security resolution ([#69](https://github.com/VdustR/fake-agent-wall/issues/69)) ([6fceb3b](https://github.com/VdustR/fake-agent-wall/commit/6fceb3b0faaedc62fad838f64f0b7944c06a37d4))
+
 ## [0.12.2](https://github.com/VdustR/fake-agent-wall/compare/v0.12.1...v0.12.2) (2026-10-14)
 
 
