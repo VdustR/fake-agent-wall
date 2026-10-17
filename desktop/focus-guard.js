@@ -1,3 +1,4 @@
+/** Schedule focus actions only while the caller's current policy permits them. */
 export function createFocusGuard({
   active,
   preferredWindow,
@@ -7,11 +8,6 @@ export function createFocusGuard({
   delayMs = 75,
 }) {
   let recoveryTimer = null
-  const sessionBlocks = new Set()
-
-  function isSessionActive() {
-    return sessionBlocks.size === 0
-  }
 
   function cancelRecovery() {
     if (recoveryTimer === null) return
@@ -21,7 +17,7 @@ export function createFocusGuard({
 
   function focusNow() {
     cancelRecovery()
-    if (!active() || !isSessionActive()) return false
+    if (!active()) return false
     const wall = preferredWindow()
     if (!wall || wall.isDestroyed?.()) return false
     wall.show()
@@ -34,28 +30,18 @@ export function createFocusGuard({
   }
 
   function recoverSoon() {
-    if (!active() || !isSessionActive() || recoveryTimer !== null) return
+    if (!active() || recoveryTimer !== null) return
     recoveryTimer = schedule(() => {
       recoveryTimer = null
       focusNow()
     }, delayMs)
   }
 
-  function setSessionBlocked(reason, blocked) {
-    if (blocked) {
-      sessionBlocks.add(reason)
-      cancelRecovery()
-    } else {
-      sessionBlocks.delete(reason)
-      recoverSoon()
-    }
-  }
-
-  return { cancelRecovery, focusNow, recoverSoon, isSessionActive, setSessionBlocked }
+  return { cancelRecovery, focusNow, recoverSoon }
 }
 
 /** Register after Electron is ready. Screen lock and sleep can overlap. */
-export function observeSessionFocus(powerMonitor, guard, cancelInput, sessionChanged = () => {}) {
+export function observeSessionFocus(powerMonitor, policy, cancelInput, sessionChanged) {
   const events = [
     ['lock-screen', 'locked', true],
     ['unlock-screen', 'locked', false],
@@ -70,8 +56,8 @@ export function observeSessionFocus(powerMonitor, guard, cancelInput, sessionCha
       // A real lid-open trace delivered unlock 28 seconds before resume.
       // Authentication has completed and the machine is awake at unlock;
       // waiting for its stale sleep block would leave the visible wall inert.
-      if (event === 'unlock-screen') guard.setSessionBlocked('sleeping', false)
-      guard.setSessionBlocked(reason, blocked)
+      if (event === 'unlock-screen') policy.setSessionBlocked('sleeping', false)
+      policy.setSessionBlocked(reason, blocked)
       sessionChanged()
     }
     powerMonitor.on(event, listener)
@@ -79,6 +65,5 @@ export function observeSessionFocus(powerMonitor, guard, cancelInput, sessionCha
   })
   return () => {
     for (const [event, listener] of listeners) powerMonitor.removeListener(event, listener)
-    guard.cancelRecovery()
   }
 }

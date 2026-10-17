@@ -13,9 +13,6 @@ if (process.platform === 'darwin') {
   execFileSync('xcrun', [
     'swiftc',
     '-O',
-    '-framework', 'AppKit',
-    '-framework', 'CoreAudio',
-    '-framework', 'CoreGraphics',
     '-framework', 'CoreMediaIO',
     join(desktop, 'native', 'activity-monitor.swift'),
     '-o', join(outputDir, 'activity-monitor'),
