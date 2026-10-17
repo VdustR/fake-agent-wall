@@ -46,6 +46,7 @@ beforeEach(() => {
   }
   class Tray {
     on() {}
+    setContextMenu() {}
     setImage() {}
     setToolTip() {}
   }
@@ -95,6 +96,17 @@ function key(window, type) {
 }
 
 describe('desktop main foreground integration', () => {
+  it.each(['win32', 'linux'])('preserves playback and Escape exit without the macOS guard on %s', async platform => {
+    Object.defineProperty(process, 'platform', { value: platform })
+    const wall = await launch()
+    key(wall, 'keyDown')
+    await vi.advanceTimersByTimeAsync(1250)
+    expect(wall.destroyed).not.toBe(true)
+    key(wall, 'keyUp')
+    expect(wall.destroyed).toBe(true)
+    expect(harness.presentation).not.toHaveBeenCalled()
+  })
+
   it('starts automatically despite enabled obsolete audio/fullscreen settings', async () => {
     Object.assign(harness.settings, { deferWhileAudioPlaying: true, deferWhileFullScreen: true })
     harness.activity = { cameraInUse: false, audioPlaying: true, fullScreen: true }
@@ -194,5 +206,47 @@ describe('desktop main foreground integration', () => {
     await vi.advanceTimersByTimeAsync(27000)
     harness.powerMonitor.emit('resume')
     expect(wall.destroyed).not.toBe(true)
+  })
+
+  const sessionCases = [
+    { name: 'lock cancels pending recovery', blocked: ['lock-screen'], recover: 'unlock-screen' },
+    { name: 'resume waits for unlock', blocked: ['suspend', 'lock-screen', 'resume'], recover: 'unlock-screen' },
+    { name: 'unlock waits for the active login session', blocked: ['user-did-resign-active', 'lock-screen', 'unlock-screen'], recover: 'user-did-become-active' },
+  ]
+  it.each(sessionCases.flatMap(({ name, blocked, recover }) => [false, true].map(idle => ({ name, blocked, recover, idle }))))(
+    '$name (idle=$idle)', async ({ blocked, recover, idle }) => {
+      const wall = await launch(idle)
+      key(wall, 'keyDown')
+      wall.emit('blur')
+      harness.app.focus.mockClear()
+      harness.state = { foreground: false, visible: false, focused: false }
+      for (const event of blocked) harness.powerMonitor.emit(event)
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(harness.app.focus).not.toHaveBeenCalled()
+      expect(harness.presentation).toHaveBeenLastCalledWith(false)
+      expect(wall.destroyed).not.toBe(true)
+
+      harness.powerMonitor.emit(recover)
+      expect(harness.app.focus).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(75)
+      expect(harness.app.focus).toHaveBeenCalledOnce()
+      harness.state = { foreground: true, visible: true, focused: true }
+      wall.emit('focus')
+      expect(harness.presentation).toHaveBeenLastCalledWith(true)
+      key(wall, 'keyUp')
+      expect(wall.destroyed).not.toBe(true)
+    },
+  )
+
+  it('removes session observers and pending focus recovery on shutdown', async () => {
+    const wall = await launch()
+    wall.emit('blur')
+    harness.app.focus.mockClear()
+    harness.app.emit('will-quit')
+    expect(harness.powerMonitor.eventNames()).toEqual([])
+    expect(vi.getTimerCount()).toBe(0)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(harness.app.focus).not.toHaveBeenCalled()
+    expect(wall.destroyed).toBe(true)
   })
 })

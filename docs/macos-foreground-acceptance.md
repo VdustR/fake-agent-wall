@@ -104,26 +104,31 @@ held Escape, hardware overlays, lid wake, and authenticated unlock remain pendin
 
 ## Physical acceptance
 
-Use an isolated profile and test the current PR head. Keep the installed release
-and its settings unchanged. Record the player, fullscreen mode, and each result.
+Review the [lifecycle design and evidence ledger](macos-wall-lifecycle.md) first.
+Use the final PR head with an isolated profile and one-minute idle. Keep the
+installed app/settings unchanged. Do not start another physical run while
+implementation or current-head checks remain open.
 
-1. **Automatic startup and exit:** use one-minute idle with the camera inactive.
-   Play video and wait for actual idle startup. Command-Tab must be restricted
-   while the visible wall has focus. Hold Escape for at least 1.2 seconds and
-   release; the player must then support pause/play, seeking, and shortcuts.
-2. **Foreground player:** reproduce the original situation where video is
-   visible in front of the wall. Player controls must work without the wall
-   pulling focus back. An automatic wall must stop; a manual wall must release
-   its restrictions. Do not use Command-Tab as the way to reach this state.
-3. **Lock and lid wake:** test manual and automatic playback. Lock, unlock,
-   wait one second, and do not click. Hold and release Escape to stop. Repeat
-   after closing and reopening the lid. Escape must not reach the revealed player.
-4. **Hardware controls:** test both startup origins. Volume/mute must work;
-   their overlay must not permanently stop playback or leave input blocked.
-   Stopping the wall must restore app switching. The agent has verified the complete idle interval after automatic
-   background teardown; the operator does not need to time it again.
+Run these three representative groups after the final checks:
 
-Physical acceptance remains pending, including multi-display behavior. Keep the
-PR Draft until the operator's player and wake tests pass. CI and native flag
-readback cannot establish WindowServer behavior after authentication. Do not
-merge, release, or replace the installed app before acceptance passes.
+| Group | Steps | Expected result and observations |
+| --- | --- | --- |
+| Automatic startup and original player | Play video in the originally affected player; wait for idle startup. If the wall becomes visible, try Command-Tab, volume/mute, then hold Escape for at least 1.2 seconds and release. Pause/play and seek in the revealed player. If video stays in front, operate its controls directly. | A foreground wall restricts switching; hardware controls work; Escape closes on release. A foreground player remains usable without focus recovery over it. Record player/fullscreen mode and whether any click was needed. |
+| Manual lock/unlock | Use Play now, lock, authenticate, wait one second, then hold/release Escape without clicking. | The wall closes on the first full hold. Escape must not reach or exit fullscreen in the revealed player. Record authentication method or any extra click/delay. |
+| Automatic lid wake | Let idle start the wall, close/reopen the lid, authenticate, wait one second, then use the same Escape gesture without clicking. | The lock screen stays usable; the wall recovers after authentication and accepts the first full hold. No leaked Escape or extra click. |
+
+This samples both startup origins and both real wake mechanisms. Automated
+production-entrypoint tests cover the remaining origin/event-order combinations.
+Shared hardware-control checks need one representative run, not a repeat for
+every origin. Do not time another idle restart interval; that timing is covered
+by the recorded device observation and the current policy/integration checks.
+
+If a group fails, record that result and reopen only the affected rule and
+relevant origin/event combinations. Stop the test instance before continuing;
+the tray Stop/Quit action or system Force Quit is the fallback. Do not grant
+new permissions, replace the installed app, or count a tool-generated key as
+physical acceptance.
+
+Keep this PR Draft until these groups pass. Multi-display behavior and other
+untested environments remain unverified. Merge, release, and installation stay
+gated on acceptance; CI is not proof of post-authentication keyboard routing.

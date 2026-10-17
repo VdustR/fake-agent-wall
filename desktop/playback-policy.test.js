@@ -1,6 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from 'node:events'
-import { vi } from 'vitest'
 import { createFocusGuard, observeSessionFocus } from './focus-guard.js'
 import { createPlaybackPolicy } from './playback-policy.js'
 
@@ -16,6 +15,41 @@ function fixture(source = 'manual') {
 }
 
 describe('macOS playback foreground policy', () => {
+  it('owns playback without clearing session blocks when playback stops', () => {
+    const policy = createPlaybackPolicy()
+    expect(policy.isPlaying()).toBe(false)
+    policy.setSessionBlocked('locked', true)
+    policy.start()
+    expect(policy.isPlaying()).toBe(true)
+    expect(policy.shouldRecover()).toBe(false)
+    policy.stop()
+    expect(policy.isPlaying()).toBe(false)
+    expect(policy.isSessionActive()).toBe(false)
+    policy.setSessionBlocked('locked', false)
+    expect(policy.isSessionActive()).toBe(true)
+    expect(policy.shouldRecover()).toBe(false)
+  })
+
+  it('keeps independent session blocks until the final reason clears', () => {
+    const { policy, at } = fixture()
+    policy.update(front)
+    for (const reason of ['locked', 'sleeping', 'inactive-session']) policy.setSessionBlocked(reason, true)
+    at(2000)
+    for (const reason of ['sleeping', 'locked']) {
+      policy.setSessionBlocked(reason, false)
+      expect(policy.isSessionActive()).toBe(false)
+      expect(policy.shouldGuard()).toBe(false)
+      expect(policy.shouldRecover()).toBe(false)
+    }
+    policy.setSessionBlocked('inactive-session', false)
+    expect(policy.isSessionActive()).toBe(true)
+    policy.update(background)
+    at(2999)
+    expect(policy.shouldRecover()).toBe(true)
+    at(3000)
+    expect(policy.shouldRecover()).toBe(false)
+  })
+
   it.each(['idle', 'manual'])('restricts %s playback only while a visible wall has foreground input focus', source => {
     const { policy, at } = fixture(source)
     expect(policy.shouldGuard()).toBe(false)
@@ -94,12 +128,12 @@ describe('macOS playback foreground policy', () => {
     const { policy, at } = fixture(source)
     policy.update(front)
     at(2000)
-    policy.setSessionActive(false)
+    policy.setSessionBlocked('locked', true)
     at(30000)
     expect(policy.update(background)).toBe(false)
     expect(policy.shouldGuard()).toBe(false)
     expect(policy.shouldRecover()).toBe(false)
-    policy.setSessionActive(true)
+    policy.setSessionBlocked('locked', false)
     expect(policy.shouldRecover()).toBe(true)
     expect(policy.shouldGuard()).toBe(false)
     at(30100)
@@ -107,12 +141,12 @@ describe('macOS playback foreground policy', () => {
     expect(policy.shouldGuard()).toBe(true)
     // A delayed resume notification must not grant another recovery interval.
     at(32000)
-    policy.setSessionActive(true)
+    policy.setSessionBlocked('locked', false)
     policy.update(background)
     expect(policy.shouldRecover()).toBe(false)
   })
 
-  it('schedules unlock recovery after both session policies have unblocked', () => {
+  it('schedules unlock recovery after the authoritative session state has unblocked', () => {
     const { policy, at } = fixture()
     const powerMonitor = new EventEmitter()
     const target = { show: vi.fn(), focus: vi.fn() }
@@ -123,10 +157,10 @@ describe('macOS playback foreground policy', () => {
       schedule: callback => { scheduled.push(callback); return scheduled.length },
       cancel: vi.fn(),
     })
-    const stop = observeSessionFocus(powerMonitor, guard, vi.fn(), () => {
-      policy.setSessionActive(guard.isSessionActive())
+    const stop = observeSessionFocus(powerMonitor, policy, vi.fn(), () => {
       policy.update(background)
-      guard.recoverSoon()
+      if (policy.isSessionActive()) guard.recoverSoon()
+      else guard.cancelRecovery()
     })
     at(2000)
     powerMonitor.emit('suspend')
@@ -142,7 +176,7 @@ describe('macOS playback foreground policy', () => {
   it('does not use the grace interval to keep restrictions during sleep', () => {
     const { policy } = fixture()
     policy.update(front)
-    policy.setSessionActive(false)
+    policy.setSessionBlocked('locked', true)
     expect(policy.shouldGuard()).toBe(false)
     expect(policy.shouldRecover()).toBe(false)
   })
