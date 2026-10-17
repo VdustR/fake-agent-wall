@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.12.3](https://github.com/VdustR/fake-agent-wall/compare/v0.12.2...v0.12.3) (2026-10-15)
+
+
+### Bug Fixes
+
+* **deps:** patch source-map-js security resolution ([#69](https://github.com/VdustR/fake-agent-wall/issues/69)) ([6fceb3b](https://github.com/VdustR/fake-agent-wall/commit/6fceb3b0faaedc62fad838f64f0b7944c06a37d4))
+
+## [0.12.2](https://github.com/VdustR/fake-agent-wall/compare/v0.12.1...v0.12.2) (2026-10-14)
+
+
+### Bug Fixes
+
+* **deps:** patch Electron security contracts ([e366c76](https://github.com/VdustR/fake-agent-wall/commit/e366c768a18b552c06e571bf0436e5fad02cc54b))
+* **deps:** patch YAML and mocker security resolutions ([6f1e494](https://github.com/VdustR/fake-agent-wall/commit/6f1e49445540712779683801afefa7e9a9e42c03))
+
+## [0.12.1](https://github.com/VdustR/fake-agent-wall/compare/v0.12.0...v0.12.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* **deps:** patch transitive security resolutions ([#64](https://github.com/VdustR/fake-agent-wall/issues/64)) ([ff0a92c](https://github.com/VdustR/fake-agent-wall/commit/ff0a92c0c7d658162ed5ded3ba2fa9d1dbc290e9))
+
 ## [0.12.0](https://github.com/VdustR/fake-agent-wall/compare/v0.11.0...v0.12.0) (2026-10-02)
 
 
