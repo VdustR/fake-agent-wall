@@ -33,3 +33,18 @@ probability/Noul lines. Luna must show finite choices without those lines.
 Both routes must select the scene's existing result, complete promptly in
 reduced motion, and preserve the recent-decision lifetime. Unrelated tasks must
 continue to exclude decision scenes. Run lint, Svelte checks, tests, and build.
+
+## Jev release follow-up
+
+Checked October 18, 2026. TypeSafe released
+[Jev 1.14 on October 14](https://typesafe.ai/blog/jev-1-14), with general
+improvements and a focus on multilingual support. The
+[current model reference](https://docs.typesafe.ai/models) lists `jev-preview`
+as `jev-1.14.0` and `jev-latest` as `jev-1.13.0`. The announcement plans to move
+`jev-latest` a week after release; that future alias change is not treated as
+already complete.
+
+Keep the wall's short `jev` label and choice/Noul simulation. Experimental image
+input and long context also support 1.13, while the new `box` question type is
+limited to 1.14. Those capabilities do not add image or bounding-box scenes to
+this refresh, and no real API integration is introduced.
