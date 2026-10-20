@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/VdustR/fake-agent-wall/compare/v0.13.0...v0.13.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* close the wall when leaving the app ([cacc047](https://github.com/VdustR/fake-agent-wall/commit/cacc047e97d9281a4ecb94c3ae795823e37319b6))
+
 ## [0.13.0](https://github.com/VdustR/fake-agent-wall/compare/v0.12.3...v0.13.0) (2026-10-18)
 
 
