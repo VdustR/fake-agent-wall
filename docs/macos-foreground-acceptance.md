@@ -59,20 +59,26 @@ independent app/input/player telemetry were used; the control was not bypassed.
 Muted Chromium fixtures pause themselves while occluded, so they do not prove
 uninterrupted audible playback in the operator's original player.
 
-## Unresolved startup trial
+## Controlled startup trial
 
-The new candidate's fullscreen-player startup has not passed. Trials with and
-without an explicit pre-show app activation both briefly took focus, changed
-Spaces, and returned focus to Chrome. Restoring Electron simple fullscreen for
-appearance is a separate unaccepted trial. Unexpected OS idle resets during a
-file-only setup command suggest possible external input, but its source is not
-known. Repeat only this discriminating trial on a quiescent desktop; do not
-repeat unrelated checks or classify the existing results as passes.
+The operator explicitly left the desktop untouched for the October 20
+08:16 UTC trial. Chrome's tagged fixture was playing HTML fullscreen immediately
+before startup. The overlay candidate became active at 08:16:22.945; macOS
+returned foreground to Chrome at 08:16:23.327; the wall received deactivation at
+08:16:23.367 and closed at 08:16:23.446. The Space counter changed from one to
+two. This confirms the startup/Space failure without attributing it to operator
+input. The idle reset is not evidence that the operator touched the desktop.
 
-A native contract rerun also failed initial focus once without phase diagnostics.
-The next run with phase/event diagnostics passed. The unexplained failure remains
-recorded; it does not establish stable fullscreen startup. The implemented
-startup deadline closes a wall that fails to acquire focus rather than retrying.
+The next candidate removes the accessory overlay and uses ordinary native
+fullscreen on all platforms. On macOS, entering the wall's own fullscreen Space
+is intentional. CI now first opens another task-owned app fullscreen, then
+verifies sustained startup focus and closure when returning to that fixture.
+This contract still does not establish Chrome/video or physical keyboard
+behavior. Current-head results must be recorded in the PR before a pass claim.
+
+An earlier overlay contract failed initial focus once without phase diagnostics;
+a later diagnostic run passed. That unexplained result is historical rather
+than proof of the new fullscreen implementation.
 
 ## Physical acceptance
 
@@ -80,7 +86,7 @@ Only run operator checks after agent checks for the final candidate pass.
 
 | Check | Steps | Expected result |
 | --- | --- | --- |
-| Fullscreen player and app switching | Play the affected video fullscreen; start the wall manually or wait for idle. Use Command-Tab to return to the player, then pause/play and seek. | Every wall closes when switching apps. No recovery, lingering overlay, new permission request, or unexpected Space change. The player remains usable. |
+| Fullscreen player and app switching | Play the affected video fullscreen; start the wall manually or wait for idle. Use Command-Tab to return to the player, then pause/play and seek. | Every wall closes when switching apps. No recovery, lingering wall, or new permission request. Entering the wall's own Space is expected; switching back must reveal the player's Space normally. The player remains usable. |
 | Escape and hardware controls | Start again. Try volume/mute/brightness, then hold Escape for at least 1.2 seconds and release. | Hardware controls remain usable. Wall stays until Escape release, then closes; Escape must not leave the revealed player fullscreen. |
 | Real lock/lid wake | Start the wall, lock or close the lid, then authenticate after waking. | Wall has closed and does not cover the unlocked desktop. Another automatic start waits the complete configured idle interval. No extra click or Escape is needed. |
 

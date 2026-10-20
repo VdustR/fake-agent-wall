@@ -32,10 +32,6 @@ beforeEach(() => {
       Object.assign(this.webContents, { id: harness.windows.length + 1, send: vi.fn(), isDestroyed: () => false })
       harness.windows.push(this)
     }
-    setAlwaysOnTop(enabled, level) { this.windowLevel = enabled ? level : 'normal' }
-    setVisibleOnAllWorkspaces() {}
-    setSimpleFullScreen(enabled) { this.simple = enabled }
-    isSimpleFullScreen() { return this.simple === true }
     isDestroyed() { return this.destroyed === true }
     show = vi.fn(() => { if (!harness.denyFocus) this.focus() })
     showInactive = vi.fn()
@@ -236,14 +232,6 @@ describe('desktop playback lifecycle', () => {
     expect(harness.app.focus).toHaveBeenCalledTimes(focusCalls)
     await vi.advanceTimersByTimeAsync(12000)
     expect(harness.windows).toHaveLength(2)
-  })
-
-  it('has only one simple-fullscreen owner across displays and restores it on exit', async () => {
-    harness.displays.push({ id: 2, bounds: { x: 1280, y: 0, width: 1280, height: 800 } })
-    const wall = await launch()
-    expect(harness.windows.filter(w => w.isSimpleFullScreen())).toHaveLength(1)
-    await leaveApp(wall)
-    expect(harness.windows.every(w => !w.isSimpleFullScreen())).toBe(true)
   })
 
   it('replaces the last display window without ending playback', async () => {

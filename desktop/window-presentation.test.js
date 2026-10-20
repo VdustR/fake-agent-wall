@@ -2,11 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { showWallWhenReady, wallWindowPresentation } from './window-presentation.js'
 
 describe('wall presentation', () => {
-  it('uses ordinary fullscreen on Windows/Linux, and display bounds on macOS', () => {
-    for (const platform of ['win32', 'linux']) {
+  it('uses ordinary fullscreen on every platform', () => {
+    for (const platform of ['darwin', 'win32', 'linux']) {
       expect(wallWindowPresentation({ platform, windowed: false })).toEqual({ fullscreen: true })
     }
-    expect(wallWindowPresentation({ platform: 'darwin', windowed: false })).toEqual({})
     expect(wallWindowPresentation({ platform: 'win32', windowed: true })).toEqual({})
   })
 

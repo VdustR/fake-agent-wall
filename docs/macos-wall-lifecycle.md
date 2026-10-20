@@ -44,12 +44,10 @@ back to the player now ends the wall instead of competing for focus.
   sleep block because a real lid trace delivered unlock before delayed resume.
   An inactive login session still blocks startup; repeated resume does not
   extend an already-started idle interval.
-- macOS uses display-sized accessory overlay windows on the current Space.
-  Their screen-saver level lasts only until app deactivation destroys them.
-  Only one preferred window owns Electron simple fullscreen's auto-hide
-  Dock/menu appearance snapshot, restored before managed teardown. No switching,
-  hiding, Force Quit, or session-termination restrictions are added. Windows/Linux
-  use ordinary fullscreen rather than kiosk mode.
+- All platforms use ordinary OS fullscreen. On macOS this deliberately enters
+  a separate wall Space. Switching to the player closes the wall instead of
+  trying to place an activating accessory overlay in the player's fullscreen
+  Space. There is no all-Spaces, always-on-top, or simple-fullscreen setup.
 
 There is no native presentation addon, window-coverage polling, global keyboard
 tap, new Accessibility permission, delayed focus recovery, or unlock activation.
@@ -62,7 +60,7 @@ The remaining native activity helper only implements the camera safeguard.
 | Enforce foreground and block system switching | Accessory presentation flags failed physical Command-Tab acceptance. Temporary regular policy improved routing but changed the player's fullscreen Space. Reject. |
 | Add a permission-based keyboard tap | A bounded separate probe passed synthetic interception and preserved Spaces, but requires permission onboarding and more lifecycle responsibility. Not adopted. |
 | Show an inactive overlay | Can obscure the player while keyboard input remains elsewhere, recreating the confusing Escape failure. Reject. |
-| Activate once and close on app departure | Preserves automatic display while making application switching a natural exit. Adopt. |
+| Native fullscreen, activate once, and close on app departure | Preserves automatic display while making application switching a natural exit. Adopt. |
 
 Electron 43.5 documents [application deactivation](https://github.com/electron/electron/blob/v43.5.0/docs/api/app.md#event-did-resign-active-macos),
 [window focus aggregation](https://github.com/electron/electron/blob/v43.5.0/docs/api/browser-window.md#browserwindowgetfocusedwindow),
@@ -73,13 +71,19 @@ ends playback rather than escalating privileges or retrying.
 
 ## Current verification limit
 
-The fullscreen-player startup trial is not accepted yet. Desktop activation and
-real deactivation contracts passed, but a production candidate over Chrome
-fullscreen briefly activated, changed Spaces, and closed again. Removing a
-redundant explicit app activation did not eliminate it. A simple-fullscreen
-appearance trial is still under investigation. Unexpected idle-clock resets
-also indicate possible external input, whose source is unconfirmed. Do not
-ship this candidate or infer a fullscreen pass from the desktop contract.
+The overlay-based fullscreen startup trial failed again while the operator
+explicitly left the desktop untouched. Unexpected idle resets therefore do not
+establish external input or operator interference. The wall briefly activated,
+macOS restored Chrome as foreground, and the wall correctly closed. This rules
+out treating the shutdown itself as failed departure handling.
+
+The current trial uses native fullscreen and deliberately enters a dedicated
+wall Space. Its CI contract first establishes a separate app's native fullscreen
+Space, starts the production wall, verifies sustained focus, transfers focus
+within the wall app, then returns to the fullscreen fixture and verifies wall
+closure. This fixture establishes window/Space behavior, not Chrome video or
+physical keyboard acceptance. Wait for current-head results before claiming a
+pass; do not reuse an earlier overlay contract result for this trial.
 
 ## Evidence reuse
 

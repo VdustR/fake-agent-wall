@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict')
-const { writeFileSync, mkdirSync } = require('node:fs')
+const { writeFileSync, mkdirSync, existsSync } = require('node:fs')
 const { spawn } = require('node:child_process')
 const { once } = require('node:events')
 const { join } = require('node:path')
@@ -20,6 +20,8 @@ Menu.buildFromTemplate = template => {
   return result
 }
 const passed = []
+const enteredFullscreen = new WeakSet()
+app.on('browser-window-created', (_, window) => window.once('enter-full-screen', () => enteredFullscreen.add(window)))
 let phase = 'initial'
 for (const event of ['did-become-active', 'did-resign-active', 'browser-window-focus', 'browser-window-blur']) {
   app.on(event, () => console.log(JSON.stringify({ at: new Date().toISOString(), phase, event })))
@@ -40,7 +42,7 @@ function until(predicate, description) {
 }
 async function play() {
   menu.items.find(item => item.label === 'Play now').click()
-  await until(() => BrowserWindow.getAllWindows().some(window => window.isFocused()), 'wall must acquire initial focus')
+  await until(() => BrowserWindow.getAllWindows().some(window => window.isFocused() && enteredFullscreen.has(window)), 'wall must acquire initial focus')
   return BrowserWindow.getFocusedWindow()
 }
 
@@ -48,8 +50,21 @@ app.whenReady().then(async () => {
   try {
     await import(pathToFileURL(join(__dirname, '../../desktop/main.js')).href)
     await until(() => menu, 'tray must be initialized')
+    // Establish another app's real native fullscreen Space before playing.
+    const profile = join(runDir, 'activator')
+    mkdirSync(profile)
+    activator = spawn(process.execPath, [join(__dirname, 'activate.cjs')], {
+      env: { ...process.env, ACTIVATOR_PROFILE: profile }, stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    activatorExit = once(activator, 'exit')
+    activator.stderr.on('data', data => process.stderr.write(data))
+    await until(() => existsSync(join(profile, 'ready')), 'fullscreen fixture must be ready')
     const wall = await play()
     passed.push('initial-focus')
+    await pause(500)
+    assert.equal(wall.isDestroyed(), false)
+    assert.equal(wall.isFocused(), true)
+    passed.push('fullscreen-app-startup')
     phase = 'internal-window-transfer'
 
     // A second real window models transferring focus within this app. Theme
@@ -66,15 +81,8 @@ app.whenReady().then(async () => {
     passed.push('internal-window-transfer')
     phase = 'external-app'
 
-    // Activate a task-owned second process. This exercises real AppKit app
-    // deactivation without touching another user's app or requesting permission.
-    const profile = join(runDir, 'activator')
-    mkdirSync(profile)
-    activator = spawn(process.execPath, [join(__dirname, 'activate.cjs')], {
-      env: { ...process.env, ACTIVATOR_PROFILE: profile }, stdio: ['ignore', 'pipe', 'pipe'],
-    })
-    activatorExit = once(activator, 'exit')
-    activator.stderr.on('data', data => process.stderr.write(data))
+    // Return to the existing fullscreen fixture, exercising real deactivation.
+    writeFileSync(join(profile, 'activate'), 'activate')
     await until(() => wall.isDestroyed(), 'app deactivation must close the wall')
     assert.equal(BrowserWindow.getAllWindows().length, 0)
     await pause(100)

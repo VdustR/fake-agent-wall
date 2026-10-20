@@ -121,9 +121,9 @@ function createWall(target) {
     movable: false,
     minimizable: false,
     maximizable: false,
-    // Native fullscreen creates a separate macOS Space. The production wall
-    // already covers the display bounds and must remain on the current Space.
-    fullscreenable: WINDOWED,
+    // Use the OS fullscreen lifecycle, including a dedicated Space on macOS.
+    // App switching ends playback instead of enforcing a persistent overlay.
+    fullscreenable: true,
     backgroundColor: '#08090a',
     // The wall is the whole screen; there is nothing behind it to reveal.
     hasShadow: false,
@@ -140,12 +140,6 @@ function createWall(target) {
   })
   const webContentsId = wall.webContents.id
 
-  if (!WINDOWED && IS_MAC) {
-    // Cover the current fullscreen Space without changing presentation options.
-    // These overlay windows are destroyed as soon as this app deactivates.
-    wall.setAlwaysOnTop(true, 'screen-saver')
-    wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-  }
   if (!WINDOWED || SIMULATED_DISPLAY_COUNT) swallowInput(wall.webContents)
 
   wall.once('ready-to-show', () => {
@@ -157,12 +151,6 @@ function createWall(target) {
         initialFocusTimer = null
         if (!hasTakenFocus) closeWalls()
       }, INITIAL_FOCUS_MS)
-    }
-    if (primary && IS_MAC && !WINDOWED) {
-      // Only one window owns simple fullscreen's app-wide auto-hide snapshot.
-      // It also removes the titled style that can move a fullscreen player Space.
-      if (![...walls.values()].some(record => record.window.isSimpleFullScreen())) wall.setSimpleFullScreen(true)
-      wall.setAlwaysOnTop(true, 'screen-saver')
     }
     showWallWhenReady(wall, primary)
   })
@@ -236,7 +224,6 @@ function destroyWall(key) {
   walls.delete(key)
   const wall = record.window
   themePanelWindows.delete(record.webContentsId)
-  if (IS_MAC && !WINDOWED && wall.isSimpleFullScreen()) wall.setSimpleFullScreen(false)
   wall.destroy()
 }
 

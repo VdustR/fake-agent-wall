@@ -128,7 +128,8 @@ The palette collection is MIT; individual scheme rights belong to their original
 authors. See [Third-Party Notices](THIRD_PARTY_NOTICES.md). Fake Agent Wall does
 not import or export `.itermcolors` files.
 
-The wall takes focus once when it starts. Switching to another app closes every
+The wall opens in normal fullscreen and takes focus once when it starts. On
+macOS, fullscreen uses its own Space. Switching to another app closes every
 wall, for both manual and automatic playback; it never pulls focus back. Locking
 or sleeping also closes it, and unlocking does not reopen it. Automatic playback
 waits the full idle interval again before restarting. System switching shortcuts
