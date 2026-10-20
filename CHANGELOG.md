@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/VdustR/fake-agent-wall/compare/v0.12.3...v0.13.0) (2026-10-18)
+
+
+### Features
+
+* refresh coding model catalog and add Meta Muse ([#71](https://github.com/VdustR/fake-agent-wall/issues/71)) ([1af17e5](https://github.com/VdustR/fake-agent-wall/commit/1af17e50da7e485653b481e8bb2e811f469f271a))
+
 ## [0.12.3](https://github.com/VdustR/fake-agent-wall/compare/v0.12.2...v0.12.3) (2026-10-15)
 
 
