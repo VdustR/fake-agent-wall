@@ -99,22 +99,61 @@ An earlier overlay contract failed initial focus once without phase diagnostics;
 a later diagnostic run passed. That unexplained result is historical rather
 than proof of the new fullscreen implementation.
 
-## Physical acceptance
+## Small checks and retained premises
 
-Only run operator checks after agent checks for the final candidate pass.
+Test each distinct mechanism at its nearest entrypoint. Do not multiply manual
+and idle startup by every exit path: both origins use the same production
+window/input/session handlers. The current source and CI already establish
+these premises; a resumed conversation is not a reason to replay them.
 
-| Check | Steps | Expected result |
+| Mechanism | Small executable check or retained observation | Remaining limit |
 | --- | --- | --- |
-| Fullscreen player and app switching | Play the affected video fullscreen; start the wall manually or wait for idle. Use Command-Tab to return to the player, then pause/play and seek. | Every wall closes when switching apps. No recovery, lingering wall, or new permission request. Entering the wall's own Space is expected; switching back must reveal the player's Space normally. The player remains usable. |
-| Escape and hardware controls | Start again. Try volume/mute/brightness, then hold Escape for at least 1.2 seconds and release. | Hardware controls remain usable. Wall stays until Escape release, then closes; Escape must not leave the revealed player fullscreen. |
-| Real lock/lid wake | Start the wall, lock or close the lid, then authenticate after waking. | Wall has closed and does not cover the unlocked desktop. Another automatic start waits the complete configured idle interval. No extra click or Escape is needed. |
+| App departure closes all walls | `desktop/main.test.js`: emit app deactivation; assert all windows destroyed and no activation retry. Both startup origins are covered. Real Electron and Chrome activation also passed. | A real Command-Tab sequence has not been observed on this candidate. |
+| Escape closes on release | `desktop/main.test.js`: keydown, advance the clock, assert alive, keyup, assert destroyed. Global device input passed for both origins with no player Escape leak. | Synthetic input does not establish every physical keyboard combination. No separate physical Escape gate is needed without contradictory evidence. |
+| Session shutdown and fresh idle | `desktop/main.test.js`: emit each session blocker, assert closed; emit wake events, assert no immediate startup. `session-events.test.js` checks unlock before delayed resume; `playback-policy.test.js` checks overlapping blockers and the fresh interval. | Actual device event delivery through lid sleep/wake still needs one observation. |
+| Fullscreen return and theme cancellation | Real Electron contract plus the source-pinned Chrome/theme device observations above. | The original player and physical multi-display behavior are not established. Do not repeat Chrome controls/theme edits for an unchanged runtime. |
+| System shortcuts and hardware events are not consumed | `desktop/main.test.js` checks modifier shortcuts and `AudioVolumeUp` are not prevented; the native interception addon has been removed. | Physical volume/mute/brightness remain untested. Treat them as optional observations, not repeated release gates. |
 
-The agent should execute everything its tools can establish and leave only
-physical input/authentication observations to the operator. Share unchanged
-hardware checks across startup origins. Do not repeat the full idle stopwatch,
-model catalog, or camera/audio matrix without a changed assumption.
+For a changed mechanism, run only its focused regression first:
 
-If a check fails, stop the candidate and reopen only the affected behavior.
-Keep the PR Draft while material implementation or acceptance remains open.
-Multi-display hardware and untested desktop environments stay explicitly
-unverified. CI success is not physical acceptance or release/install proof.
+```sh
+pnpm exec vitest run desktop/main.test.js -t 'closes on app departure'
+pnpm exec vitest run desktop/main.test.js -t 'keeps held Escape'
+pnpm exec vitest run desktop/session-events.test.js desktop/playback-policy.test.js
+```
+
+These are existing regression contracts, not new causal reproductions. For a
+new failure, retain a small failing artifact, its exact source/runtime and
+command, expected/actual output, and exit code. Before claiming its cause,
+observe fail → candidate fix passes → reverted fix fails. A historical failure
+followed by a later pass alone does not establish that counterfactual.
+
+Use `pnpm test:desktop` when window/Space integration or its runtime changes,
+or as a required final CI check. Do not rerun local GUI acceptance after a
+wording-only edit. The CI contract remains a merge check; repeated CI execution
+is not a request for another operator test. Reopen an observation only under
+the invalidation rules in the lifecycle document or on contradictory evidence.
+
+## Remaining operator acceptance
+
+Only two independent OS interactions remain. Manual startup is sufficient;
+the automated contracts already cover origin-independent shutdown. The agent
+must not send synthetic keys during the operator observation.
+
+| Check | Steps | Expected result | Record |
+| --- | --- | --- | --- |
+| Physical app switching | With the fullscreen player open, start Wall and use physical Command-Tab to return to the player. | All walls close when the app switch completes. The original player Space is visible. No recovery or permission prompt. Player pause/seek and Escape need not be repeated. | Pass / wall remains / switch fails / other. |
+| Physical lid sleep and wake | Start Wall, close the lid until the machine sleeps, then reopen and authenticate. | No wall remains after unlock. No extra click or Escape is needed. Read event telemetry to identify which actual session events occurred. | Pass / wall remains / machine did not sleep / other. |
+
+A separate lock/unlock path is not physically verified by a lid test unless its
+telemetry contains those events. Keep that distinction in the record; the
+session-event contracts establish the shared handling. Request a separate
+physical lock test only if missing or contradictory evidence makes it necessary.
+Do not require another full idle stopwatch, hardware matrix, theme edit, camera
+check, or model check for these observations.
+
+If either check fails, retain its event trace and reduce that failure before
+asking for another end-to-end run. Keep the PR Draft while these acceptance
+items remain open. Untested original-player, multi-display, Windows/Linux, and
+hardware behavior stays explicitly unverified; CI success is not proof of
+those environments or of release/install delivery.
