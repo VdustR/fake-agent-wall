@@ -48,11 +48,29 @@ both switcher directions, repeated desktop/fullscreen cycles, explicit cleanup,
 and a 20-second research deadline. It is not adopted or installed. The final
 implementation removes both mechanisms rather than combining them.
 
-For the new production-entrypoint candidate, an agent-driven switch to Chrome
-at 07:49:07.372 UTC emitted application deactivation and closed the manual wall
-at 07:49:07.411. Options remained zero; there was no recovery attempt. This
-verifies real app departure, not a physical Command-Tab sequence. Further device
-results must identify the source and limits before being added here.
+The native-fullscreen candidate was tested on this device at
+[the accepted source revision](https://github.com/VdustR/fake-agent-wall/commit/78e6435920db8b18c3e78df6290a321ec8ee9528)
+on October 20, 2026, 08:28–08:32 UTC, using an isolated profile and a tagged
+Chrome HTML-fullscreen video fixture:
+
+- Manual startup acquired focus and remained active in the wall's own Space.
+  A global synthetic Escape hold lasted 1,527 ms; keyup closed the wall within
+  3 ms. The player retained HTML fullscreen and received no Escape event.
+- Theme settings opened through the actual shortcut. Global text entry changed
+  the label draft; Escape discarded it. Reopening showed the original label,
+  with playback retained throughout. Select-all was not established by this test.
+- Activating Chrome emitted app deactivation at 08:30:09.206; the wall closed
+  at 08:30:09.207. Native presentation options returned to zero and Chrome's
+  original fullscreen Space returned. Global clicks produced pause, seek, and
+  play events. The first click after return only activated the player and is
+  not counted as a control pass.
+- Automatic startup occurred at actual OS idle 62 seconds, acquired focus,
+  and remained active. A 1,575 ms Escape hold closed on keyup within 1 ms.
+  Automatic startup was disabled after the test.
+
+These are app/input/player telemetry and Accessibility observations. Synthetic
+Command-Tab again did not commit an OS app switch, so physical Command-Tab
+remains open. No hardware-control or authenticated wake pass is inferred.
 
 A capture ownership control refused screenshots in this session. AX and
 independent app/input/player telemetry were used; the control was not bypassed.
@@ -73,8 +91,9 @@ The next candidate removes the accessory overlay and uses ordinary native
 fullscreen on all platforms. On macOS, entering the wall's own fullscreen Space
 is intentional. CI now first opens another task-owned app fullscreen, then
 verifies sustained startup focus and closure when returning to that fixture.
-This contract still does not establish Chrome/video or physical keyboard
-behavior. Current-head results must be recorded in the PR before a pass claim.
+Current-head CI passed this contract. The device results above separately
+establish the tagged Chrome fixture behavior; physical keyboard acceptance
+remains open.
 
 An earlier overlay contract failed initial focus once without phase diagnostics;
 a later diagnostic run passed. That unexplained result is historical rather

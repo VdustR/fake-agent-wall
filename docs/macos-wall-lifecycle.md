@@ -82,9 +82,11 @@ The current trial uses native fullscreen and deliberately enters a dedicated
 wall Space. Its CI contract first establishes a separate app's native fullscreen
 Space, starts the production wall, verifies sustained focus, transfers focus
 within the wall app, then returns to the fullscreen fixture and verifies wall
-closure. This fixture establishes window/Space behavior, not Chrome video or
-physical keyboard acceptance. Wait for current-head results before claiming a
-pass; do not reuse an earlier overlay contract result for this trial.
+closure. Current-head CI passed this contract. The separate device acceptance record
+establishes tagged Chrome startup/return, global player controls, theme draft
+cancellation, and manual/automatic held Escape. Physical Command-Tab, hardware
+controls, and authenticated lock/lid wake remain open. Earlier overlay results
+do not establish these native-fullscreen behaviors.
 
 ## Evidence reuse
 
@@ -93,6 +95,7 @@ pass; do not reuse an earlier overlay contract result for this trial.
 | Playback origins share the departure and Escape rules | `main.test.js` exercises both origins and all three platform branches | Window lifecycle, input handling, or platform events change. |
 | Internal window focus is not app departure | Integration tests and the real Electron desktop contract | Event mapping, window topology, Electron, or OS changes. |
 | Initial activation, native app deactivation, and teardown work on macOS | `pnpm test:desktop` launches the production entrypoint and a task-owned second process | Relevant source, Electron, or macOS changes. This is not physical Command-Tab proof. |
+| Chrome fullscreen startup/return, player controls, theme draft cancellation, and held Escape | Device acceptance at the linked runtime revision; global input with independent app/player telemetry | Window/input/renderer behavior, Electron, Chrome, or macOS changes; physical keyboard and the original player remain separate. |
 | Lock/sleep closes playback and wake does not restore it | Session/policy tests and Electron contract with synthetic power events | Session mapping or close/startup logic changes; real lock/lid acceptance remains separate. |
 | Exit and final session unblock require fresh idle | Policy/main tests with controlled clocks | Idle clock, stop semantics, or session mapping changes. |
 | Camera default/opt-out and absence of media delays remain | Unchanged settings/activity source and main integration tests | Settings normalization or activity detection changes. No repeated camera/audio matrix for this lifecycle change. |
