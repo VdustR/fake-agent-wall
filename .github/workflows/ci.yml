@@ -24,7 +24,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:native
-      - run: pnpm exec electron desktop/presentation-guard-smoke.cjs
+      - run: pnpm build
+      - run: pnpm test:desktop
       - run: pnpm test:electron-security
 
   verify:

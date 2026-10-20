@@ -15,8 +15,8 @@ import { getSettings, setSettings } from './settings.js'
 import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
 import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
-import { createFocusGuard, observeSessionFocus } from './focus-guard.js'
-import { setPresentationGuard } from './presentation-guard.js'
+import { observeSessionState } from './session-events.js'
+import { createPlaybackPolicy } from './playback-policy.js'
 import { isHardwareControl } from './system-controls.js'
 import {
   parseSimulatedDisplayCount,
@@ -25,8 +25,6 @@ import {
   simulatedDisplayTargets,
 } from './display-layout.js'
 import {
-  applyWallPresentation,
-  releaseWallPresentation,
   showWallWhenReady,
   wallWindowPresentation,
 } from './window-presentation.js'
@@ -49,10 +47,12 @@ const HELP_KEY_COUNT = 4
 const HELP_KEY_WINDOW_MS = 1800
 const IDLE_POLL_MS = 2000
 const IS_MAC = process.platform === 'darwin'
+const INITIAL_FOCUS_MS = 1000
 const PRESENTATION = wallWindowPresentation({ platform: process.platform, windowed: WINDOWED })
 
 const walls = new Map()
-let playing = false
+const playbackPolicy = createPlaybackPolicy()
+const isPlaying = playbackPolicy.isPlaying
 let tray = null
 let trayMenu = null
 let blockerId = null
@@ -62,25 +62,24 @@ let exitTimer = null
 let recentKeyTimes = []
 let idleTimer = null
 let idleCheckRunning = false
-let stopSessionFocus = null
+let stopSessionState = null
+let initialFocusTimer = null
+let focusCheckTimer = null
+let hasTakenFocus = false
+let trayMenuOpen = false
 const themePanelWindows = new Set()
-const focusGuard = createFocusGuard({
-  active: () => playing && !WINDOWED,
-  preferredWindow: preferredWall,
-  activateApp: () => {
-    if (IS_MAC) app.focus({ steal: true })
-  },
-})
 
 /* ------------------------------------------------------------------- window */
 
 function openWall() {
-  if (playing) {
+  if (!playbackPolicy.isSessionActive()) return
+  if (isPlaying()) {
     reconcileWalls()
     focusPreferredWall()
     return
   }
-  playing = true
+  playbackPolicy.start()
+  hasTakenFocus = false
   cancelExitHold(false)
   recentKeyTimes = []
   themePanelWindows.clear()
@@ -98,16 +97,12 @@ function targetDisplays() {
 }
 
 function reconcileWalls() {
-  if (!playing) return
+  if (!isPlaying()) return
   const targets = targetDisplays()
   const existing = new Map([...walls].map(([key, record]) => [key, record.bounds]))
   const { remove, create } = planDisplayReconciliation(existing, targets)
-  // Electron's simple fullscreen also owns presentation options. Restore our
-  // snapshot before it changes any windows, then acquire the new snapshot.
-  if (remove.length || create.length) updatePresentationGuard(true)
   for (const key of remove) destroyWall(key)
   for (const target of create) createWall(target)
-  updatePresentationGuard()
   applyPowerBlocker()
   refreshTray()
 }
@@ -126,9 +121,9 @@ function createWall(target) {
     movable: false,
     minimizable: false,
     maximizable: false,
-    // Native fullscreen creates a separate macOS Space. The production wall
-    // already covers the display bounds and must remain on the current Space.
-    fullscreenable: WINDOWED,
+    // Use the OS fullscreen lifecycle, including a dedicated Space on macOS.
+    // App switching ends playback instead of enforcing a persistent overlay.
+    fullscreenable: true,
     backgroundColor: '#08090a',
     // The wall is the whole screen; there is nothing behind it to reveal.
     hasShadow: false,
@@ -145,28 +140,44 @@ function createWall(target) {
   })
   const webContentsId = wall.webContents.id
 
-  if (!WINDOWED) {
-    // The display-sized borderless window stays on the current macOS Space.
-    // Windows kiosk owns its display; always-on-top covers system chrome on
-    // macOS and keeps every wall above ordinary windows elsewhere.
-    wall.setAlwaysOnTop(true, 'screen-saver')
-    wall.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-  }
-  applyWallPresentation(wall, { platform: process.platform, windowed: WINDOWED })
   if (!WINDOWED || SIMULATED_DISPLAY_COUNT) swallowInput(wall.webContents)
 
   wall.once('ready-to-show', () => {
-    showWallWhenReady(wall, preferredWall() === wall)
-    updatePresentationGuard()
+    if (wall.isDestroyed() || !isPlaying()) return
+    const primary = preferredWall() === wall
+    // One activation attempt only. No blur or wake handler may focus the wall.
+    if (primary && !WINDOWED) {
+      initialFocusTimer = setTimeout(() => {
+        initialFocusTimer = null
+        if (!hasTakenFocus) closeWalls()
+      }, INITIAL_FOCUS_MS)
+    }
+    showWallWhenReady(wall, primary)
   })
-  wall.on('focus', () => focusGuard.cancelRecovery())
-  wall.on('blur', () => focusGuard.recoverSoon())
+  wall.on('focus', () => {
+    hasTakenFocus = true
+    clearTimeout(initialFocusTimer)
+    initialFocusTimer = null
+    clearTimeout(focusCheckTimer)
+    focusCheckTimer = null
+  })
+  wall.on('blur', () => {
+    cancelExitHold(false)
+    checkAppFocusSoon()
+  })
+  wall.on('hide', checkAppFocusSoon)
+  wall.on('close', event => {
+    if (!WINDOWED) { event.preventDefault(); closeWalls() }
+  })
   wall.on('closed', () => {
     const record = walls.get(target.key)
-    if (record?.window === wall) walls.delete(target.key)
+    // Managed teardown removes the record first (including display replacement).
+    if (record?.window !== wall) return
+    walls.delete(target.key)
     themePanelWindows.delete(webContentsId)
     applyPowerBlocker()
     refreshTray()
+    if (walls.size === 0) closeWalls()
   })
   // A wedged renderer must not be able to trap the screen.
   wall.webContents.on('render-process-gone', () => closeWalls())
@@ -179,26 +190,32 @@ function createWall(target) {
 }
 
 function closeWalls() {
-  if (!playing && walls.size === 0) return
-  playing = false
-  focusGuard.cancelRecovery()
+  if (!isPlaying() && walls.size === 0) return
+  playbackPolicy.stop()
+  clearTimeout(initialFocusTimer)
+  initialFocusTimer = null
+  clearTimeout(focusCheckTimer)
+  focusCheckTimer = null
+  hasTakenFocus = false
   cancelExitHold(false)
   themePanelWindows.clear()
-  updatePresentationGuard()
   for (const key of walls.keys()) destroyWall(key)
   applyPowerBlocker()
   refreshTray()
 }
 
-function updatePresentationGuard(layoutChanging = false) {
-  if (!IS_MAC || WINDOWED) return
-  try {
-    setPresentationGuard(!layoutChanging && playing && walls.size > 0 && focusGuard.isSessionActive())
-  } catch (error) {
-    console.error('Cannot apply macOS presentation guard:', error)
-    // Native failures must leave an ordinary, escapable desktop.
-    if (playing) closeWalls()
-  }
+function checkAppFocusSoon() {
+  if (IS_MAC || WINDOWED || !isPlaying() || !hasTakenFocus) return
+  clearTimeout(focusCheckTimer)
+  // Let focus transfer to another wall or the app's native menu first.
+  focusCheckTimer = setTimeout(() => {
+    focusCheckTimer = null
+    if (!trayMenuOpen && !BrowserWindow.getFocusedWindow()) closeWalls()
+  }, 0)
+}
+
+function sessionChanged() {
+  if (!playbackPolicy.isSessionActive()) closeWalls()
 }
 
 function destroyWall(key) {
@@ -207,18 +224,14 @@ function destroyWall(key) {
   walls.delete(key)
   const wall = record.window
   themePanelWindows.delete(record.webContentsId)
-  releaseWallPresentation(wall, { platform: process.platform, windowed: WINDOWED })
   wall.destroy()
 }
 
 function focusPreferredWall() {
-  if (!WINDOWED) {
-    focusGuard.focusNow()
-    return
-  }
   const preferred = preferredWall()
-  preferred?.show()
-  preferred?.focus()
+  if (!preferred) return
+  preferred.show()
+  preferred.focus()
 }
 
 function preferredWall() {
@@ -238,7 +251,9 @@ function preferredWall() {
 function swallowInput(wc) {
   wc.on('before-input-event', (event, input) => {
     if (isHardwareControl(input)) return
+    if (!isPlaying() || !playbackPolicy.isSessionActive()) return
     const themePanelOpen = themePanelWindows.has(wc.id)
+    if ((input.meta || input.control || input.alt) && input.code !== 'Comma' && input.key !== 'Escape') return
     if (input.type === 'keyUp') {
       if (!themePanelOpen) event.preventDefault()
       if (input.key === 'Escape' && !themePanelOpen) finishExitHold()
@@ -269,7 +284,7 @@ function swallowInput(wc) {
 }
 
 function startExitHold() {
-  if (!playing) return
+  if (!isPlaying()) return
   if (escDown) return
   escDown = true
   clearTimeout(exitTimer)
@@ -344,7 +359,7 @@ function hint(state) {
 
 function applyPowerBlocker() {
   const { keepAwake } = getSettings()
-  const want = keepAwake === 'always' || (keepAwake === 'playing' && playing)
+  const want = keepAwake === 'always' || (keepAwake === 'playing' && isPlaying())
 
   if (want && blockerId === null) {
     // Also prevents system sleep, which is what "caffeine" means here.
@@ -362,13 +377,18 @@ function startIdleWatch() {
   idleTimer = setInterval(async () => {
     if (idleCheckRunning) return
     const s = getSettings()
-    if (!s.idleStart || playing || !focusGuard.isSessionActive()) return
-    if (powerMonitor.getSystemIdleTime() < s.idleMinutes * 60) return
+    if (!s.idleStart || isPlaying() || !playbackPolicy.isSessionActive()) return
+    if (playbackPolicy.idleSeconds(powerMonitor.getSystemIdleTime()) < s.idleMinutes * 60) return
 
     idleCheckRunning = true
     try {
       const activity = await getSystemActivity()
-      if (!playing && focusGuard.isSessionActive() && !shouldDeferIdleStart(s, activity)) openWall()
+      // Activity detection is asynchronous. Recheck settings and idle input
+      // after it returns so playback cannot start over a newly active operator.
+      const current = getSettings()
+      if (!isPlaying() && current.idleStart && playbackPolicy.isSessionActive() &&
+          playbackPolicy.idleSeconds(powerMonitor.getSystemIdleTime()) >= current.idleMinutes * 60 &&
+          !shouldDeferIdleStart(current, activity)) openWall()
     } finally {
       idleCheckRunning = false
     }
@@ -382,7 +402,7 @@ function trayIcon() {
   // Elsewhere a template renders as a black-on-black smudge, so those platforms
   // get the coloured icon instead.
   if (!IS_MAC) return nativeImage.createFromPath(join(HERE, 'assets', 'tray.png'))
-  const filename = playing ? 'trayPlayingTemplate.png' : 'trayTemplate.png'
+  const filename = isPlaying() ? 'trayPlayingTemplate.png' : 'trayTemplate.png'
   const img = nativeImage.createFromPath(join(HERE, 'assets', filename))
   img.setTemplateImage(true)
   return img
@@ -392,7 +412,7 @@ function refreshTray() {
   if (!tray) return
   const s = getSettings()
   if (IS_MAC) tray.setImage(trayIcon())
-  tray.setToolTip(playing ? 'Fake Agent Wall — playing (hold esc to stop)' : 'Fake Agent Wall — click to play')
+  tray.setToolTip(isPlaying() ? 'Fake Agent Wall — playing (hold esc to stop)' : 'Fake Agent Wall — click to play')
 
   const minuteChoice = (m) => ({
     label: `${m} min`,
@@ -410,7 +430,7 @@ function refreshTray() {
   trayMenu = updateTrayMenu(
     tray,
     Menu.buildFromTemplate([
-      playing
+      isPlaying()
         ? { label: 'Stop', click: () => closeWalls() }
         : { label: 'Play now', click: () => openWall() },
       { type: 'separator' },
@@ -425,28 +445,11 @@ function refreshTray() {
         submenu: [1, 2, 3, 5, 10, 15, 30, 60].map(minuteChoice),
       },
       {
-        label: 'Delay automatic start while',
+        label: 'Delay automatic start while camera is in use',
         visible: IS_MAC,
-        submenu: [
-          {
-            label: 'Audio is playing',
-            type: 'checkbox',
-            checked: s.deferWhileAudioPlaying,
-            click: () => update({ deferWhileAudioPlaying: !s.deferWhileAudioPlaying }),
-          },
-          {
-            label: 'Camera is in use',
-            type: 'checkbox',
-            checked: s.deferWhileCameraInUse,
-            click: () => update({ deferWhileCameraInUse: !s.deferWhileCameraInUse }),
-          },
-          {
-            label: 'Another app is full screen',
-            type: 'checkbox',
-            checked: s.deferWhileFullScreen,
-            click: () => update({ deferWhileFullScreen: !s.deferWhileFullScreen }),
-          },
-        ],
+        type: 'checkbox',
+        checked: s.deferWhileCameraInUse,
+        click: () => update({ deferWhileCameraInUse: !s.deferWhileCameraInUse }),
       },
       {
         label: 'Keep display awake',
@@ -474,6 +477,11 @@ function refreshTray() {
     ]),
     IS_MAC,
   )
+  trayMenu.on('menu-will-show', () => { trayMenuOpen = true })
+  trayMenu.on('menu-will-close', () => {
+    trayMenuOpen = false
+    checkAppFocusSoon()
+  })
 }
 
 function update(patch) {
@@ -509,16 +517,18 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => openWall())
 
   app.whenReady().then(() => {
-    if (IS_MAC) {
-      stopSessionFocus = observeSessionFocus(
-        powerMonitor, focusGuard, () => cancelExitHold(false), updatePresentationGuard,
-      )
-    }
+    stopSessionState = observeSessionState(powerMonitor, playbackPolicy, sessionChanged)
+    // macOS exposes application deactivation separately from window blur.
+    // Switching between our display windows or opening the theme panel is not
+    // leaving the app. Other platforms aggregate window focus after the event.
+    if (IS_MAC) app.on('did-resign-active', () => {
+      if (!WINDOWED && hasTakenFocus) closeWalls()
+    })
     tray = new Tray(trayIcon())
     // Left click plays immediately; the menu is on right click. This is the
     // "one click" path, and it is why no context menu is bound to plain click.
     if (IS_MAC) {
-      tray.on('click', () => (playing ? closeWalls() : openWall()))
+      tray.on('click', () => (isPlaying() ? closeWalls() : openWall()))
       tray.on('right-click', () => openTrayMenu(tray, trayMenu))
     } else {
       // Windows and Linux expect a left click to open the menu, so the one-click
@@ -542,15 +552,19 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   // Reopening from the Dock plays again rather than resurrecting a blank window.
-  app.on('activate', () => openWall())
+  app.on('activate', () => {
+    if (!isPlaying()) openWall()
+    else {
+      focusPreferredWall()
+    }
+  })
 
   // The tray is the app. Closing the wall must not quit.
   app.on('window-all-closed', (e) => e?.preventDefault?.())
 
   app.on('will-quit', () => {
     closeWalls()
-    stopSessionFocus?.()
-    focusGuard.cancelRecovery()
+    stopSessionState?.()
     clearInterval(idleTimer)
     if (blockerId !== null) powerSaveBlocker.stop(blockerId)
   })

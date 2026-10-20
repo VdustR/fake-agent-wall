@@ -4,7 +4,7 @@ import { promisify } from 'node:util'
 import { app } from 'electron'
 
 const execFileAsync = promisify(execFile)
-const EMPTY_ACTIVITY = Object.freeze({ audioPlaying: false, cameraInUse: false, fullScreen: false })
+const EMPTY_ACTIVITY = Object.freeze({ cameraInUse: false })
 const HELPER_TIMEOUT_MS = 1500
 let reportedError = false
 
@@ -26,9 +26,7 @@ export async function getSystemActivity() {
     const value = JSON.parse(stdout)
     reportedError = false
     return {
-      audioPlaying: value.audioPlaying === true,
       cameraInUse: value.cameraInUse === true,
-      fullScreen: value.fullScreen === true,
     }
   } catch (err) {
     if (!reportedError) {
