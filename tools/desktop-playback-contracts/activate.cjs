@@ -1,0 +1,10 @@
+const { app, BrowserWindow } = require('electron')
+app.setPath('userData', process.env.ACTIVATOR_PROFILE)
+app.whenReady().then(async () => {
+  const window = new BrowserWindow({ width: 320, height: 240, show: false })
+  await window.loadURL('about:blank')
+  app.focus({ steal: true })
+  window.show()
+  process.stdout.write('ready\n')
+  setTimeout(() => app.quit(), 15000)
+})

@@ -128,7 +128,13 @@ The palette collection is MIT; individual scheme rights belong to their original
 authors. See [Third-Party Notices](THIRD_PARTY_NOTICES.md). Fake Agent Wall does
 not import or export `.itermcolors` files.
 
-Stopping the wall takes Escape held for 1.2 seconds. Nothing else interrupts it.
+The wall takes focus once when it starts. Switching to another app closes every
+wall, for both manual and automatic playback; it never pulls focus back. Locking
+or sleeping also closes it, and unlocking does not reopen it. Automatic playback
+waits the full idle interval again before restarting. System switching shortcuts
+remain available, and no Accessibility permission is required.
+
+While the wall is foreground, you can also stop it by holding Escape for 1.2 seconds.
 Moving the mouse or pressing several keys in quick succession raises a hint plate
 showing the way out. Holding Escape fills its progress bar; releasing early cancels
 the exit. Once the bar is full, the wall waits for Escape to be released before it

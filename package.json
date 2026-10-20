@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
+    "test:desktop": "node tools/desktop-playback-contracts/run.cjs",
     "test:electron-security": "node tools/electron-security-contracts/run.cjs",
     "preview": "vite preview",
     "lint": "oxlint .",
