@@ -134,16 +134,24 @@ wording-only edit. The CI contract remains a merge check; repeated CI execution
 is not a request for another operator test. Reopen an observation only under
 the invalidation rules in the lifecycle document or on contradictory evidence.
 
-## Remaining operator acceptance
+## Operator acceptance record
 
-Only two independent OS interactions remain. Manual startup is sufficient;
-the automated contracts already cover origin-independent shutdown. The agent
-must not send synthetic keys during the operator observation.
+The operator reported both required interactions passing on October 20, 2026,
+at approximately 16:40 Asia/Taipei. The isolated candidate used the unchanged
+runtime source linked above; the current PR head adds test diagnostics and
+evidence documentation only. No agent-generated input occurred during these
+operator observations.
 
-| Check | Steps | Expected result | Record |
-| --- | --- | --- | --- |
-| Physical app switching | With the fullscreen player open, start Wall and use physical Command-Tab to return to the player. | All walls close when the app switch completes. The original player Space is visible. No recovery or permission prompt. Player pause/seek and Escape need not be repeated. | Pass / wall remains / switch fails / other. |
-| Physical lid sleep and wake | Start Wall, close the lid until the machine sleeps, then reopen and authenticate. | No wall remains after unlock. No extra click or Escape is needed. Read event telemetry to identify which actual session events occurred. | Pass / wall remains / machine did not sleep / other. |
+| Check | Operator result | Independent candidate trace (UTC) |
+| --- | --- | --- |
+| Physical Command-Tab after opening Wall | Wall closes. | App deactivation at 08:39:56.676; the last wall closed at 08:39:56.678. No recovery or new wall followed. |
+| Close and reopen the lid after opening Wall | Wall closes. | Suspend at 08:39:40.220; last wall closed at 08:39:40.224. Lock at 08:39:41.983, resume at 08:39:42.005, unlock at 08:39:44.219; no wall was restored. |
+
+The lid trace contains real suspend, lock, resume, and unlock events. It proves
+that sequence's event delivery and shutdown, not every possible ordering or a
+separate lock-only interaction. The source-pinned session regression contracts
+cover the alternate event orderings. These two operator gates are complete;
+do not request another run for documentation, Ready, merge, or release metadata.
 
 A separate lock/unlock path is not physically verified by a lid test unless its
 telemetry contains those events. Keep that distinction in the record; the
@@ -153,7 +161,6 @@ Do not require another full idle stopwatch, hardware matrix, theme edit, camera
 check, or model check for these observations.
 
 If either check fails, retain its event trace and reduce that failure before
-asking for another end-to-end run. Keep the PR Draft while these acceptance
-items remain open. Untested original-player, multi-display, Windows/Linux, and
+asking for another end-to-end run. Reopen the affected acceptance item if a new failure appears. Untested original-player, multi-display, Windows/Linux, and
 hardware behavior stays explicitly unverified; CI success is not proof of
 those environments or of release/install delivery.
