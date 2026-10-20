@@ -246,10 +246,23 @@ describe('desktop playback lifecycle', () => {
     expect(harness.menu.items[0].label).toBe('Stop')
   })
 
-  it('ends playback when a wall is hidden', async () => {
+  it.each(['win32', 'linux'])('ends playback when hiding leaves no app window focused on %s', async platform => {
+    Object.defineProperty(process, 'platform', { value: platform })
     const wall = await launch()
+    harness.focused = null
     wall.emit('hide')
+    await vi.advanceTimersByTimeAsync(1)
     expect(wall.destroyed).toBe(true)
+  })
+
+  it('keeps a macOS fullscreen wall when the OS hides it for another app window', async () => {
+    const wall = await launch()
+    const auxiliary = new harness.BrowserWindow({})
+    auxiliary.show()
+    wall.emit('hide')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(wall.destroyed).not.toBe(true)
+    auxiliary.destroy()
   })
 
   it('ends playback when the last window is closed normally', async () => {

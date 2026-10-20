@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict')
-const { writeFileSync, mkdirSync, existsSync } = require('node:fs')
+const { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync } = require('node:fs')
 const { spawn } = require('node:child_process')
 const { once } = require('node:events')
 const { join } = require('node:path')
@@ -76,18 +76,24 @@ app.whenReady().then(async () => {
     await pause(100)
     assert.equal(wall.isDestroyed(), false)
     auxiliary.destroy()
-    wall.focus()
+    wall.show()
     await until(() => wall.isFocused(), 'wall must remain usable after internal focus transfer')
     passed.push('internal-window-transfer')
     phase = 'external-app'
 
     // Return to the existing fullscreen fixture, exercising real deactivation.
+    if (existsSync(join(profile, 'active'))) unlinkSync(join(profile, 'active'))
     writeFileSync(join(profile, 'activate'), 'activate')
     await until(() => wall.isDestroyed(), 'app deactivation must close the wall')
     assert.equal(BrowserWindow.getAllWindows().length, 0)
     await pause(100)
     assert.equal(BrowserWindow.getAllWindows().length, 0)
     passed.push('app-deactivation-exit')
+    await until(() => existsSync(join(profile, 'active')), 'fullscreen fixture must receive focus again')
+    const returned = JSON.parse(readFileSync(join(profile, 'active'), 'utf8'))
+    assert.equal(returned.fullscreen, true)
+    assert.equal(returned.focused, true)
+    passed.push('fullscreen-return')
     activator.kill('SIGTERM')
     await activatorExit
     activator = null

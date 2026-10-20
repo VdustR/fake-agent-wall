@@ -165,7 +165,7 @@ function createWall(target) {
     cancelExitHold(false)
     checkAppFocusSoon()
   })
-  wall.on('hide', () => { if (!WINDOWED) closeWalls() })
+  wall.on('hide', checkAppFocusSoon)
   wall.on('close', event => {
     if (!WINDOWED) { event.preventDefault(); closeWalls() }
   })

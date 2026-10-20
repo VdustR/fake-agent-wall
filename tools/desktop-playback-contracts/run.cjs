@@ -17,7 +17,7 @@ try {
   assert.equal(child.status, 0, 'production playback contracts must pass')
   const result = JSON.parse(readFileSync(join(runDir, 'results.json'), 'utf8'))
   assert.equal(result.electron, require('electron/package.json').version)
-  assert.deepEqual(result.passed, ['initial-focus', 'fullscreen-app-startup', 'internal-window-transfer', 'app-deactivation-exit', 'session-stop'])
+  assert.deepEqual(result.passed, ['initial-focus', 'fullscreen-app-startup', 'internal-window-transfer', 'app-deactivation-exit', 'fullscreen-return', 'session-stop'])
 } finally {
   rmSync(runDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
 }

@@ -15,7 +15,8 @@ contracts from physical keyboard, player, and wake observations.
 | The operator switches to another app | Close every wall, for both startup origins. No focus recovery or background retention. |
 | Focus moves between this app's windows | Keep playback. Cancel any incomplete Escape hold. |
 | Theme settings or the app's native menu opens | Keep playback while the operator remains within the app. Theme settings live in the same WebContents. |
-| A wall is hidden, or the last wall closes | End playback. The tray remains available. |
+| The last wall closes | End playback. The tray remains available. |
+| macOS hides a fullscreen wall while another window in this app is active | Preserve playback; hiding a window is not app deactivation. |
 | Lock, sleep, or inactive login session | Close the wall and block idle startup. Unlock/resume never reopens it directly. |
 | Playback ends, or the final session block clears | Wait the entire configured idle interval, also respecting actual OS idle time, before another automatic startup. |
 
