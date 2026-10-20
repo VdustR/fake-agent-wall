@@ -35,8 +35,10 @@ available. Windowed development mode does not impose these restrictions.
 The native addon reads the live BrowserWindow's `NSWindow.occlusionState`, key
 status, `NSApplication.isActive`, and `NSWorkspace.frontmostApplication` in the
 main process. It also reads WindowServer window order, bounds, and window alpha.
-A window alpha of one and bounds containing the entire wall mark it as
-covered. Missing wall metadata also releases restrictions. No window names or
+A window alpha of one, a layer at least as high as the wall, and bounds
+containing the entire wall mark it as covered. Lower-layer system transition
+surfaces can precede the wall in the list and must not count as covers. Missing
+wall metadata also releases restrictions. No window names or
 pixels are inspected, and no input monitoring or screen recording permission
 is added.
 
@@ -101,6 +103,37 @@ the system idle clock. These results prove native state transitions, not physica
 keyboard routing, pointer reachability, or the operator's original player case.
 The sample video does not establish audible-media behavior. Physical Command-Tab,
 held Escape, hardware overlays, lid wake, and authenticated unlock remain pending.
+
+## October 20 agent acceptance
+
+The production entrypoint ran on macOS 26.6.2 (25G83), Electron 43.5.0, with
+one 1680 × 1050 display at scale 2 and an isolated profile. Installed v0.13.0
+and its settings were not replaced. The starting PR source was
+[the lifecycle refactor](https://github.com/VdustR/fake-agent-wall/commit/09f9da5633eca9d0275ea030406fdd1c2c5e7d82).
+The native layer correction is identified by blob
+`ae9716fa8b49cecb01058e47272b81714d6feca8`.
+
+| Check | Result and limit |
+| --- | --- |
+| System-level short and held Escape | A 196 ms hold kept the manual wall open. Holds of 1,606 ms and 1,580 ms closed it after keyup and restored presentation options to zero. Global event synthesis reset real OS idle and was observed independently in Electron input events; this is stronger than an app-targeted key, but remains synthetic input. |
+| Sample-player controls | Global coordinate clicks paused, resumed, and sought a separate Electron player and a Chrome 155.0.8059.85 player. In Chrome after wall exit, the first click activated the inactive player; subsequent clicks paused, sought exactly +2 seconds, and resumed. Fresh AX bounds supplied coordinates; no background AX button action counted as pointer proof. |
+| Escape leakage | The full-screen sample player stayed full-screen after wall exit and recorded no Escape. Both muted Chromium samples paused themselves while occluded and resumed when revealed; this does not establish uninterrupted or audible media in the original player. |
+| Real idle startup and exit | The automatic wall started at 60–62 seconds of real OS idle with the one-minute setting; no fake idle clock or startup callback was used. With the layer correction, Command-H did not hide the automatic wall; a subsequent 1,598 ms Escape hold closed it on release and restored options to zero. |
+| Dock transition metadata | Synthetic Command-Tab exposed a full-display Dock surface at layer 20 ahead of a wall at layer 101. The geometry-only check released restrictions and closed the automatic wall. Layer filtering prevents that false coverage without excluding Dock by name or changing background policy. |
+| Native coverage and restoration | After the layer correction, the standalone native smoke passed flags, restoration, full coverage, lower layers, and partial overlays. An initial run concurrent with a guarded candidate failed restoration; that overlapping run was invalid and is not a pass. |
+| Synthetic Command-Tab followed by Escape | Still inconclusive: both manual and automatic walls retained foreground/guard state with the layer correction, but the first synthetic Escape sometimes did not reach it; a later hold did. Do not equate native flags or accepted tool dispatch with physical shortcut acceptance. |
+
+The layer condition follows [Apple window levels](https://developer.apple.com/documentation/appkit/nswindow/level-swift.property)
+and [window-layer metadata](https://developer.apple.com/documentation/coregraphics/kcgwindowlayer).
+It does not solve per-pixel transparency at the same or a higher layer. The
+alternative of excluding a named system app would add an app-specific exception;
+removing coverage checks would reopen the demonstrated full-cover failure.
+
+No screen pixels were captured: the capture host rejected ownership because an
+existing owner had no reachable socket. AX-only observation and independently
+logged native/input/player state remained available. Volume/brightness key
+names were rejected before dispatch by the tool. Actual hardware controls,
+authenticated unlock, lid wake, and the original player remain physical checks.
 
 ## Physical acceptance
 

@@ -55,13 +55,17 @@ app.whenReady().then(async () => {
     wall.show()
     wall.focus()
     await waitForVisibility(wall, true)
-    for (const fullSize of [false, true]) {
+    for (const { fullSize, above, uncovered } of [
+      { fullSize: false, above: true, uncovered: true },
+      { fullSize: true, above: false, uncovered: true },
+      { fullSize: true, above: true, uncovered: false },
+    ]) {
       const cover = new BrowserWindow({ ...bounds, ...(fullSize ? {} : { width: 160, height: 100 }), show: false, frame: false })
       if (fullSize) cover.setSimpleFullScreen(true)
-      cover.setAlwaysOnTop(true, 'screen-saver', 100)
+      cover.setAlwaysOnTop(above, above ? 'screen-saver' : 'normal', above ? 100 : 0)
       await cover.loadURL('data:text/html,<h1>Native cover fixture</h1>')
       cover.showInactive()
-      await waitForVisibility(wall, !fullSize)
+      await waitForVisibility(wall, uncovered)
       if (fullSize) cover.setSimpleFullScreen(false)
       cover.destroy()
       await waitForVisibility(wall, true)
@@ -69,7 +73,7 @@ app.whenReady().then(async () => {
     wall.setSimpleFullScreen(false)
     wall.destroy()
     assert.equal(native.getOptions(), baseline, 'visibility fixtures restore desktop presentation')
-    console.log('Native presentation smoke passed: flags, restoration, full coverage, and partial overlays')
+    console.log('Native presentation smoke passed: flags, restoration, full coverage, lower layers, and partial overlays')
     app.exit(0)
   } catch (error) {
     native.setEnabled(false)

@@ -15,17 +15,24 @@ static bool IsWindowUncovered(NSWindow *window) {
       kCGNullWindowID));
   CGRect wallBounds = CGRectZero;
   NSUInteger wallIndex = NSNotFound;
+  NSInteger wallLayer = [window level];
   for (NSUInteger index = 0; index < [windows count]; index++) {
     NSDictionary *entry = windows[index];
     if ([entry[(__bridge NSString *)kCGWindowNumber] integerValue] != [window windowNumber]) continue;
     NSDictionary *bounds = entry[(__bridge NSString *)kCGWindowBounds];
     if (!bounds || !CGRectMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)bounds, &wallBounds)) return false;
+    NSNumber *layer = entry[(__bridge NSString *)kCGWindowLayer];
+    if (layer) wallLayer = [layer integerValue];
     wallIndex = index;
     break;
   }
   if (wallIndex == NSNotFound || CGRectIsEmpty(wallBounds)) return false;
   for (NSUInteger index = 0; index < wallIndex; index++) {
     NSDictionary *entry = windows[index];
+    // Dock transition surfaces can precede the wall in the list while still
+    // belonging to a lower layer. They cannot cover a higher-level window.
+    NSNumber *layer = entry[(__bridge NSString *)kCGWindowLayer];
+    if (!layer || [layer integerValue] < wallLayer) continue;
     NSNumber *alpha = entry[(__bridge NSString *)kCGWindowAlpha];
     if (!alpha || [alpha doubleValue] < 1.0) continue;
     NSDictionary *bounds = entry[(__bridge NSString *)kCGWindowBounds];

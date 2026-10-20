@@ -1,6 +1,6 @@
 # macOS wall lifecycle design and evidence
 
-Updated October 17, 2026 (Asia/Taipei). This records the scope of the lifecycle
+Updated October 20, 2026 (Asia/Taipei). This records the scope of the lifecycle
 refactor in the [foreground restrictions PR](https://github.com/VdustR/fake-agent-wall/pull/62).
 The [physical acceptance procedure](macos-foreground-acceptance.md#physical-acceptance)
 is the remaining operator gate.
@@ -24,8 +24,9 @@ not those rules.
 
 Escape is armed after 1,200 ms and closes the wall only after its keyup is
 consumed. Audio/fullscreen startup deferral stays removed. Camera protection,
-its opt-out, native presentation options, window geometry/coverage, settings,
-and rendering stay unchanged. No additional dependency or media heuristic is
+its opt-out, native presentation options, settings, and rendering stay unchanged.
+The October 20 acceptance correction also requires a covering window to have at
+least the wall's native layer. No additional dependency or media heuristic is
 introduced by the refactor.
 
 ## Alternatives and decision
@@ -69,7 +70,7 @@ the native source is identical.
 | Unlock can precede resume and must clear the prior sleep block | [October 2 laptop acceptance](macos-unlock-acceptance.md#historical-device-evidence); regression sequences in `main.test.js` | Session mapping, recovery ownership/order/timing, Electron, macOS, or authentication environment changes. This refactor and runtime update reopen representative wake acceptance. |
 | A fully covered window can still be reported visible by AppKit | [October 3 device record](macos-foreground-acceptance.md#device-verification-completed-by-the-agent); native coverage smoke | Native window implementation, Electron, macOS, or display arrangement changes. The old raw temporary traces are unavailable; do not present this as a new reproduction. |
 | Presentation flags preserve Force Quit and session termination and restore prior options | `presentation-guard.mm` and `presentation-guard-smoke.cjs`; source identity below | Native source, window teardown/reconciliation, Electron, or macOS changes. Re-run CI native smoke for the runtime update; physical routing is separate. |
-| Small overlays do not count as a full-window cover; a full-size window with window alpha one does, even with transparent content | Native smoke and coverage implementation; no per-pixel opacity or union of partial windows | Coverage geometry/alpha rules or runtime/display environment changes. Do not claim pixel-perfect detection. |
+| Small overlays and lower-layer surfaces do not count as full-window covers; a full-size same/higher-layer window with window alpha one does, even with transparent content | Native smoke and coverage implementation; no per-pixel opacity or union of partial windows | Coverage geometry/alpha rules or runtime/display environment changes. Do not claim pixel-perfect detection. |
 | An automatic background teardown waits a complete configured idle interval before restart | October 3 one-minute record and policy/main clock tests | Idle clock, background teardown, or startup scheduling changes. This refactor rechecks policy/main tests; no extra operator stopwatch exercise is required. |
 | Camera protection remains enabled by default with an opt-out; audio/fullscreen deferral remains absent | Settings/activity source plus integration tests | Settings normalization or activity detection changes. No operator camera/audio matrix for this refactor. |
 
@@ -78,7 +79,11 @@ the native source is identical.
 These are Git blob IDs from the pre-refactor source and were compared with the
 refactor working tree on October 17. They identify source equality, not binary
 or runtime equivalence. Compare with `git hash-object <path>` when deciding
-whether a code-specific check needs reopening.
+whether a code-specific check needs reopening. The native presentation and smoke
+blobs below are historical: October 20 acceptance changed the native blob to
+`ae9716fa8b49cecb01058e47272b81714d6feca8`, reopening native smoke and device
+coverage/shortcut checks, and added lower-layer smoke coverage. Other listed blobs
+remain reusable within their scope.
 
 | File | Git blob |
 | --- | --- |
