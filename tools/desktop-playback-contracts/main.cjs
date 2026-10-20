@@ -29,8 +29,8 @@ for (const event of ['did-become-active', 'did-resign-active', 'browser-window-f
 let activator = null
 let activatorExit = null
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
-function until(predicate, description) {
-  const deadline = Date.now() + 5000
+function until(predicate, description, timeout = 5000) {
+  const deadline = Date.now() + timeout
   return new Promise((resolve, reject) => {
     const check = () => {
       if (predicate()) resolve()
@@ -42,7 +42,11 @@ function until(predicate, description) {
 }
 async function play() {
   menu.items.find(item => item.label === 'Play now').click()
-  await until(() => BrowserWindow.getAllWindows().some(window => window.isFocused() && enteredFullscreen.has(window)), 'wall must acquire initial focus')
+  await until(() => BrowserWindow.getAllWindows().some(window => window.isFocused()), 'wall must acquire initial focus')
+  // Native fullscreen transitions are asynchronous, including when macOS is
+  // removing the previous app's Space. Keep focus and transition deadlines
+  // separate so a slow animation is not reported as failed activation.
+  await until(() => BrowserWindow.getAllWindows().some(window => window.isFocused() && enteredFullscreen.has(window)), 'focused wall must finish entering fullscreen', 10000)
   return BrowserWindow.getFocusedWindow()
 }
 
@@ -111,7 +115,7 @@ app.whenReady().then(async () => {
     console.log(JSON.stringify({ electron: process.versions.electron, passed }))
     app.quit()
   } catch (error) {
-    console.error({ phase, passed, windows: BrowserWindow.getAllWindows().map(w => ({ focused: w.isFocused(), visible: w.isVisible() })) }); console.error(error)
+    console.error({ phase, passed, windows: BrowserWindow.getAllWindows().map(w => ({ focused: w.isFocused(), visible: w.isVisible(), fullscreen: w.isFullScreen(), enteredFullscreen: enteredFullscreen.has(w) })) }); console.error(error)
     if (activator) { activator.kill('SIGTERM'); await activatorExit; activator = null }
     app.exit(1)
   } finally {
