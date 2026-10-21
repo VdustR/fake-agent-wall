@@ -34,7 +34,8 @@ the next fullscreen request may be ignored. This follows [Electron's test
 cleanup guidance](https://github.com/electron/electron/pull/53502). The local
 Electron 43.5.0/macOS 26.6.2 diagnostic failed with forced exit, passed with
 event-driven exit, and failed again when forced exit was restored. The normal
-exit must complete within five seconds; the contract fails rather than retrying
+exit is deferred to the next event-loop turn after that native callback returns.
+Leaving fullscreen must complete within five seconds; the contract fails rather than retrying
 activation or relaxing its fullscreen assertion. This is fixture sequencing
 evidence, not a new physical-device acceptance result.
 

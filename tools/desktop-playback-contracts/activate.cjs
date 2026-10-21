@@ -23,7 +23,12 @@ app.whenReady().then(async () => {
       // Space is being removed. Finish leaving before destroying the fixture.
       // https://github.com/electron/electron/pull/53502
       const timeout = setTimeout(() => app.exit(1), 5000)
-      window.once('leave-full-screen', () => { clearTimeout(timeout); app.quit() })
+      window.once('leave-full-screen', () => {
+        clearTimeout(timeout)
+        // Electron's native delegate still uses the window after this event.
+        // Defer closing it until the callback has returned to avoid reentrancy.
+        setImmediate(() => app.quit())
+      })
       window.setFullScreen(false)
       return
     }
