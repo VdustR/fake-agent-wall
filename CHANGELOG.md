@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.2](https://github.com/VdustR/fake-agent-wall/compare/v0.13.1...v0.13.2) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deps-dev:** patch Vite and synchronize fullscreen test teardown ([#74](https://github.com/VdustR/fake-agent-wall/issues/74)) ([8062c0f](https://github.com/VdustR/fake-agent-wall/commit/8062c0f9c01a37139aefbbba805ced183f4427c1))
+* serialize macOS fullscreen retirement before replay ([#77](https://github.com/VdustR/fake-agent-wall/issues/77)) ([77c633e](https://github.com/VdustR/fake-agent-wall/commit/77c633ee5e98c4353743df17eefe50087fabb785))
+
 ## [0.13.1](https://github.com/VdustR/fake-agent-wall/compare/v0.13.0...v0.13.1) (2026-10-20)
 
 
