@@ -33,6 +33,9 @@ beforeEach(() => {
       harness.windows.push(this)
     }
     isDestroyed() { return this.destroyed === true }
+    isFullScreen() { return harness.nativeFullscreen === true }
+    setOpacity = vi.fn()
+    setFullScreen = vi.fn(() => { if (!harness.nativeFullscreen) this.emit('leave-full-screen') })
     show = vi.fn(() => { if (!harness.denyFocus) this.focus() })
     showInactive = vi.fn()
     focus = vi.fn(() => {
@@ -101,6 +104,87 @@ async function leaveApp(wall) {
 }
 
 describe('desktop playback lifecycle', () => {
+
+  it('coalesces explicit playback requests until native retirement completes', async () => {
+    harness.nativeFullscreen = true
+    const wall = await launch()
+    await leaveApp(wall)
+    expect(wall.setOpacity).toHaveBeenCalledWith(0)
+    expect(wall.isDestroyed()).toBe(false)
+    harness.menu.items.find(item => item.label === 'Play now').click()
+    harness.menu.items.find(item => item.label === 'Play now').click()
+    expect(harness.windows).toHaveLength(1)
+    wall.emit('leave-full-screen')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(wall.isDestroyed()).toBe(true)
+    expect(harness.windows).toHaveLength(2)
+  })
+
+  it('cancels queued playback when the user leaves the app again', async () => {
+    harness.nativeFullscreen = true
+    const wall = await launch()
+    await leaveApp(wall)
+    harness.menu.items.find(item => item.label === 'Play now').click()
+    harness.app.emit('did-resign-active')
+    wall.emit('leave-full-screen')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(harness.windows).toHaveLength(1)
+    expect(wall.isDestroyed()).toBe(true)
+  })
+
+  it('does not restart automatically when native retirement finishes', async () => {
+    harness.nativeFullscreen = true
+    const wall = await launch()
+    await leaveApp(wall)
+    wall.emit('leave-full-screen')
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(harness.windows).toHaveLength(1)
+    expect(wall.isDestroyed()).toBe(true)
+  })
+
+  it('cancels queued playback on suspend and does not reopen on wake', async () => {
+    harness.nativeFullscreen = true
+    const wall = await launch()
+    await leaveApp(wall)
+    harness.menu.items.find(item => item.label === 'Play now').click()
+    harness.powerMonitor.emit('suspend')
+    wall.emit('leave-full-screen')
+    await vi.advanceTimersByTimeAsync(0)
+    harness.powerMonitor.emit('unlock-screen')
+    harness.powerMonitor.emit('resume')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(harness.windows).toHaveLength(1)
+    expect(wall.isDestroyed()).toBe(true)
+  })
+
+  it('does not queue blocked-session requests for a later wake', async () => {
+    harness.nativeFullscreen = true
+    const wall = await launch()
+    harness.powerMonitor.emit('suspend')
+    harness.app.emit('activate')
+    harness.app.emit('second-instance')
+    harness.menu.items.find(item => item.label === 'Play now').click()
+    harness.powerMonitor.emit('unlock-screen')
+    harness.powerMonitor.emit('resume')
+    wall.emit('leave-full-screen')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(harness.windows).toHaveLength(1)
+    expect(wall.isDestroyed()).toBe(true)
+  })
+
+  it('does not revive playback after quit while native retirement is pending', async () => {
+    harness.nativeFullscreen = true
+    const wall = await launch()
+    await leaveApp(wall)
+    harness.menu.items.find(item => item.label === 'Play now').click()
+    harness.app.emit('before-quit')
+    wall.emit('leave-full-screen')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(harness.windows).toHaveLength(1)
+    expect(harness.app.quit).toHaveBeenCalledOnce()
+  })
+
+
   it.each(['darwin', 'win32', 'linux'])('takes focus once and closes the whole app display on departure on %s', async platform => {
     Object.defineProperty(process, 'platform', { value: platform })
     harness.displays.push({ id: 2, bounds: { x: 1280, y: 0, width: 1280, height: 800 } })
@@ -186,6 +270,8 @@ describe('desktop playback lifecycle', () => {
     await vi.advanceTimersByTimeAsync(1250)
     expect(wall.destroyed).not.toBe(true)
     expect(key(wall, 'keyUp').preventDefault).toHaveBeenCalledOnce()
+    if (platform === 'darwin') expect(wall.setOpacity).toHaveBeenCalledWith(0)
+    await vi.advanceTimersByTimeAsync(0)
     expect(wall.destroyed).toBe(true)
   })
 
@@ -221,6 +307,8 @@ describe('desktop playback lifecycle', () => {
   it.each(['lock-screen', 'suspend', 'user-did-resign-active'])('closes on %s and never restores on wake', async event => {
     const wall = await launch()
     harness.powerMonitor.emit(event)
+    expect(wall.setOpacity).toHaveBeenCalledWith(0)
+    await vi.advanceTimersByTimeAsync(0)
     expect(wall.destroyed).toBe(true)
     const focusCalls = harness.app.focus.mock.calls.length
     await vi.advanceTimersByTimeAsync(30000)
@@ -274,6 +362,7 @@ describe('desktop playback lifecycle', () => {
   it('removes observers and pending work on shutdown', async () => {
     await launch()
     harness.app.emit('will-quit')
+    await vi.advanceTimersByTimeAsync(0)
     expect(harness.powerMonitor.eventNames()).toEqual([])
     expect(vi.getTimerCount()).toBe(0)
   })

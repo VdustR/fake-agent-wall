@@ -50,6 +50,14 @@ back to the player now ends the wall instead of competing for focus.
   trying to place an activating accessory overlay in the player's fullscreen
   Space. There is no all-Spaces, always-on-top, or simple-fullscreen setup.
 
+On macOS, stopping playback makes the retiring wall transparent immediately,
+then exits native fullscreen and destroys the window after that callback
+returns. A new explicit Play request waits for this retirement so AppKit does
+not discard its fullscreen request. Requests during a blocked session are
+ignored; app departure, a later session interruption, or quit cancels pending
+playback. A five-second teardown failure prevents queued playback from starting.
+No focus attempt is repeated. Other platforms retain immediate destruction.
+
 There is no native presentation addon, window-coverage polling, global keyboard
 tap, new Accessibility permission, delayed focus recovery, or unlock activation.
 The remaining native activity helper only implements the camera safeguard.

@@ -109,7 +109,8 @@ app.whenReady().then(async () => {
     phase = 'session-stop'
     const next = await play()
     powerMonitor.emit('suspend')
-    assert.equal(next.isDestroyed(), true)
+    assert.equal(next.getOpacity(), 0, 'suspend must remove the wall visually immediately')
+    await until(() => next.isDestroyed(), 'suspend must finish native wall teardown')
     powerMonitor.emit('unlock-screen')
     powerMonitor.emit('resume')
     await pause(100)

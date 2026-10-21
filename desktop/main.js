@@ -17,6 +17,7 @@ import { getSystemActivity } from './activity-monitor.js'
 import { shouldDeferIdleStart } from './activity-guards.js'
 import { observeSessionState } from './session-events.js'
 import { createPlaybackPolicy } from './playback-policy.js'
+import { createWindowRetirement } from './window-retirement.js'
 import { isHardwareControl } from './system-controls.js'
 import {
   parseSimulatedDisplayCount,
@@ -68,11 +69,24 @@ let focusCheckTimer = null
 let hasTakenFocus = false
 let trayMenuOpen = false
 const themePanelWindows = new Set()
+const windowRetirement = createWindowRetirement({ platform: process.platform, windowed: WINDOWED })
+let openRequest = 0
+let quitRequested = false
 
 /* ------------------------------------------------------------------- window */
 
 function openWall() {
   if (!playbackPolicy.isSessionActive()) return
+  const request = ++openRequest
+  if (quitRequested) return
+  if (windowRetirement.isPending()) {
+    void windowRetirement.wait().then(results => {
+      if (request !== openRequest || quitRequested) return
+      if (results.every(Boolean)) openWall()
+      else console.error('[fake-agent-wall] fullscreen teardown failed; playback was not restarted')
+    })
+    return
+  }
   if (isPlaying()) {
     reconcileWalls()
     focusPreferredWall()
@@ -190,6 +204,7 @@ function createWall(target) {
 }
 
 function closeWalls() {
+  ++openRequest
   if (!isPlaying() && walls.size === 0) return
   playbackPolicy.stop()
   clearTimeout(initialFocusTimer)
@@ -199,7 +214,7 @@ function closeWalls() {
   hasTakenFocus = false
   cancelExitHold(false)
   themePanelWindows.clear()
-  for (const key of walls.keys()) destroyWall(key)
+  for (const key of walls.keys()) destroyWall(key, true)
   applyPowerBlocker()
   refreshTray()
 }
@@ -218,13 +233,16 @@ function sessionChanged() {
   if (!playbackPolicy.isSessionActive()) closeWalls()
 }
 
-function destroyWall(key) {
+function destroyWall(key, retiring = false) {
   const record = walls.get(key)
   if (!record) return
   walls.delete(key)
   const wall = record.window
   themePanelWindows.delete(record.webContentsId)
-  wall.destroy()
+  if (!retiring) { wall.destroy(); return }
+  void windowRetirement.retire(wall).then(() => {
+    if (quitRequested && !windowRetirement.isPending()) app.quit()
+  })
 }
 
 function focusPreferredWall() {
@@ -514,6 +532,7 @@ function syncLoginItem(openAtLogin) {
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
+  app.on('before-quit', () => { quitRequested = true; ++openRequest })
   app.on('second-instance', () => openWall())
 
   app.whenReady().then(() => {
@@ -522,6 +541,7 @@ if (!app.requestSingleInstanceLock()) {
     // Switching between our display windows or opening the theme panel is not
     // leaving the app. Other platforms aggregate window focus after the event.
     if (IS_MAC) app.on('did-resign-active', () => {
+      ++openRequest
       if (!WINDOWED && hasTakenFocus) closeWalls()
     })
     tray = new Tray(trayIcon())

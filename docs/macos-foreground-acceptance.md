@@ -39,6 +39,26 @@ Leaving fullscreen must complete within five seconds; the contract fails rather 
 activation or relaxing its fullscreen assertion. This is fixture sequencing
 evidence, not a new physical-device acceptance result.
 
+The native retirement candidate keeps the same-process restart contract. On
+macOS, a stopped wall becomes transparent immediately, exits native fullscreen,
+and is destroyed after the exit callback returns. A subsequent explicit Play
+request waits for that retirement; duplicate requests coalesce, and session
+interruption or quit cancels them. No automatic focus recovery is introduced.
+The original fullscreen test failure was not limited to helper cleanup: a later
+main CI run reproduced it after orderly helper exit. Process isolation was
+rejected because it removed the real restart path.
+
+The changed native teardown requires a targeted operator observation on the
+isolated candidate: open playback, physically Command-Tab away, confirm the wall
+vanishes, then immediately start playback again and hold/release Escape. Until
+that observation is recorded, the previous physical pass does not verify this
+candidate and its runtime change remains gated. Also open playback and close/
+reopen the lid once: retain the real suspend/wake trace and confirm the wall
+does not return or leave a transparent window blocking input. Synthetic suspend
+does not establish native fullscreen teardown while the OS actually sleeps.
+These are targeted checks for the changed cleanup, not a replay of unrelated
+player/theme/audio/idle-stopwatch or hardware matrices.
+
 These checks do not prove physical keyboard shortcuts, player controls,
 authenticated unlock/lid behavior, or Windows/Linux window-manager behavior.
 An earlier synthetic Command-Tab was delivered successfully by the tool but did
