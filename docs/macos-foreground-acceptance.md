@@ -48,16 +48,20 @@ The original fullscreen test failure was not limited to helper cleanup: a later
 main CI run reproduced it after orderly helper exit. Process isolation was
 rejected because it removed the real restart path.
 
-The changed native teardown requires a targeted operator observation on the
-isolated candidate: open playback, physically Command-Tab away, confirm the wall
-vanishes, then immediately start playback again and hold/release Escape. Until
-that observation is recorded, the previous physical pass does not verify this
-candidate and its runtime change remains gated. Also open playback and close/
-reopen the lid once: retain the real suspend/wake trace and confirm the wall
-does not return or leave a transparent window blocking input. Synthetic suspend
-does not establish native fullscreen teardown while the OS actually sleeps.
-These are targeted checks for the changed cleanup, not a replay of unrelated
-player/theme/audio/idle-stopwatch or hardware matrices.
+The operator completed the targeted checks on October 21, 2026, using the
+[retirement candidate](https://github.com/VdustR/fake-agent-wall/commit/a9c17cddd9888b0eeeb1cce57501257a88e3368d)
+on macOS 26.6.2 (25G83), ARM64, Electron 43.5.0, and an isolated profile.
+
+| Changed-source check | Operator observation | Candidate trace (UTC) |
+| --- | --- | --- |
+| Command-Tab, immediate replay, held Escape release | Both transitions felt natural; the wall closed correctly. | First wall closed at 06:25:40.445; the second entered fullscreen at 06:25:42.632, received Escape keyup at 06:25:44.430, and closed at 06:25:45.508. |
+| Actual lid close/open | No restored wall; other apps remained normally usable. | Suspend at 06:32:41.395; opacity became zero, then the wall closed at 06:32:42.833. Resume at 06:32:44.949 and unlock at 06:32:45.789 found no windows; checks through five seconds after wake remained empty while the candidate process stayed alive. |
+
+No agent-generated input was used for these observations. Both targeted gates
+are complete for the linked runtime source. Later documentation, readiness,
+merge, and release metadata do not invalidate that evidence. Separate lock-only,
+original-player, multi-display, and Windows/Linux behavior remain unverified;
+these checks do not require replaying unrelated historical matrices.
 
 These checks do not prove physical keyboard shortcuts, player controls,
 authenticated unlock/lid behavior, or Windows/Linux window-manager behavior.
