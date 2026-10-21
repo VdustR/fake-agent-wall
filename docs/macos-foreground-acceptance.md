@@ -28,6 +28,16 @@ at scale 2. Current-head CI is recorded in
   `pnpm test:electron-security` remain required. Five inherited lint warnings
   in the existing security fixture are not introduced by this change.
 
+The fullscreen fixture exits through `leave-full-screen` before the next wall
+starts. Killing that fixture can leave AppKit removing its Space, during which
+the next fullscreen request may be ignored. This follows [Electron's test
+cleanup guidance](https://github.com/electron/electron/pull/53502). The local
+Electron 43.5.0/macOS 26.6.2 diagnostic failed with forced exit, passed with
+event-driven exit, and failed again when forced exit was restored. The normal
+exit must complete within five seconds; the contract fails rather than retrying
+activation or relaxing its fullscreen assertion. This is fixture sequencing
+evidence, not a new physical-device acceptance result.
+
 These checks do not prove physical keyboard shortcuts, player controls,
 authenticated unlock/lid behavior, or Windows/Linux window-manager behavior.
 An earlier synthetic Command-Tab was delivered successfully by the tool but did

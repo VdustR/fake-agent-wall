@@ -13,9 +13,22 @@ app.whenReady().then(async () => {
   window.show()
   window.setFullScreen(true)
   // Reactivate this same fullscreen app after the parent tests internal focus.
-  setInterval(() => {
+  const commands = setInterval(() => {
+    const stop = join(profile, 'stop')
+    if (existsSync(stop)) {
+      unlinkSync(stop)
+      clearInterval(commands)
+      if (!window.isFullScreen()) { app.quit(); return }
+      // AppKit can ignore the next window's fullscreen request while this
+      // Space is being removed. Finish leaving before destroying the fixture.
+      // https://github.com/electron/electron/pull/53502
+      const timeout = setTimeout(() => app.exit(1), 5000)
+      window.once('leave-full-screen', () => { clearTimeout(timeout); app.quit() })
+      window.setFullScreen(false)
+      return
+    }
     const command = join(profile, 'activate')
     if (existsSync(command)) { unlinkSync(command); window.show() }
   }, 50)
-  setTimeout(() => app.quit(), 25000)
+  setTimeout(() => app.exit(1), 25000)
 })

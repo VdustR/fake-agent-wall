@@ -98,9 +98,13 @@ app.whenReady().then(async () => {
     assert.equal(returned.fullscreen, true)
     assert.equal(returned.focused, true)
     passed.push('fullscreen-return')
-    activator.kill('SIGTERM')
-    await activatorExit
+    // A process exit alone does not finish macOS's fullscreen Space teardown.
+    // Ask the fixture to leave fullscreen before starting another wall.
+    writeFileSync(join(profile, 'stop'), 'stop')
+    const [exitCode, exitSignal] = await activatorExit
     activator = null
+    assert.equal(exitSignal, null, 'fullscreen fixture must exit normally')
+    assert.equal(exitCode, 0, 'fullscreen fixture must finish its Space teardown')
 
     phase = 'session-stop'
     const next = await play()
