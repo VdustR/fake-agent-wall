@@ -70,9 +70,6 @@ app.whenReady().then(async () => {
     assert.equal(wall.isDestroyed(), false)
     assert.equal(wall.isFocused(), true)
     passed.push('fullscreen-app-startup')
-    phase = 'cursor-idle'
-    await verifyCursor(wall)
-    passed.push('cursor-idle')
     phase = 'internal-window-transfer'
 
     // A second real window models transferring focus within this app. Theme
@@ -112,6 +109,12 @@ app.whenReady().then(async () => {
 
     phase = 'session-stop'
     const next = await play()
+    // Cursor checks take several idle intervals. Run them after the competing
+    // fullscreen fixture exits so they cannot perturb the focus-return scenario.
+    phase = 'cursor-idle'
+    await verifyCursor(next)
+    passed.push('cursor-idle')
+    phase = 'session-stop'
     powerMonitor.emit('suspend')
     assert.equal(next.getOpacity(), 0, 'suspend must remove the wall visually immediately')
     await until(() => next.isDestroyed(), 'suspend must finish native wall teardown')
