@@ -3,6 +3,28 @@ const assert = require('node:assert/strict')
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
 const evaluate = (wall, expression) => wall.webContents.executeJavaScript(expression)
 
+async function idle(wall) {
+  // Fullscreen entry can deliver a late pointer event on CI. Observe the
+  // eventual state instead of assuming every native event arrived before a sleep.
+  // Unit tests separately enforce the exact 2600ms interval and timer reset.
+  await evaluate(wall, `new Promise((resolve, reject) => {
+    const deck = document.querySelector('.deck')
+    const observer = new MutationObserver(check)
+    const timeout = setTimeout(() => {
+      observer.disconnect()
+      reject(new Error('Pointer did not become idle within 8 seconds'))
+    }, 8000)
+    function check() {
+      if (!deck.classList.contains('cursor-idle')) return
+      clearTimeout(timeout)
+      observer.disconnect()
+      resolve()
+    }
+    observer.observe(deck, { attributes: true, attributeFilter: ['class'] })
+    check()
+  })`)
+}
+
 async function panel(wall, open) {
   wall.webContents.send(open ? 'wall:theme-toggle' : 'wall:theme-close')
   await pause(80)
@@ -37,7 +59,7 @@ exports.verifyCursor = async function verifyCursor(wall) {
   // and compiled CSS. Keep these transitions sequential: each depends on the last.
   await move(wall, '.wall')
   assert.notEqual((await snapshot(wall)).wall, 'none')
-  await pause(2800)
+  await idle(wall)
   assert.equal((await snapshot(wall)).wall, 'none')
 
   // Opening settings while idle must not create a permanently visible island.
@@ -45,7 +67,7 @@ exports.verifyCursor = async function verifyCursor(wall) {
   assert.deepEqual(await snapshot(wall), { wall: 'none', panel: 'none', button: 'none', input: 'none' })
   await move(wall, '#wall-label')
   assert.deepEqual(await snapshot(wall), { wall: 'auto', panel: 'default', button: 'pointer', input: 'text' })
-  await pause(2800)
+  await idle(wall)
   assert.deepEqual(await snapshot(wall), { wall: 'none', panel: 'none', button: 'none', input: 'none' })
   await move(wall, '.theme-panel .close')
   assert.equal((await snapshot(wall)).button, 'pointer')
@@ -56,7 +78,7 @@ exports.verifyCursor = async function verifyCursor(wall) {
   await panel(wall, true)
   await panel(wall, false)
   await panel(wall, true)
-  await pause(2800)
+  await idle(wall)
   assert.deepEqual(await snapshot(wall), { wall: 'none', panel: 'none', button: 'none', input: 'none' })
   await move(wall, '.theme-panel .close')
   await panel(wall, false)
