@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.3](https://github.com/VdustR/fake-agent-wall/compare/v0.13.2...v0.13.3) (2026-10-25)
+
+
+### Bug Fixes
+
+* show the desktop cursor on movement and hide it when idle ([#79](https://github.com/VdustR/fake-agent-wall/issues/79)) ([cec2970](https://github.com/VdustR/fake-agent-wall/commit/cec29706331327ca9f86c60abd762779a9232866))
+
 ## [0.13.2](https://github.com/VdustR/fake-agent-wall/compare/v0.13.1...v0.13.2) (2026-10-21)
 
 
