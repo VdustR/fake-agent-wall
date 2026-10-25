@@ -137,7 +137,9 @@ remain available, and no Accessibility permission is required.
 
 While the wall is foreground, you can also stop it by holding Escape for 1.2 seconds.
 Moving the mouse or pressing several keys in quick succession raises a hint plate
-showing the way out. Holding Escape fills its progress bar; releasing early cancels
+showing the way out. The pointer appears immediately when moved and hides after
+2.6 seconds without movement, both on the wall and inside the theme panel.
+Holding Escape fills its progress bar; releasing early cancels
 the exit. Once the bar is full, the wall waits for Escape to be released before it
 closes, so the application underneath never receives the held key. That gesture
 lives in the Electron main process, so it still works if the page has wedged.

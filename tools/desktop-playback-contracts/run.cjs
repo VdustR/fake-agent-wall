@@ -8,7 +8,7 @@ const runDir = mkdtempSync(join(tmpdir(), 'fake-wall-playback-'))
 try {
   const child = spawnSync(require('electron'), [join(__dirname, 'main.cjs')], {
     env: { ...process.env, PLAYBACK_RUN_DIR: runDir },
-    encoding: 'utf8', timeout: 30000,
+    encoding: 'utf8', timeout: 60000,
   })
   if (child.stdout) process.stdout.write(child.stdout)
   if (child.stderr) process.stderr.write(child.stderr)
@@ -17,7 +17,7 @@ try {
   assert.equal(child.status, 0, 'production playback contracts must pass')
   const result = JSON.parse(readFileSync(join(runDir, 'results.json'), 'utf8'))
   assert.equal(result.electron, require('electron/package.json').version)
-  assert.deepEqual(result.passed, ['initial-focus', 'fullscreen-app-startup', 'internal-window-transfer', 'app-deactivation-exit', 'fullscreen-return', 'session-stop'])
+  assert.deepEqual(result.passed, ['initial-focus', 'fullscreen-app-startup', 'cursor-idle', 'internal-window-transfer', 'app-deactivation-exit', 'fullscreen-return', 'session-stop'])
 } finally {
   rmSync(runDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
 }

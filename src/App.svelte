@@ -11,16 +11,19 @@
   import Tile from './components/Tile.svelte'
   import { Swarm } from './lib/swarm.svelte'
   import { OperationsWorld } from './lib/operations.svelte'
+  import { observePointerIdle } from './lib/pointer-idle'
   import { applyTheme, clearThemeSettings, cloneTheme, defaultTheme, loadTheme, normalizeWallLabel, saveTheme, THEME_STORAGE_KEY, type ThemeSettings } from './lib/theme'
 
   const swarm = new Swarm()
   const operations = new OperationsWorld(swarm)
   let themeOpen = $state(false)
+  let cursorIdle = $state(false)
   let committedTheme = $state<ThemeSettings>()
   let wallLabel = $state('fake-agent-wall')
   let gridElement = $state<HTMLDivElement>()
 
   onMount(() => {
+    const stopPointerIdle = desktop ? observePointerIdle(window, idle => { cursorIdle = idle }) : undefined
     committedTheme = loadTheme()
     wallLabel = normalizeWallLabel(committedTheme.wallLabel)
     applyTheme(committedTheme)
@@ -64,6 +67,7 @@
     const offClose = window.agentWall?.onThemeClose(close)
 
     return () => {
+      stopPointerIdle?.()
       swarm.stop()
       operations.stop()
       cancelAnimationFrame(resizeFrame)
@@ -104,8 +108,7 @@
   }
 
   const beat = $derived(swarm.uptimeMs)
-  // The desktop shell hides the pointer and owns the exit gesture; in a plain
-  // browser tab neither applies and the page behaves like an ordinary page.
+  // Only desktop playback hides an idle pointer and owns the exit gesture.
   const desktop = typeof window !== 'undefined' && window.agentWall?.isDesktop === true
   const onAir = $derived(swarm.agents[swarm.pgm] ?? swarm.agents[0]!)
   const gridItems = $derived(operations.gridItems)
@@ -115,7 +118,7 @@
   })
 </script>
 
-<main class="deck" class:desktop>
+<main class="deck" class:desktop class:cursor-idle={desktop && cursorIdle}>
   <StatusLine {swarm} {wallLabel} />
 
     <div class="wall">
@@ -163,20 +166,24 @@
 </main>
 
 <style>
-  /* Kiosk playback: no pointer anywhere on the wall, and no text selection to
-     be left highlighted by a stray click. */
+  /* Keep stray clicks from leaving highlighted transcripts on camera. */
   .deck.desktop,
   .deck.desktop :global(*) {
-    cursor: none;
     user-select: none;
     -webkit-user-select: none;
   }
 
   .deck.desktop :global(.theme-panel),
   .deck.desktop :global(.theme-panel *) {
-    cursor: auto;
     user-select: auto;
     -webkit-user-select: auto;
+  }
+
+  /* One idle state covers the wall and settings, including controls with their
+     own pointer or text cursor. Removing it restores each control's cursor. */
+  .deck.desktop.cursor-idle,
+  .deck.desktop.cursor-idle :global(*) {
+    cursor: none;
   }
 
   .deck {

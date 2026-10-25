@@ -5,6 +5,7 @@ const { once } = require('node:events')
 const { join } = require('node:path')
 const { pathToFileURL } = require('node:url')
 const { app, BrowserWindow, Menu, powerMonitor } = require('electron')
+const { verifyCursor } = require('./cursor.cjs')
 
 const runDir = process.env.PLAYBACK_RUN_DIR
 app.setPath('userData', runDir)
@@ -69,6 +70,9 @@ app.whenReady().then(async () => {
     assert.equal(wall.isDestroyed(), false)
     assert.equal(wall.isFocused(), true)
     passed.push('fullscreen-app-startup')
+    phase = 'cursor-idle'
+    await verifyCursor(wall)
+    passed.push('cursor-idle')
     phase = 'internal-window-transfer'
 
     // A second real window models transferring focus within this app. Theme

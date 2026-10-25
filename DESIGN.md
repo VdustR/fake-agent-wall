@@ -657,11 +657,15 @@ gets a visible quantity beside it, whether that is a countdown numeral or a fill
 
 ### Desktop Mode
 
-When `window.swarmdeck?.isDesktop` is true the deck takes a `.desktop` class that sets
-`cursor: none` and disables text selection across the entire wall. This is kiosk
-playback: there is no pointer to aim with, and a stray click must not leave a highlighted
-run of transcript on camera. In a plain browser tab neither applies and the page behaves
-like an ordinary page.
+When `window.agentWall?.isDesktop` is true the deck disables text selection on
+the wall while preserving selection in the Theme Panel. The pointer starts
+visible, hides after 2600ms without pointer movement, and reappears immediately
+on the first movement. One timer covers the wall and Theme Panel, including
+buttons and text fields; opening or closing the panel does not reset it. While
+visible, each control keeps its normal cursor. The 2600ms delay matches the exit
+hint's settling time, giving the operator time to locate a control before the
+wall returns to ambient playback. The timer and movement listener are removed
+when the page unmounts. A plain browser tab keeps its ordinary pointer behavior.
 
 ### Named Rules
 
