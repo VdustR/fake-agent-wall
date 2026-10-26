@@ -33,7 +33,7 @@
     "svelte-check": "^4.7.5",
     "typescript": "^6.0.3",
     "vite": "^8.2.4",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "main": "desktop/main.js",
   "description": "A responsive ambient wall of synthetic coding agents for idle screens, videos, livestreams, and presentations.",
