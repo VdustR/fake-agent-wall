@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.6](https://github.com/VdustR/fake-agent-wall/compare/v0.13.5...v0.13.6) (2026-10-26)
+
+
+### Bug Fixes
+
+* refresh coding model catalog for October 26 ([#87](https://github.com/VdustR/fake-agent-wall/issues/87)) ([2e88beb](https://github.com/VdustR/fake-agent-wall/commit/2e88beb92d73eda25e5615299bfb81eb074c05ea))
+
 ## [0.13.5](https://github.com/VdustR/fake-agent-wall/compare/v0.13.4...v0.13.5) (2026-10-26)
 
 
