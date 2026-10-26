@@ -67,7 +67,7 @@ export const PROVIDERS = [
   { name: 'Alibaba', model: 'qwen3.8-max', used: 86, resetSeconds: 18_420, tokens: 5.44, cost: 21.72 },
   { name: 'DeepSeek', model: 'deepseek-v4-pro', used: 37, resetSeconds: 42_955, tokens: 1.86, cost: 8.95 },
   { name: 'Mistral', model: 'mistral-large-4-preview', used: 52, resetSeconds: 12_704, tokens: 2.24, cost: 11.48 },
-  { name: 'Moonshot', model: 'kimi-k3', used: 29, resetSeconds: 25_190, tokens: 1.42, cost: 6.37 },
+  { name: 'Moonshot', model: 'kimi-k3.1-pro', used: 29, resetSeconds: 25_190, tokens: 1.42, cost: 6.37 },
   { name: 'Zhipu', model: 'glm-5.3', used: 68, resetSeconds: 8_611, tokens: 3.83, cost: 13.92 },
 ] as const
 
