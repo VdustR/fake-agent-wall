@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.4](https://github.com/VdustR/fake-agent-wall/compare/v0.13.3...v0.13.4) (2026-10-26)
+
+
+### Bug Fixes
+
+* **deps-dev:** patch vulnerable tooling dependencies ([#83](https://github.com/VdustR/fake-agent-wall/issues/83)) ([afab632](https://github.com/VdustR/fake-agent-wall/commit/afab63242f580dee7b79641481a2e88ae05e7fa6))
+
 ## [0.13.3](https://github.com/VdustR/fake-agent-wall/compare/v0.13.2...v0.13.3) (2026-10-25)
 
 
