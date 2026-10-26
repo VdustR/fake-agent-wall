@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.5](https://github.com/VdustR/fake-agent-wall/compare/v0.13.4...v0.13.5) (2026-10-26)
+
+
+### Bug Fixes
+
+* **deps-dev:** bump electron ([#82](https://github.com/VdustR/fake-agent-wall/issues/82)) ([e86b47c](https://github.com/VdustR/fake-agent-wall/commit/e86b47c96f9cf49d91d0801a0309ea7a0e0e02a4))
+
+
+### Documentation
+
+* record Electron 43.8.1 foreground acceptance ([#86](https://github.com/VdustR/fake-agent-wall/issues/86)) ([372c0ad](https://github.com/VdustR/fake-agent-wall/commit/372c0ad65b2c637490f404e4f3b36016e31abff5))
+
 ## [0.13.4](https://github.com/VdustR/fake-agent-wall/compare/v0.13.3...v0.13.4) (2026-10-26)
 
 
