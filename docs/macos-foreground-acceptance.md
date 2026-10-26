@@ -13,6 +13,9 @@ experiment runs on macOS 26.6.2 (25G83), Electron 43.5.0, one 1680 × 1050 displ
 at scale 2. Current-head CI is recorded in
 [the lifecycle PR](https://github.com/VdustR/fake-agent-wall/pull/62).
 
+The [Electron 43.8.1 runtime acceptance](electron-43.8.1-acceptance.md) records
+the October 26 targeted upgrade checks and their separate evidence limits.
+
 ## Executable checks
 
 - `pnpm test` covers app departure for both origins, three platform branches,
