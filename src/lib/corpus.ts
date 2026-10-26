@@ -198,10 +198,11 @@ export const MODELS = [
   { name: 'qwen3.8-max', provider: 'alibaba' },
   { name: 'qwen3.8-flash', provider: 'alibaba' },
   { name: 'kimi-k2.7-code', provider: 'moonshot' },
-  { name: 'kimi-k3', provider: 'moonshot' },
+  { name: 'kimi-k3.1-pro', provider: 'moonshot' },
   { name: 'glm-5.3', provider: 'zai' },
+  { name: 'glm-5.3-flash', provider: 'zai' },
   { name: 'minimax-m3', provider: 'minimax' },
-  { name: 'minimax-m3.1-flash-preview', provider: 'minimax' },
+  { name: 'minimax-m3.1-flash', provider: 'minimax' },
   { name: 'ernie-5.1', provider: 'baidu' },
 ] as const
 
