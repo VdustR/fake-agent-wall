@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.7](https://github.com/VdustR/fake-agent-wall/compare/v0.13.6...v0.13.7) (2026-11-01)
+
+
+### Bug Fixes
+
+* unify application and tray icon artwork ([#89](https://github.com/VdustR/fake-agent-wall/issues/89)) ([d1d2cb8](https://github.com/VdustR/fake-agent-wall/commit/d1d2cb85acbc76e5486ed39e1a5ddaca309f6d54))
+
 ## [0.13.6](https://github.com/VdustR/fake-agent-wall/compare/v0.13.5...v0.13.6) (2026-10-26)
 
 
