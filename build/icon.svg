@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 256 256">
+  <title>Fake Agent Wall — Bold</title>
+  <rect id="background" x="8" y="8" width="240" height="240" rx="54" fill="#222c2b"/>
+  <g id="sessions">
+    <rect id="lead" x="43" y="43" width="120" height="120" rx="14" fill="#e6e3cd"/>
+    <rect id="right-source" x="175" y="43" width="38" height="120" rx="11" fill="#93ada1"/>
+    <rect id="lower-source" x="43" y="175" width="38" height="38" rx="10" fill="#93ada1"/>
+    <rect id="signal" x="93" y="175" width="120" height="38" rx="11" fill="#e08765"/>
+  </g>
+  <path id="prompt" d="m70 78 25 23-25 23m40 7h28" fill="none" stroke="#222c2b" stroke-opacity="1" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
