@@ -1,5 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <!-- Terminal multiviewer: one program terminal and three source monitors. -->
-  <path fill="#000" fill-rule="evenodd" d="M1 2h14v12H1V2Zm2 2v8h6V4H3Zm8 0v2h2V4h-2Zm0 4v1h2V8h-2Zm0 3v1h2v-1h-2Z"/>
-  <path fill="#000" d="m4 6 2 2-2 2V9l1-1-1-1V6Zm2 4h2v1H6v-1Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="31 31 194 194">
+  <title>Fake Agent Wall — idle</title>
+  <defs>
+    <mask id="prompt-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <rect width="256" height="256" fill="#fff" />
+      <path id="prompt" d="m70 78 25 23-25 23m40 7h28" fill="none" stroke="#000" stroke-opacity="1" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+    </mask>
+  </defs>
+  <g id="sessions" mask="url(#prompt-cutout)">
+    <rect id="lead" x="43" y="43" width="120" height="120" rx="14" fill="#000" />
+    <rect id="right-source" x="175" y="43" width="38" height="120" rx="11" fill="#000" fill-opacity="0.65" />
+    <rect id="lower-source" x="43" y="175" width="38" height="38" rx="10" fill="#000" fill-opacity="0.65" />
+    <rect id="signal" x="93" y="175" width="120" height="38" rx="11" fill="#000" fill-opacity="0.65" />
+  </g>
 </svg>
