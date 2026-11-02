@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.8](https://github.com/VdustR/fake-agent-wall/compare/v0.13.7...v0.13.8) (2026-11-02)
+
+
+### Bug Fixes
+
+* **deps-dev:** patch packaging minimatch resolutions ([#91](https://github.com/VdustR/fake-agent-wall/issues/91)) ([e6c8908](https://github.com/VdustR/fake-agent-wall/commit/e6c890825eae418564e065884b26fcdefd06f823))
+
 ## [0.13.7](https://github.com/VdustR/fake-agent-wall/compare/v0.13.6...v0.13.7) (2026-11-01)
 
 
