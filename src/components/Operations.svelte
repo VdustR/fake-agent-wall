@@ -71,7 +71,7 @@
       {#each fleetAgents as agent (agent.slot)}
         <div>
           <i style={`--breath-delay: -${agent.slot * 107}ms`} data-state={agent.status} class:activity-breathe={agent.status === 'run'}></i>
-          <span>{agent.numLabel} · <SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /><small>{agent.provider} / {agent.model}</small></span>
+          <span><span class="fleet-session"><span>{agent.numLabel} ·&nbsp;</span><SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /></span><small>{agent.provider} / {agent.model}</small></span>
           <b><RollingNumber value={Math.round(agent.contextLeft)} />%</b>
         </div>
       {/each}
@@ -134,6 +134,8 @@
   .fleet i[data-state='hold'] { background: var(--hold); }
   .fleet i[data-state='done'] { background: var(--done); }
   .fleet span { min-width: 0; color: var(--txt); font: var(--type-label)/1.3 var(--f-umd); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fleet-session { display: flex; align-items: baseline; }
+  .fleet-session > span { flex: none; }
   .fleet small { display: block; margin-top: 3px; color: var(--txt-fnt); font-size: var(--type-meta); overflow: hidden; text-overflow: ellipsis; }
   .fleet b { color: var(--amber); font: var(--type-label)/1.3 var(--f-umd); font-variant-numeric: tabular-nums; }
   @media (prefers-reduced-motion: reduce) {

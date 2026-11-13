@@ -138,6 +138,8 @@
     color: var(--txt-dim);
   }
   .win > span {
+    display: flex;
+    align-items: baseline;
     min-width: 0;
     overflow: hidden;
     white-space: nowrap;

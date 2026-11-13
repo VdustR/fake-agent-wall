@@ -8,7 +8,7 @@
 </span>
 
 <style>
-  .session-light { position: relative; display: inline-block; white-space: nowrap; }
+  .session-light { position: relative; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .light { display: none; user-select: none; -webkit-user-select: none; }
   @supports (mask-image: linear-gradient(black, transparent)) {
     .running .light {
