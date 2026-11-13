@@ -1,6 +1,6 @@
 export interface MosaicItem {
   key: string
-  type: 'pgm' | 'telemetry' | 'agent' | 'ops'
+  type: 'pgm' | 'agent' | 'ops'
   preferredAspect: number
   minAspect: number
   maxAspect: number
@@ -243,8 +243,9 @@ export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportH
   let pgmColumns: number
   let pgmRows: number
   let regions: GridRegion[]
+  const sideWidth = Math.max(0, ...rest.map(item => item.minWidth))
 
-  if (viewportAspect < 0.82) {
+  if (viewportAspect < 0.82 || viewportWidth < pgm.minWidth + sideWidth) {
     pgmColumns = GRID_COLUMNS
     const minRows = Math.ceil(pgm.minHeight / viewportHeight * GRID_ROWS)
     pgmRows = Math.max(minRows, Math.min(Math.round(GRID_ROWS * 0.52), Math.round(GRID_ROWS * viewportAspect / pgm.preferredAspect)))
@@ -252,7 +253,12 @@ export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportH
   } else {
     const widthFraction = Math.sqrt(pgmArea * pgm.preferredAspect / viewportAspect)
     const minPgmColumns = Math.ceil(pgm.minWidth / viewportWidth * GRID_COLUMNS)
-    const maxPgmColumns = Math.min(Math.round(GRID_COLUMNS * 0.625), Math.floor(1060 / viewportWidth * GRID_COLUMNS))
+    // Reserve a viable secondary column before assigning width to the program.
+    const maxPgmColumns = Math.min(
+      Math.round(GRID_COLUMNS * 0.625),
+      Math.floor(1060 / viewportWidth * GRID_COLUMNS),
+      Math.floor((viewportWidth - sideWidth) / viewportWidth * GRID_COLUMNS),
+    )
     const minPgmRows = Math.ceil(pgm.minHeight / viewportHeight * GRID_ROWS)
     const maxPgmRows = Math.round(GRID_ROWS * 0.73)
     pgmColumns = Math.max(minPgmColumns, Math.min(maxPgmColumns, Math.round(widthFraction * GRID_COLUMNS)))
@@ -271,30 +277,7 @@ export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportH
   const targetWeights = regions.map(region => totalRestWeight * region.rows * region.columns / totalArea)
   const groups = regions.map(() => [] as MosaicItem[])
   const groupWeights = regions.map(() => 0)
-  const telemetry = rest.find(item => item.type === 'telemetry')
-  const unassigned = rest.filter(item => item !== telemetry)
-
-  if (telemetry) {
-    let telemetryRegion = 0
-    let bestScore = Number.POSITIVE_INFINITY
-    regions.forEach((region, index) => {
-      const regionAspect = viewportWidth * region.columns / (viewportHeight * region.rows)
-      const rangePenalty = regionAspect < telemetry.minAspect
-        ? Math.log(telemetry.minAspect / regionAspect) * 4
-        : regionAspect > telemetry.maxAspect
-          ? Math.log(regionAspect / telemetry.maxAspect) * 4
-          : 0
-      const score = rangePenalty + Math.abs(Math.log(regionAspect / telemetry.preferredAspect))
-      if (score < bestScore) {
-        telemetryRegion = index
-        bestScore = score
-      }
-    })
-    groups[telemetryRegion]!.push(telemetry)
-    groupWeights[telemetryRegion]! += telemetry.weight
-  }
-
-  for (const item of unassigned) {
+  for (const item of rest) {
     let regionIndex = 0
     for (let index = 1; index < regions.length; index += 1) {
       const fill = groupWeights[index]! / Math.max(0.01, targetWeights[index]!)

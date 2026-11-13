@@ -145,8 +145,6 @@
                 nextCutIn={swarm.nextCutIn}
                 cueing={swarm.pst === -1 ? null : (swarm.agents[swarm.pst]?.numLabel ?? null)}
               />
-            {:else if item.type === 'telemetry'}
-              <Telemetry {swarm} />
             {:else if item.type === 'agent'}
               <Tile agent={item.agent!} {beat} onAir={item.agent!.slot === swarm.pgm} cued={item.agent!.slot === swarm.pst} calm={swarm.reducedMotion} />
             {:else}
@@ -157,6 +155,7 @@
       </div>
     </div>
 
+  <Telemetry {swarm} />
   <Ticker {swarm} />
   <OpsNotice notice={operations.notice} />
   {#if desktop}<ExitHint />{/if}

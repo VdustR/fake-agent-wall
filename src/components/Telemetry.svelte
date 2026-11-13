@@ -14,16 +14,6 @@
   }
   const { swarm }: Props = $props()
 
-  /**
-   * Full-scale references calibrated to the synthetic fleet. The wall grows
-   * more agents at larger viewports, so one global ceiling made the same two
-   * channels pin at 100% even though their absolute readings were still moving.
-   * A stable fleet still has a fixed, printed PPM scale.
-   */
-  const TICKS = [0, 20, 40, 60, 80, 100]
-  /** Where the graticule prints its reference mark, as a percentage of scale. */
-  const REF = 70
-
   const tokenScale = $derived(throughputFullScale(swarm.agents.length, TOKENS_PER_SOURCE_FULL_SCALE))
   const toolScale = $derived(throughputFullScale(swarm.agents.length, TOOLS_PER_SOURCE_FULL_SCALE))
 
@@ -39,7 +29,7 @@
     },
     {
       key: 'tools',
-      label: 'tool calls / min',
+      label: 'calls / min',
       value: normalizeThroughput(swarm.toolsPerMin, toolScale),
       peak: normalizeThroughput(swarm.peakTools, toolScale),
       flat: false,
@@ -48,7 +38,7 @@
     },
     {
       key: 'src',
-      label: 'sources live',
+      label: 'live / total',
       value: swarm.running / swarm.agents.length,
       peak: 0,
       // Every source working is the nominal state here, not an overload, so this
@@ -69,66 +59,50 @@
     untrack(() => { readings = channels.map(({ read, load }) => ({ read, load })) })
   })
 
+  // Keep the original normalized history; its 90 samples span about 12 seconds.
+  const trace = $derived(swarm.history.map((value, index) =>
+    `${index / Math.max(1, swarm.history.length - 1) * 100},${30 - value * 28}`,
+  ).join(' '))
+  const pressure = $derived(Math.round((swarm.history.at(-1) ?? 0) * 100))
+  const contextAgents = $derived(swarm.agents.slice(0, 27))
 </script>
 
-<section class="tel">
-  <header class="bar umd-type">
-    <span class="who">swarm bus</span>
-    <span class="unit">sim · ppm · % of scale</span>
-  </header>
-
-  <!-- Bus meters on one printed scale, the way a meter bridge is silkscreened. -->
+<section class="tel" aria-label="Synthetic swarm telemetry">
   <div class="bus">
-    {#each channels as c, index (c.key)}
-      <div class="ch">
-        <span class="lb umd-type">{c.label}</span>
-        <span class="ppm">
-          <i class="fill" class:flat={c.flat} style="--v:{c.value}"></i>
-          {#if !c.flat}<i class="level" style="--v:{c.value}"></i>{/if}
-          {#if c.peak > 0.01}<i class="cap" style="--p:{c.peak}"></i>{/if}
-          <i class="ref" style="--at:{REF}%"></i>
-        </span>
-        <span class="read tnum"><b><RollingNumber value={readings[index]?.read ?? c.read} duration={180} /></b><small><RollingNumber value={readings[index]?.load ?? c.load} duration={180} /></small></span>
-      </div>
-    {/each}
-
-    <div class="grat" aria-hidden="true">
-      <span class="lb umd-type"></span>
-      <span class="scale">
-        {#each TICKS as t}
-          <b style="--t:{t}%"><em class="umd-type tnum">{t}</em></b>
-        {/each}
-      </span>
-      <span></span>
-    </div>
-  </div>
-
-  <!-- Swarm output pressure over the last ~12 seconds. Synthetic, like all of it. -->
-  <div class="hist">
-    <span class="axis umd-type">output pressure</span>
-    <div class="bars" aria-hidden="true">
-      {#each swarm.history as h, i}
-        <i style="--h:{Math.max(0.03, h)}" class:lead={i > swarm.history.length - 4}></i>
+    <header class="section-label umd-type"><b>swarm bus</b><span>sim</span></header>
+    <div class="channels">
+      {#each channels as c, index (c.key)}
+        <div class="ch">
+          <div class="reading"><span class="lb umd-type">{c.label}</span><b class="tnum"><RollingNumber value={readings[index]?.read ?? c.read} duration={180} /></b></div>
+          <span class="ppm" aria-hidden="true">
+            <i class="fill" class:flat={c.flat} style="--v:{c.value}"></i>
+            {#if c.peak > 0.01}<i class="cap" style="--p:{c.peak}"></i>{/if}
+          </span>
+          <small class="load umd-type"><RollingNumber value={readings[index]?.load ?? c.load} duration={180} /></small>
+        </div>
       {/each}
     </div>
-    {#each [75, 50, 25] as r}
-      <span class="rule" style="--at:{r}" aria-hidden="true"
-        ><em class="umd-type tnum">{r}</em></span
-      >
-    {/each}
   </div>
 
-  <!-- Meter bridge: context remaining on every source, read at a glance. -->
+  <div class="hist">
+    <header class="section-label umd-type"><span>output pressure</span><span><RollingNumber value={pressure} duration={180} />% · ~12s</span></header>
+    <svg class="trace" viewBox="0 0 100 32" preserveAspectRatio="none" role="img" aria-label="Normalized synthetic output pressure over approximately twelve seconds">
+      {#each [25, 50, 75] as tick}
+        <line class="rule" x1="0" x2="100" y1={30 - tick * .28} y2={30 - tick * .28} />
+      {/each}
+      <polygon class="area" points={`0,32 ${trace} 100,32`} />
+      <polyline class="signal" points={trace} />
+      <line class="now" x1="100" x2="100" y1="0" y2="32" />
+    </svg>
+  </div>
+
   <div class="bridge">
-    <span class="blabel umd-type">context<br />remaining</span>
-    <div class="cols">
-      {#each swarm.agents.slice(0, 27) as a (a.slot)}
-        <div class="col">
-          <span class="pc umd-type tnum"><RollingNumber value={Math.round(a.contextLeft)} /></span>
-          <span class="track"
-            ><i style="--h:{a.contextLeft / 100}" data-low={a.contextLeft < 25}></i></span
-          >
-          <span class="id umd-type tnum">{a.numLabel}</span>
+    <header class="section-label umd-type"><span>context remaining</span>{#if swarm.agents.length > 27}<span>01–27 / {swarm.agents.length}</span>{/if}</header>
+    <div class="contexts">
+      {#each contextAgents as a (a.slot)}
+        <div class="context" class:low={a.contextLeft < 25} aria-label={`Session ${a.numLabel}: ${Math.round(a.contextLeft)}% context remaining`}>
+          <span class="id">{a.numLabel}</span><b class="tnum"><RollingNumber value={Math.round(a.contextLeft)} /></b>
+          <span class="track" aria-hidden="true"><i style="--v:{a.contextLeft / 100}"></i></span>
         </div>
       {/each}
     </div>
@@ -138,287 +112,67 @@
 <style>
   .tel {
     flex: none;
-    display: flex;
-    flex-direction: column;
-    container: telemetry / size;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(140px, 1fr) clamp(240px, 25vw, 360px);
+    gap: 16px;
+    margin: 0 calc(var(--gap) * 1.5) calc(var(--gap) / 2);
+    padding: 6px 10px;
     background: var(--ink-100);
     border: 1px solid var(--line-hi);
     border-radius: var(--r);
-    overflow: hidden;
   }
-
-  .bar {
+  .bus, .hist, .bridge { min-width: 0; }
+  .hist, .bridge { border-left: 1px solid var(--line); padding-left: 16px; }
+  .section-label {
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    padding: 5px 12px 6px;
-    background: var(--ink-150);
-    border-bottom: 1px solid var(--line);
-  }
-  .who {
-    color: var(--umd);
-    font-weight: 700;
-  }
-  .unit {
-    color: var(--txt-fnt);
-  }
-
-  .bus {
-    padding: 8px 12px 7px;
-  }
-  .ch,
-  .grat {
-    display: grid;
-    grid-template-columns: clamp(64px, 7.5vw, 108px) minmax(0, 1fr) clamp(44px, 5vw, 72px);
-    align-items: center;
-    gap: 10px;
-  }
-  .ch + .ch {
-    margin-top: 5px;
-  }
-  .lb {
-    color: var(--txt-fnt);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .read {
-    display: grid;
-    justify-items: end;
-    font-family: var(--f-umd);
-    text-align: right;
-  }
-  .read b {
-    color: var(--amber);
-    font-size: clamp(9.5px, 0.86vw, 15px);
-    line-height: 1;
-  }
-  .read small {
-    margin-top: 2px;
-    color: var(--txt-fnt);
-    font-size: clamp(5.5px, 0.4vw, 8px);
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .ppm {
-    position: relative;
-    display: block;
-    height: clamp(9px, 0.95vw, 15px);
-    overflow: hidden;
-    background: var(--ink-050);
-    box-shadow: inset 0 0 0 1px var(--line);
-    /* Segment rules, the way a real ladder is printed rather than drawn. */
-    background-image: repeating-linear-gradient(
-      90deg,
-      transparent 0 calc(5% - 1px),
-      var(--ink-100) calc(5% - 1px) 5%
-    );
-  }
-  /* The scale colours belong to the TRACK, not to the fill: a bar drawn with its
-     own gradient shows "into the red" at 10% of scale, which is a lie. The fill
-     spans the whole track and is clipped back to the reading. */
-  .fill {
-    position: absolute;
-    inset: 1px;
-    background: linear-gradient(90deg, var(--cue) 0 62%, var(--amber) 62% 84%, var(--live) 84%);
-    clip-path: inset(0 calc(100% - var(--v) * 100%) 0 0);
-  }
-  .fill.flat {
-    background: var(--cue);
-  }
-  .level {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: calc(var(--v) * 100% - 1px);
-    width: 2px;
-    background: var(--txt-hi);
-    transition: left 220ms linear;
-  }
-  .cap {
-    position: absolute;
-    top: 1px;
-    bottom: 1px;
-    left: calc(var(--p) * 100%);
-    width: 2px;
-    background: var(--amber);
-  }
-  .ref {
-    position: absolute;
-    top: -2px;
-    bottom: -2px;
-    left: var(--at);
-    width: 1px;
-    background: var(--umd);
-    opacity: 0.75;
-  }
-
-  .grat {
-    margin-top: 4px;
-  }
-  .scale {
-    position: relative;
-    display: block;
-    height: 12px;
-  }
-  .scale b {
-    position: absolute;
-    left: var(--t);
-    top: 0;
-    width: 1px;
-    height: 3px;
-    background: var(--line-hi);
-  }
-  .scale em {
-    position: absolute;
-    top: 4px;
-    left: 0;
-    transform: translateX(-50%);
-    font-style: normal;
-    color: var(--txt-fnt);
-  }
-
-  .hist {
-    position: relative;
-    /* Left gutter reserved for the scale numerals, so they never sit on a bar. */
-    padding: 7px 12px 9px 34px;
-    border-top: 1px solid var(--line);
-    background: var(--ink-050);
-  }
-  .bars {
-    display: flex;
-    align-items: flex-end;
-    gap: 1px;
-    height: clamp(32px, 3.6vw, 56px);
-  }
-  .bars i {
-    flex: 1;
-    min-width: 0;
-    height: calc(var(--h) * 100%);
-    background: color-mix(in oklab, var(--coral) 58%, var(--ink-200));
-  }
-  .bars i.lead {
-    background: var(--coral);
-  }
-  .axis {
-    position: absolute;
-    top: 7px;
-    right: 12px;
-    color: var(--txt-fnt);
-    z-index: 1;
-  }
-  /* Ruled and numbered: an unlabelled gridline measures nothing. */
-  .rule {
-    position: absolute;
-    left: 34px;
-    right: 12px;
-    bottom: calc(9px + var(--at) * 0.01 * clamp(32px, 3.6vw, 56px));
-    height: 1px;
-    background: var(--line-hi);
-    pointer-events: none;
-  }
-  .rule em {
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    padding-right: 5px;
-    font-style: normal;
-    color: var(--txt-fnt);
-  }
-
-  .bridge {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: end;
-    gap: 12px;
-    padding: 8px 12px 9px;
-    border-top: 1px solid var(--line);
-  }
-  .blabel {
-    color: var(--txt-fnt);
-    line-height: 1.5;
-    padding-bottom: 11px;
-  }
-  .cols {
-    display: grid;
-    grid-template-columns: repeat(9, minmax(0, 1fr));
-    gap: clamp(3px, 0.5vw, 9px);
-  }
-  .col {
-    display: grid;
-    justify-items: center;
-    gap: 3px;
-  }
-  .pc {
+    gap: 8px;
+    margin-bottom: 5px;
     color: var(--txt-dim);
+    line-height: 1.2;
+    white-space: nowrap;
   }
-  .track {
-    display: block;
-    width: 100%;
-    height: clamp(14px, 1.5vw, 24px);
-    background: var(--ink-050);
-    box-shadow: inset 0 0 0 1px var(--line);
-    position: relative;
-    overflow: hidden;
+  .section-label b { color: var(--umd); }
+  .section-label > span:last-child:not(:first-child) { color: var(--txt-fnt); }
+  .channels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .reading { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
+  .lb { color: var(--txt-dim); white-space: nowrap; }
+  .reading b { font: 700 clamp(10px, .86vw, 15px)/1.2 var(--f-umd); color: var(--amber); }
+  .ppm { position: relative; display: block; height: 4px; margin-top: 3px; overflow: hidden; background: var(--ink-050); }
+  .fill { position: absolute; inset: 0; background: linear-gradient(90deg, var(--cue) 0 62%, var(--amber) 62% 84%, var(--live) 84%); clip-path: inset(0 calc(100% - var(--v) * 100%) 0 0); }
+  .fill.flat { background: var(--cue); }
+  .cap { position: absolute; inset-block: 0; left: calc(var(--p) * 100% - 1px); width: 1px; background: var(--txt-hi); }
+  .load { display: block; margin-top: 3px; color: var(--txt-fnt); }
+  .trace { display: block; width: 100%; height: 34px; overflow: hidden; }
+  .rule { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .area { fill: color-mix(in oklab, var(--cue) 12%, transparent); }
+  .signal { fill: none; stroke: var(--cue); stroke-width: 1.2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .now { stroke: var(--txt-dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .contexts { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px 8px; }
+  .context { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 2px; padding-bottom: 3px; font: clamp(7px, .54vw, 10px)/1 var(--f-umd); }
+  .id { color: var(--txt-fnt); }
+  .context b { color: var(--txt); font-weight: 500; }
+  .track { position: absolute; inset: auto 0 0; height: 2px; background: var(--ink-050); overflow: hidden; }
+  .track i { display: block; height: 100%; background: var(--cue); transform: scaleX(var(--v)); transform-origin: left; transition: transform 300ms linear; }
+  .context.low b { color: var(--hold); }
+  .context.low .track i { background: var(--hold); }
+  @media (max-width: 900px) {
+    .tel { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); gap: 8px 12px; }
+    .bridge { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); padding: 5px 0 0; display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; align-items: start; }
+    .bridge .section-label { display: block; white-space: normal; }
+    .bridge .section-label > span { display: block; }
+    .contexts { grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 4px 6px; }
+    .hist { padding-left: 12px; }
   }
-  /* Scaled rather than resized: nine of these move at once, and only transform
-     stays off the layout path. */
-  .track i {
-    position: absolute;
-    inset: 0;
-    transform: scaleY(var(--h));
-    transform-origin: bottom;
-    background: color-mix(in oklab, var(--cue) 55%, var(--ink-200));
-    transition: transform 300ms linear;
+  @media (max-width: 540px) {
+    .tel { padding: 6px 8px; gap: 7px 10px; }
+    .channels { gap: 8px; }
+    .reading { flex-direction: column; gap: 2px; }
+    .hist { padding-left: 10px; }
+    .trace { height: 42px; }
+    .bridge { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+    .contexts { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px 6px; }
   }
-  .track i[data-low='true'] {
-    background: var(--hold);
-  }
-  .id {
-    color: var(--txt-fnt);
-  }
-
-  /* This component moves around the mosaic, so its own dimensions—not the
-     window width—decide whether the context bridge fits. */
-  @container telemetry (max-width: 520px) {
-    .bridge {
-      display: none;
-    }
-    .bars {
-      flex: 1;
-      height: auto;
-      min-height: 30px;
-    }
-    .hist {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 80px;
-    }
-    .rule {
-      bottom: calc(2px + var(--at) * 1%);
-    }
-  }
-  @container telemetry (max-height: 325px) {
-    .bridge {
-      display: none;
-    }
-    .hist {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 60px;
-    }
-    .bars {
-      flex: 1;
-      height: auto;
-      min-height: 30px;
-    }
-    .rule {
-      bottom: calc(2px + var(--at) * 1%);
-    }
-  }
+  @media (prefers-reduced-motion: reduce) { .track i { transition: none; } }
 </style>
