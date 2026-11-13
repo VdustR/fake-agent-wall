@@ -44,18 +44,19 @@
     const toggle = () => setThemeOpen(!themeOpen)
     const close = () => setThemeOpen(false)
     const onKeydown = (event: KeyboardEvent) => {
+      if (event.isComposing || event.keyCode === 229) return
       const shortcut = (event.metaKey || event.ctrlKey) && event.shiftKey && event.code === 'Comma'
       if (shortcut) {
         event.preventDefault()
         event.stopPropagation()
         toggle()
-      } else if (event.key === 'Escape' && themeOpen) {
+      } else if (event.key === 'Escape' && themeOpen && !event.defaultPrevented) {
         event.preventDefault()
         event.stopPropagation()
         close()
       }
     }
-    window.addEventListener('keydown', onKeydown, { capture: true })
+    window.addEventListener('keydown', onKeydown)
     const onStorage = (event: StorageEvent) => {
       if (event.key !== THEME_STORAGE_KEY) return
       committedTheme = loadTheme()
@@ -73,7 +74,7 @@
       cancelAnimationFrame(resizeFrame)
       clearTimeout(resizeSettled)
       gridObserver.disconnect()
-      window.removeEventListener('keydown', onKeydown, { capture: true })
+      window.removeEventListener('keydown', onKeydown)
       window.removeEventListener('storage', onStorage)
       offToggle?.()
       offClose?.()

@@ -1,5 +1,8 @@
 <script lang="ts">
   import { tick } from 'svelte'
+  import FontAutocomplete from './FontAutocomplete.svelte'
+  import { defaultFontOptions } from '../lib/font-autocomplete'
+  import { systemFontCatalog } from '../lib/system-font-catalog'
   import {
     allPresets,
     ANSI_KEYS,
@@ -25,6 +28,13 @@
   // svelte-ignore state_referenced_locally
   let draft = $state(cloneTheme(value))
   let search = $state('')
+  const fontOptions = $derived.by(() => {
+    const merged = new Map(defaultFontOptions().map((font) => [font.value, font]))
+    for (const font of $systemFontCatalog.fonts) if (!merged.has(font.value)) merged.set(font.value, font)
+    return [...merged.values()]
+  })
+  const fontStatus = $derived($systemFontCatalog.message)
+  const loadingFonts = $derived($systemFontCatalog.status === 'loading')
   let saveError = $state(false)
   let searchInput = $state<HTMLInputElement>()
   // The panel is remounted for every editing session, so the prop is the initial selection.
@@ -182,22 +192,21 @@
 
     <section>
       <h2>Typography</h2>
-      <label class="font-field">
-        <span>Editorial font stack</span>
-        <input value={draft.editorialFont} oninput={(event) => updateFont('editorialFont', event.currentTarget.value)} spellcheck="false" />
+      <div class="font-field">
+        <FontAutocomplete label="Editorial font stack" value={draft.editorialFont} options={fontOptions} onescape={oncancel} onchange={(family) => updateFont('editorialFont', family)} />
         <output class="editorial-preview" style:font-family={draft.editorialFont}>The fleet is ready for the next run.</output>
-      </label>
-      <label class="font-field">
-        <span>Chrome font stack</span>
-        <input value={draft.uiFont} oninput={(event) => updateFont('uiFont', event.currentTarget.value)} spellcheck="false" />
+      </div>
+      <div class="font-field">
+        <FontAutocomplete label="Chrome font stack" value={draft.uiFont} options={fontOptions} onescape={oncancel} onchange={(family) => updateFont('uiFont', family)} />
         <output style:font-family={draft.uiFont}>SWARM BUS · 012345</output>
-      </label>
-      <label class="font-field">
-        <span>Terminal font stack</span>
-        <input value={draft.codeFont} oninput={(event) => updateFont('codeFont', event.currentTarget.value)} spellcheck="false" />
+      </div>
+      <div class="font-field">
+        <FontAutocomplete label="Terminal font stack" value={draft.codeFont} options={fontOptions} onescape={oncancel} onchange={(family) => updateFont('codeFont', family)} />
         <output style:font-family={draft.codeFont}>● Read(src/App.svelte)</output>
-      </label>
+      </div>
       <p class="fallback">Each value is a complete CSS font-family stack.</p>
+      <button class="text-button" type="button" disabled={loadingFonts} onclick={() => systemFontCatalog.load()}>{loadingFonts ? 'Loading fonts…' : 'Load system fonts'}</button>
+      {#if fontStatus || loadingFonts}<p class="fallback" role="status">{fontStatus || 'Waiting for browser font access. Check the permission prompt in your browser.'}</p>{/if}
     </section>
   </div>
 
@@ -229,7 +238,7 @@
   .field-label { display: block; color: var(--umd); font-size: 10px; line-height: 1.2; letter-spacing: .1em; text-transform: uppercase; }
   h3 { margin-top: 18px; color: var(--txt-fnt); font-size: 9px; text-transform: uppercase; letter-spacing: .12em; }
   .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  input[type='search'], .text-field, .font-field input { width: 100%; height: 36px; margin-top: 10px; padding: 0 10px; color: var(--txt-hi); background: var(--ink-000); border: 1px solid var(--line-hi); border-radius: 2px; outline: none; font-family: var(--f-term); }
+  input[type='search'], .text-field { width: 100%; height: 36px; margin-top: 10px; padding: 0 10px; color: var(--txt-hi); background: var(--ink-000); border: 1px solid var(--line-hi); border-radius: 2px; outline: none; font-family: var(--f-term); }
   .wall-label-preview { display: block; margin-top: 8px; color: var(--on-coral); background: var(--coral); padding: 7px 10px; font: 700 11px/1.2 var(--f-term); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   input:focus-visible, button:focus-visible { outline: 1px solid var(--coral); outline-offset: 2px; }
   .preset-list { height: 178px; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); background: var(--ink-000); scrollbar-color: var(--line-hi) var(--ink-000); }

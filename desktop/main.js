@@ -7,9 +7,10 @@ import {
   powerMonitor,
   powerSaveBlocker,
   screen,
+  session,
   Tray,
 } from 'electron'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
 import { getSettings, setSettings } from './settings.js'
 import { openTrayMenu, updateTrayMenu } from './tray-menu.js'
@@ -72,6 +73,25 @@ const themePanelWindows = new Set()
 const windowRetirement = createWindowRetirement({ platform: process.platform, windowed: WINDOWED })
 let openRequest = 0
 let quitRequested = false
+
+/** Only the app's settings main frame may enumerate local font metadata. */
+function allowLocalFonts(webContents, permission, details) {
+  if (permission !== 'local-fonts' || !webContents || webContents.isDestroyed()) return false
+  if (!details.isMainFrame || !themePanelWindows.has(webContents.id)) return false
+  if (![...walls.values()].some(record => record.webContentsId === webContents.id)) return false
+  const expected = new URL(DEV_URL || pathToFileURL(join(HERE, '..', 'dist', 'index.html')).href)
+  expected.hash = ''
+  expected.search = ''
+  const isAppDocument = value => {
+    try {
+      const actual = new URL(value)
+      actual.hash = ''
+      actual.search = ''
+      return actual.href === expected.href
+    } catch { return false }
+  }
+  return isAppDocument(webContents.getURL()) && isAppDocument(details.requestingUrl)
+}
 
 /* ------------------------------------------------------------------- window */
 
@@ -289,13 +309,13 @@ function swallowInput(wc) {
       event.preventDefault()
       return
     }
+    // Settings and its nested inputs own editing, composition and dismissal.
+    if (themePanelOpen) return
     if (input.key === 'Escape') {
-      if (themePanelOpen) wc.send('wall:theme-close')
-      else startExitHold()
+      startExitHold()
       event.preventDefault()
       return
     }
-    if (themePanelOpen) return
     trackHelpKey(input)
     event.preventDefault()
   })
@@ -536,6 +556,8 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => openWall())
 
   app.whenReady().then(() => {
+    session.defaultSession.setPermissionCheckHandler((webContents, permission, _origin, details) => allowLocalFonts(webContents, permission, details))
+    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => callback(allowLocalFonts(webContents, permission, details)))
     stopSessionState = observeSessionState(powerMonitor, playbackPolicy, sessionChanged)
     // macOS exposes application deactivation separately from window blur.
     // Switching between our display windows or opening the theme panel is not

@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events'
+import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const originalPlatform = process.platform
@@ -29,7 +30,7 @@ beforeEach(() => {
       super()
       this.options = options
       this.webContents = new EventEmitter()
-      Object.assign(this.webContents, { id: harness.windows.length + 1, send: vi.fn(), isDestroyed: () => false })
+      Object.assign(this.webContents, { id: harness.windows.length + 1, send: vi.fn(), isDestroyed: () => this.isDestroyed(), getURL: () => this.documentUrl })
       harness.windows.push(this)
     }
     isDestroyed() { return this.destroyed === true }
@@ -48,7 +49,7 @@ beforeEach(() => {
       if (harness.focused === this) harness.focused = null
       this.emit('closed')
     }
-    loadFile() { queueMicrotask(() => this.emit('ready-to-show')) }
+    loadFile(path) { this.documentUrl = new URL(`file://${path}`).href; queueMicrotask(() => this.emit('ready-to-show')) }
   }
   class Tray {
     on() {}
@@ -65,6 +66,10 @@ beforeEach(() => {
   }
   vi.doMock('electron', () => ({
     app, powerMonitor, screen, BrowserWindow, Tray, ipcMain,
+    session: { defaultSession: {
+      setPermissionCheckHandler: handler => { harness.checkPermission = handler },
+      setPermissionRequestHandler: handler => { harness.requestPermission = handler },
+    } },
     Menu: { buildFromTemplate: items => { const menu = Object.assign(new EventEmitter(), { items }); harness.menu = menu; return menu } },
     nativeImage: { createFromPath: () => ({ setTemplateImage() {} }) },
     powerSaveBlocker: { start: vi.fn(), stop: vi.fn() },
@@ -104,6 +109,41 @@ async function leaveApp(wall) {
 }
 
 describe('desktop playback lifecycle', () => {
+
+  it('limits font enumeration to the owned settings main frame', async () => {
+    const wall = await launch()
+    const wc = wall.webContents
+    const details = { isMainFrame: true, requestingUrl: wc.getURL() }
+    const check = (permission = 'local-fonts', extra = {}, contents = wc) => harness.checkPermission(contents, permission, 'file:///', { ...details, ...extra })
+    expect(check()).toBe(false)
+    harness.ipcMain.emit('wall:theme-panel', { sender: wc }, true)
+    expect(check()).toBe(true)
+    expect(check('camera')).toBe(false)
+    expect(check('local-fonts', { isMainFrame: false })).toBe(false)
+    expect(check('local-fonts', { requestingUrl: 'https://example.com' })).toBe(false)
+    const other = new harness.BrowserWindow({})
+    other.loadFile(fileURLToPath(new URL('../dist/index.html', import.meta.url)))
+    expect(check('local-fonts', {}, other.webContents)).toBe(false)
+    const reply = vi.fn()
+    harness.requestPermission(wc, 'local-fonts', reply, details)
+    expect(reply).toHaveBeenCalledWith(true)
+    harness.ipcMain.emit('wall:theme-panel', { sender: wc }, false)
+    expect(check()).toBe(false)
+    reply.mockClear()
+    harness.requestPermission(wc, 'local-fonts', reply, details)
+    expect(reply).toHaveBeenCalledWith(false)
+  })
+
+  it('leaves settings Escape and composition to the renderer', async () => {
+    const wall = await launch()
+    harness.ipcMain.emit('wall:theme-panel', { sender: wall.webContents }, true)
+    expect(key(wall, 'keyDown').preventDefault).not.toHaveBeenCalled()
+    expect(key(wall, 'keyUp').preventDefault).not.toHaveBeenCalled()
+    expect(key(wall, 'keyDown', { isComposing: true }).preventDefault).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(wall.isDestroyed()).toBe(false)
+    expect(wall.webContents.send).not.toHaveBeenCalledWith('wall:theme-close')
+  })
 
   it('coalesces explicit playback requests until native retirement completes', async () => {
     harness.nativeFullscreen = true
