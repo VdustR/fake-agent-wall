@@ -1,10 +1,11 @@
-/* Terminal body faces load at 400 only; emphasis inside transcripts uses colour
-   rather than adding another large font payload. */
+/* Local font assets ship with both the site and the desktop app. Terminal
+   transcripts use regular; the tmux register uses the bundled bold weight. */
 @import '@fontsource/instrument-serif/400.css';
-@import '@fontsource/monaspace-neon/400.css';
-@import '@fontsource/monaspace-xenon/400.css';
-@import '@fontsource/monaspace-xenon/500.css';
-@import '@fontsource/monaspace-xenon/700.css';
+@import '@fontsource/commit-mono/latin-400.css';
+@import '@fontsource/commit-mono/latin-700.css';
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-500.css';
+@import '@fontsource/ibm-plex-sans/latin-700.css';
 
 :root {
   /* Master-control chrome: graphite plate, not neon-on-black. */
@@ -52,8 +53,8 @@
   --selection: #363634;
 
   --f-editorial: 'Instrument Serif', Charter, Georgia, serif;
-  --f-umd: 'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace;
-  --f-term: 'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace;
+  --f-umd: 'IBM Plex Sans', sans-serif;
+  --f-term: 'Commit Mono', ui-monospace, monospace;
 
   --gap: clamp(5px, 0.5vw, 10px);
   --r: 2px;
@@ -114,67 +115,67 @@ body {
   flex: none;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  color: var(--txt);
+  color: var(--term-fg);
   /* Hanging indent, so a wrapped line stays under its own gutter the way a
      real terminal's soft wrap does instead of resetting to column zero. */
   padding-left: 3ch;
   text-indent: -3ch;
 }
 .ln .bul {
-  color: var(--coral);
+  color: var(--ansi-blue);
   font-weight: 400;
 }
 .ln.tool {
-  color: var(--txt-hi);
+  color: var(--term-fg);
 }
 .ln.gut,
 .ln.cont {
-  color: var(--txt-dim);
+  color: var(--term-dim);
 }
 .ln.ctx {
-  color: var(--txt-fnt);
+  color: var(--term-muted);
 }
 .ln.add {
-  color: var(--add);
-  background: var(--add-bg);
+  color: var(--ansi-green);
+  background: var(--term-add-bg);
 }
 .ln.del {
-  color: var(--del);
-  background: var(--del-bg);
+  color: var(--ansi-red);
+  background: var(--term-del-bg);
 }
 .ln.todo-done {
-  color: var(--txt-fnt);
+  color: var(--term-muted);
 }
 .ln.todo-open {
-  color: var(--txt-dim);
+  color: var(--term-dim);
 }
 .ln.text {
-  color: var(--txt-hi);
+  color: var(--term-fg);
 }
 .ln.user {
-  color: var(--umd);
+  color: var(--ansi-cyan);
 }
 .ln.err {
-  color: var(--del);
+  color: var(--ansi-red);
 }
 .ln.ok {
-  color: var(--add);
+  color: var(--ansi-green);
 }
 .ln.dim {
-  color: var(--txt-fnt);
+  color: var(--term-muted);
 }
 .ln.rule {
   height: 0;
   margin: 0.6em 0;
-  border-top: 1px dashed var(--line-hi);
+  border-top: 1px dashed var(--term-line);
   overflow: hidden;
 }
 .ln.spin {
-  color: var(--coral);
+  color: var(--ansi-yellow);
   margin-top: 0.25em;
 }
 .ln.spin .meta {
-  color: var(--txt-fnt);
+  color: var(--term-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

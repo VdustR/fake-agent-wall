@@ -87,9 +87,14 @@
     min-height: 0;
     height: 100%;
     container: terminal / inline-size;
-    background: var(--ink-050);
+    background: var(--term-bg);
+    color: var(--term-fg);
     font-size: clamp(9px, 0.67vw, 13px);
     line-height: 1.44;
+  }
+  .term ::selection {
+    color: var(--term-fg);
+    background: var(--term-selection);
   }
   .term.pgm {
     font-size: clamp(10.5px, 0.84vw, 16px);
@@ -120,43 +125,43 @@
     background: transparent;
   }
   .cur.on {
-    background: var(--coral);
+    background: var(--term-cursor);
   }
 
   /* Permission requests are distinct from transcript output without borrowing a client skin. */
   .ask {
     flex: none;
     margin-top: 0.55em;
-    border: 1px solid var(--coral);
+    border: 1px solid var(--ansi-yellow);
     border-radius: 4px;
     padding: 0.5em 0.7em;
-    background: color-mix(in oklab, var(--coral) 8%, var(--ink-050));
+    background: var(--term-bg);
   }
   .ask-t {
-    color: var(--coral);
+    color: var(--ansi-yellow);
   }
   .ask-b {
-    color: var(--txt);
+    color: var(--term-fg);
     padding-left: 1.5ch;
     margin-top: 0.3em;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
   .ask-b.sub {
-    color: var(--txt-fnt);
+    color: var(--term-muted);
     margin-top: 0.1em;
   }
   .ask-q {
-    color: var(--txt-hi);
+    color: var(--term-fg);
     margin-top: 0.55em;
   }
   .ask-o {
-    color: var(--txt-dim);
+    color: var(--term-dim);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
   .ask-o.sel {
-    color: var(--coral);
+    color: var(--ansi-yellow);
   }
 
   .bar {
@@ -167,8 +172,8 @@
     justify-content: space-between;
     gap: 1ch;
     padding: 0.35em 0.75em 0.45em;
-    border-top: 1px solid var(--line);
-    background: var(--ink-000);
+    border-top: 1px solid var(--term-line);
+    background: var(--term-bg);
     font-size: 0.92em;
     white-space: nowrap;
     overflow: hidden;
@@ -178,14 +183,14 @@
     display: flex;
     gap: 0.8em;
     padding: 0.25em 0.75em;
-    border-top: 1px solid var(--line);
-    color: var(--txt-dim);
-    background: color-mix(in oklab, var(--add) 6%, var(--ink-000));
+    border-top: 1px solid var(--term-line);
+    color: var(--term-dim);
+    background: var(--term-bg);
     white-space: nowrap;
     overflow: hidden;
   }
   .recent-decision span {
-    color: var(--add);
+    color: var(--ansi-green);
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
@@ -193,7 +198,7 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--txt-hi);
+    color: var(--term-fg);
     font-weight: 500;
   }
   .mode,
@@ -203,13 +208,13 @@
     text-overflow: ellipsis;
   }
   .mode {
-    color: color-mix(in oklab, var(--add) 62%, var(--txt-fnt));
+    color: var(--ansi-green);
   }
   .left {
     flex: 0 1 auto;
     display: flex;
     min-width: 0;
-    color: var(--txt-fnt);
+    color: var(--term-muted);
   }
   .runtime {
     min-width: 0;
@@ -218,7 +223,7 @@
   }
   .context {
     flex: none;
-    color: var(--txt-dim);
+    color: var(--term-dim);
   }
 
   @container terminal (max-width: 340px) {

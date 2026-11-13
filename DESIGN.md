@@ -2,6 +2,9 @@
 name: Swarmdeck
 description: A master-control multiviewer for a heterogeneous wall of coding agents, framed by a tmux status line.
 colors:
+  term-bg: "#1e1e2e"
+  term-fg: "#cdd6f4"
+  term-muted: "color-mix(in oklch, #1e1e2e, #cdd6f4 56%)"
   ink-000: "#262624"
   ink-050: "color-mix(in oklch, #262624, #e5e4e1 4%)"
   ink-100: "color-mix(in oklch, #262624, #e5e4e1 7%)"
@@ -35,29 +38,29 @@ typography:
     fontWeight: 400
     lineHeight: 1.15
   headline:
-    fontFamily: "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'IBM Plex Sans', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(9.5px, 0.86vw, 15px)"
     fontWeight: 700
     lineHeight: 1
     fontFeature: "tabular-nums"
   status:
-    fontFamily: "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Commit Mono', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(9.5px, 0.72vw, 14px)"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "normal"
   body:
-    fontFamily: "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Commit Mono', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(9px, 0.67vw, 13px)"
     fontWeight: 400
     lineHeight: 1.44
   body-pgm:
-    fontFamily: "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Commit Mono', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(10.5px, 0.84vw, 16px)"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'IBM Plex Sans', 'SFMono-Regular', ui-monospace, monospace"
     fontSize: "clamp(6.5px, 0.46vw, 9.5px)"
     fontWeight: 500
     lineHeight: 1
@@ -104,13 +107,13 @@ components:
     backgroundColor: "{colors.ink-000}"
     rounded: "{rounded.panel}"
   terminal-field:
-    backgroundColor: "{colors.ink-050}"
-    textColor: "{colors.txt}"
+    backgroundColor: "{colors.term-bg}"
+    textColor: "{colors.term-fg}"
     typography: "{typography.body}"
     padding: "0.5em 0.7em"
   terminal-status-bar:
-    backgroundColor: "{colors.ink-000}"
-    textColor: "{colors.txt-fnt}"
+    backgroundColor: "{colors.term-bg}"
+    textColor: "{colors.term-muted}"
     padding: "0.35em 0.75em 0.45em"
   umd-strip:
     backgroundColor: "{colors.ink-150}"
@@ -248,7 +251,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - Graphite tonal layering (five ink steps) instead of shadow-based elevation, with exactly one recess on the whole surface.
 - Hard 1px hairlines; corners at 2px or 0.
 - Tally lamps as the primary status channel: red program bus, green preview bus, amber operator-blocked, blue idle.
-- Three typography roles with strict boundaries: Instrument Serif for narrative text, Monaspace Xenon for chrome, and Monaspace Neon for transcript body and the one tmux band.
+- Three typography roles with strict boundaries: Instrument Serif for narrative text, IBM Plex Sans for chrome, and Commit Mono for transcript body and the one tmux band.
 - No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
 - Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
@@ -278,7 +281,7 @@ signal colour at a time, plus Swarmdeck coral as the single product accent.
 ### Neutral
 
 - **Plate Black** (`{colors.ink-000}`): the deck and the inside of every monitor. Also the *ink* on any grey plate — see the ink rules below.
-- **Terminal Field** (`{colors.ink-050}`): the transcript background, the PPM track well and the histogram panel, one step up from the plate so a screen reads as lit glass inside a bezel.
+- **Terminal Field** (`{colors.term-bg}`): the exact selected preset background, shared by transcript, terminal status bar, decisions, and permission prompts. The PPM track well and histogram retain the derived `{colors.ink-050}` equipment surface.
 - **Panel Graphite** (`{colors.ink-100}`): telemetry body, the ticker rail, and the printed segment rules inside a PPM track.
 - **Label Graphite** (`{colors.ink-150}`): every UMD strip, header bar, the telemetry title bar, the status line, and the exit slate.
 - **Chip Graphite** (`{colors.ink-200}`): the source-number chip, the resting `NEXT CUT` plate, and the mix partner for every dimmed tally colour.
@@ -316,14 +319,14 @@ Two kinds of filled block exist, and they take different ink.
 ## Typography
 
 **Editorial Font:** Instrument Serif (with Charter, Georgia, `serif`)
-**Chrome Font:** Monaspace Xenon (with SFMono-Regular, `ui-monospace`, `monospace`)
-**Terminal Font:** Monaspace Neon (with SFMono-Regular, `ui-monospace`, `monospace`)
+**Chrome Font:** IBM Plex Sans (with `sans-serif` recovery)
+**Terminal Font:** Commit Mono (with `ui-monospace`, `monospace` recovery)
 
-**Character:** Two related Monaspace voices own the wall, with Instrument Serif used
-for narrative text and the settings hierarchy. Xenon is mechanical and squared-off,
-so it reads as silkscreen printed onto a rack panel. Neon is calmer and more open in
-long transcripts while retaining the same family proportions. Ligatures are disabled
-globally so code remains explicit at dense sizes.
+**Character:** Commit Mono supplies restrained, neutral code forms; IBM Plex Sans
+makes equipment labels more compact and distinct from terminal output. Instrument
+Serif retains the narrative and settings hierarchy. All three faces ship locally,
+so the default identity does not depend on system fonts or a network font service.
+Ligatures remain disabled so code stays explicit at dense sizes.
 
 There is **no display step on the wall**. The largest type on the surface is the program monitor's
 transcript at a 16px ceiling; the next largest is the bus readout at 15px. The build
@@ -337,18 +340,18 @@ client-specific glyph or fallback face.
 
 ### Hierarchy
 
-- **Headline** (Monaspace Xenon 700, `clamp(9.5px, 0.86vw, 15px)`, line-height 1.2, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. Small, because on this panel the bar carries the magnitude and the numeral only confirms it.
-- **Status** (Monaspace Neon 400, `clamp(9.5px, 0.72vw, 14px)`, line-height 1.2, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This is the only chrome on the surface written in the terminal face, and the only chrome that is not uppercase. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
-- **Body** (Monaspace Neon 400, `clamp(9px, 0.67vw, 13px)`, line-height 1.44): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`clamp(10.5px, 0.84vw, 16px)`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read. Instrument Serif task copy in the PGM header has a 10px floor because its fine strokes do not survive below that size.
-- **Label** (Monaspace Xenon 500, `clamp(6.5px, 0.46vw, 9.5px)`, `0.1em`, uppercase, line-height 1.2): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `clamp(10px, 0.86vw, 15px)` at `0.13em`), because that plate is read across a room rather than on camera.
+- **Headline** (IBM Plex Sans 700, `clamp(9.5px, 0.86vw, 15px)`, line-height 1.2, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. Small, because on this panel the bar carries the magnitude and the numeral only confirms it.
+- **Status** (Commit Mono 400, `clamp(9.5px, 0.72vw, 14px)`, line-height 1.2, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This is the only chrome on the surface written in the terminal face, and the only chrome that is not uppercase. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
+- **Body** (Commit Mono 400, `clamp(9px, 0.67vw, 13px)`, line-height 1.44): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`clamp(10.5px, 0.84vw, 16px)`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read. Instrument Serif task copy in the PGM header has a 10px floor because its fine strokes do not survive below that size.
+- **Label** (IBM Plex Sans 500, `clamp(6.5px, 0.46vw, 9.5px)`, `0.1em`, uppercase, line-height 1.2): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `clamp(10px, 0.86vw, 15px)` at `0.13em`), because that plate is read across a room rather than on camera.
 
 ### Named Rules
 
-**The Wall-Register Rule.** Monaspace Xenon is the chrome register and Monaspace Neon is the terminal register. Uppercase and tracked is chrome; a transcript is Neon. Instrument Serif is limited to narrative text such as the PGM task and the settings hierarchy. The single crossing between the two wall registers is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
+**The Wall-Register Rule.** IBM Plex Sans is the chrome register and Commit Mono is the terminal register. Uppercase and tracked is chrome; a transcript is Commit Mono. Instrument Serif is limited to narrative text such as the PGM task and the settings hierarchy. The single crossing between the two wall registers is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
 
 **The One-Terminal-Edge Rule.** Exactly one band on this surface speaks tmux: the status line across the top. It is the only place the terminal face is used as chrome, the only place chrome is mixed-case and untracked, and the only place `{colors.txt-fnt}`/`{colors.txt-dim}`/`{colors.txt-hi}` grade a *label* rather than a transcript. Everything below it — sources, instruments, the ticker, every plate and badge — is master control. The mixture is deliberate and it is capped at one band. A second tmux element anywhere else makes the surface read as two half-finished worlds instead of a terminal wall mounted in a rack, and a master-control device inside the status line does the same in reverse.
 
-**The One-Weight Rule.** Monaspace Neon ships at weight 400 only, so the transcript has no bold. Emphasis inside a transcript is always a colour change. The status line may use synthetic 700 at 10–14px chrome; Monaspace Xenon carries 400/500/700 because 7px labels need real weight contrast to survive.
+**The Transcript-Weight Rule.** Transcripts use Commit Mono 400 with colour emphasis. The tmux status line uses bundled Commit Mono 700 for active windows and counts. IBM Plex Sans carries 400/500/700 so small equipment labels have real weight contrast. These fonts use local Fontsource assets, and their OFL texts ship in `dist/licenses/`.
 
 **The Hanging-Gutter Rule.** Every transcript line carries `padding-left: 3ch; text-indent: -3ch`, so a soft-wrapped line stays under its own gutter instead of resetting to column zero. This is what makes a clipped 9px terminal still parse as a terminal.
 
@@ -509,13 +512,22 @@ Swarmdeck semantic tokens are derived from the iTerm palette rather than stored
 as a second editable palette. Background and foreground generate the graphite,
 hairline, and text ramps with `color-mix(in oklch, ...)`; ANSI red, green, yellow,
 and blue feed program, preview, hold, and idle; cursor feeds Swarmdeck coral; bright
-variants feed readouts and transcript diff colours. Ink on saturated fills is
+variants feed wall readouts. Terminal content has a separate `--term-*` and
+`--ansi-*` token boundary: background, foreground, cursor, selection, and all 16
+ANSI entries are exported unchanged. Normal output uses foreground; tool bullets
+use ANSI blue, user turns cyan, thinking and permission accents yellow, success
+and additions green, and errors and deletions red. The cursor colour controls
+only the terminal cursor within this boundary. Dim and muted output blend the
+terminal foreground with its background; diff bands use translucent ANSI green
+and red. Terminal surfaces never use the lifted chrome background or substitute
+bright white for the preset foreground. Ink on saturated fills is
 chosen from black or white for legibility. This mapping preserves the wall's
 status grammar while allowing light and dark terminal schemes.
 
 Typography has two independent user values: UI font for tmux/master-control
-chrome and code font for terminal content. Both preview while typing and always
-append `ui-monospace, monospace`. The panel does not fetch fonts or accept webfont
+chrome and code font for terminal content. Both preview while typing. The default chrome uses bundled IBM Plex Sans;
+the default terminal uses bundled Commit Mono. Generic fallback families are
+recovery paths, rather than the primary visual identity. The panel does not fetch fonts or accept webfont
 markup; a missing local family falls
 through immediately.
 
@@ -576,24 +588,27 @@ when the source is held, and the tally state word (`on air` / `live` / `think` /
 
 ### Terminal
 
-The transcript field. Bottom-anchored, clipped, on `{colors.ink-050}`. Line kinds are
+The transcript field. Bottom-anchored, clipped, on the unmodified preset
+background (`--term-bg`), with the unmodified foreground (`--term-fg`). The frontmatter
+terminal tokens show the default Catppuccin Mocha values; runtime tokens always
+follow the active preset or custom colours. Line kinds are
 styled globally in `app.css` rather than scoped in the component, because the kind
 arrives as a runtime value that Svelte's scoped-CSS pruning cannot see statically —
 scoping them would silently delete the rules. Fourteen kinds form the shared agent
-grammar: `tool` (brightened to `{colors.txt-hi}`, coral `●` bullet), `gut`/`cont` (dim
+grammar: `tool` (preset foreground, ANSI blue `●` bullet), `gut`/`cont` (dim
 result gutters), `ctx` (faint diff context), `add`/`del` (tinted text on a translucent
 tinted band), `todo-done`/`todo-open`, `text`, `user`, `err`, `ok`, `dim`, `spin`, and
 `rule` (a dashed 1px separator with 0.6em breathing room, used to mark a session
 turnover).
 
-A block cursor (0.62em × 1em, coral) blinks on the streaming line at a 530ms half-cycle,
+A block cursor (0.62em × 1em, preset cursor colour) blinks on the streaming line at a 530ms half-cycle,
 and the spinner cycles a restrained `· o O o` sequence at 110ms alongside a faint
 `(Ns · ↑ Nk tokens · esc to interrupt)` meta. The status bar pins the fleet execution
-policy (in a green/faint mix) against `provider / model · N% context left`.
+policy (in ANSI green) against `provider / model · N% context left`.
 
-The **permission prompt** is the one framed object inside a transcript: a 4px coral
-border on an 8% coral wash, with title, indented body, question and numbered options
-where the selected option is coral and prefixed `❯`.
+The **permission prompt** is the one framed object inside a transcript: a 1px ANSI yellow
+border with a 4px radius on the unchanged terminal background, with title, indented body, question and numbered options
+where the selected option is ANSI yellow and prefixed `❯`.
 
 ### LED Meter
 
@@ -688,10 +703,10 @@ when the page unmounts. A plain browser tab keeps its ordinary pointer behavior.
 - **Do** resolve every status from one value. Tile border, badge, meter tone, UMD word and status-line window ink all derive from the same `run | cue | hold | done` status, so a source can never display two states.
 - **Do** keep the tmux register to the top band. If new chrome belongs to the wall, write it in the label register; if it belongs to the status line, write it in the terminal face, mixed case, untracked.
 - **Do** use `{spacing.gap}` as the only gutter between panels, and clamp panel heights to the viewport rather than fixing pixels.
-- **Do** put every piece of master-control chrome in the `.umd-type` label register (Monaspace Xenon 500, uppercase, `0.1em`) and every transcript in Monaspace Neon 400.
+- **Do** put every piece of master-control chrome in the `.umd-type` label register (IBM Plex Sans 500, uppercase, `0.1em`) and every transcript in Commit Mono 400.
 - **Do** put `.tnum` on any number that changes on screen.
 - **Do** reach for `{colors.txt-hi}` when something needs to be brighter than `{colors.txt}`, for the matching `on-*` token when text sits on a saturated lamp, and for `{colors.ink-000}` when it sits on a grey plate.
-- **Do** express emphasis inside a transcript with colour. The terminal face intentionally ships at one weight.
+- **Do** express emphasis inside a transcript with colour. Transcripts use regular weight; the tmux status register also loads a real bold face.
 - **Do** style runtime-valued classes globally in `app.css`, alongside the existing `.ln` rules.
 - **Do** draw new signal states as coloured 1px hairlines and coloured lamps, and derive dimmed variants with `color-mix(in oklab, <signal> N%, var(--ink-200))` the way the tally system already does.
 - **Do** print an instrument's scale — ticks, numerals, segment rules, reference mark — on the empty track, and put the scale colours on the track with the fill clipped back to the reading.
