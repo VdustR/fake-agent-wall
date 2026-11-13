@@ -117,7 +117,8 @@
   const beat = $derived(swarm.uptimeMs)
   // Only desktop playback hides an idle pointer and owns the exit gesture.
   const desktop = typeof window !== 'undefined' && window.agentWall?.isDesktop === true
-  const onAir = $derived(swarm.agents[swarm.pgm] ?? swarm.agents[0]!)
+  const onAir = $derived(swarm.programAgent)
+  const preview = $derived(swarm.previewAgent)
   const gridItems = $derived(operations.gridItems)
   $effect(() => {
     const slots = gridItems.flatMap(item => item.type === 'agent' && item.agent ? [item.agent.slot] : [])
@@ -144,12 +145,12 @@
                 flash={swarm.flash}
                 calm={swarm.reducedMotion}
                 nextCutIn={swarm.nextCutIn}
-                cueing={swarm.pst === -1 ? null : (swarm.agents[swarm.pst]?.numLabel ?? null)}
+                cueing={preview?.numLabel ?? null}
               />
             {:else if item.type === 'system'}
               <SystemStatus {swarm} />
             {:else if item.type === 'agent'}
-              <Tile agent={item.agent!} {beat} onAir={item.agent!.slot === swarm.pgm} cued={item.agent!.slot === swarm.pst} calm={swarm.reducedMotion} />
+              <Tile agent={item.agent!} {beat} onAir={item.agent === onAir} cued={item.agent === preview} calm={swarm.reducedMotion} />
             {:else}
               <Operations world={operations} kind={item.kind!} />
             {/if}

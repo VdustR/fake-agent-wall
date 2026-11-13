@@ -96,6 +96,10 @@ export class Swarm {
     if (this.pst >= target) this.pst = -1
   }
 
+  /** Resolve routing indexes once; view code compares sources, never slot numbers. */
+  get programAgent(): Agent { return this.agents[this.pgm] ?? this.agents[0]! }
+  get previewAgent(): Agent | undefined { return this.agents[this.pst] }
+
   start() {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     this.reducedMotion = mq.matches
