@@ -55,6 +55,7 @@ export class Swarm {
   #cutAt = 0
   #cueAt = 0
   #lastSeen = new Map<number, number>()
+  #counterSamples = new WeakMap<Agent, { tokens: number; tools: number }>()
   #tickerId = 0
   #raf = 0
   #watchdog = 0
@@ -71,6 +72,9 @@ export class Swarm {
   constructor(seed = 20260811) {
     this.#seed = seed
     this.ensureAgentCount(INITIAL_AGENT_COUNT)
+    // Seed the wall's history once. Later membership changes are not new work.
+    this.totalTokens = this.agents.reduce((sum, agent) => sum + agent.lifeTokens, 0)
+    this.totalTools = this.agents.reduce((sum, agent) => sum + agent.lifeTools, 0)
   }
 
   ensureAgentCount(count: number): void {
@@ -79,7 +83,9 @@ export class Swarm {
       { length: count - this.agents.length },
       (_, index) => {
         const slot = this.agents.length + index + 1
-        return new Agent(slot, this.#seed + (slot - 1) * 7919)
+        const agent = new Agent(slot, this.#seed + (slot - 1) * 7919)
+        this.#counterSamples.set(agent, { tokens: agent.lifeTokens, tools: agent.lifeTools })
+        return agent
       },
     )
     this.agents = [...this.agents, ...additions]
@@ -90,6 +96,10 @@ export class Swarm {
     if (target >= this.agents.length) {
       this.ensureAgentCount(target)
       return
+    }
+    for (const agent of this.agents.slice(target)) {
+      this.#lastSeen.delete(agent.slot)
+      this.#counterSamples.delete(agent)
     }
     this.agents = this.agents.slice(0, target)
     if (this.pgm >= target) this.pgm = 0
@@ -158,16 +168,24 @@ export class Swarm {
 
     let running = 0
     let activity = 0
-    let tokens = 0
-    let tools = 0
+    let tokens = this.totalTokens
+    let tools = this.totalTools
     for (const a of this.agents) {
       a.calm = this.reducedMotion
       if (this.#visibleSlots.has(a.slot)) a.tick(now, dt)
       else if (tickBackground) a.tick(now, backgroundDt)
       if (a.status !== 'done') running += 1
       if (a.status === 'run') activity += a.level
-      tokens += a.lifeTokens
-      tools += a.lifeTools
+      const previous = this.#counterSamples.get(a)
+      if (previous) {
+        // Reset detection happens per producer, before fleet aggregation.
+        tokens += a.lifeTokens >= previous.tokens ? a.lifeTokens - previous.tokens : a.lifeTokens
+        tools += a.lifeTools >= previous.tools ? a.lifeTools - previous.tools : a.lifeTools
+        previous.tokens = a.lifeTokens
+        previous.tools = a.lifeTools
+      } else {
+        this.#counterSamples.set(a, { tokens: a.lifeTokens, tools: a.lifeTools })
+      }
       const seen = this.#lastSeen.get(a.slot) ?? 0
       const ev = a.lastEvent
       if (ev && ev.n > seen) {
