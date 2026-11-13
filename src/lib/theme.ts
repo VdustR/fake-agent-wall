@@ -49,11 +49,17 @@ const LEGACY_STORAGE_KEYS = ['fake-agent-wall.theme.v1', 'fake-agent-wall.theme.
 const HEX = /^#[0-9a-f]{6}$/i
 
 const LEGACY_EDITORIAL_FONT = "'Source Serif 4', Charter, Georgia, serif"
-const LEGACY_UI_FONT = "'Martian Mono', 'SFMono-Regular', ui-monospace, monospace"
-const LEGACY_CODE_FONT = "Iosevka, 'SFMono-Regular', ui-monospace, monospace"
+const LEGACY_UI_FONTS = new Set([
+  "'Martian Mono', 'SFMono-Regular', ui-monospace, monospace",
+  "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace",
+])
+const LEGACY_CODE_FONTS = new Set([
+  "Iosevka, 'SFMono-Regular', ui-monospace, monospace",
+  "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace",
+])
 export const DEFAULT_EDITORIAL_FONT = "'Instrument Serif', Charter, Georgia, serif"
-export const DEFAULT_UI_FONT = "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace"
-export const DEFAULT_CODE_FONT = "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"
+export const DEFAULT_UI_FONT = "'IBM Plex Sans', sans-serif"
+export const DEFAULT_CODE_FONT = "'Commit Mono', ui-monospace, monospace"
 export const DEFAULT_WALL_LABEL = 'fake-agent-wall'
 
 export const presets = presetData.colors as ThemePreset[]
@@ -80,8 +86,8 @@ export function cloneTheme(theme: ThemeSettings): ThemeSettings {
   return {
     ...theme,
     editorialFont: theme.editorialFont === LEGACY_EDITORIAL_FONT ? DEFAULT_EDITORIAL_FONT : theme.editorialFont,
-    uiFont: theme.uiFont === LEGACY_UI_FONT ? DEFAULT_UI_FONT : theme.uiFont,
-    codeFont: theme.codeFont === LEGACY_CODE_FONT ? DEFAULT_CODE_FONT : theme.codeFont,
+    uiFont: LEGACY_UI_FONTS.has(theme.uiFont) ? DEFAULT_UI_FONT : theme.uiFont,
+    codeFont: LEGACY_CODE_FONTS.has(theme.codeFont) ? DEFAULT_CODE_FONT : theme.codeFont,
     wallLabel: normalizeWallLabel(theme.wallLabel),
     colors: { ...theme.colors },
   }
@@ -128,6 +134,15 @@ export function applyTheme(theme: ThemeSettings): void {
   const root = document.documentElement
   root.style.colorScheme = relativeLuminance(colors.background) > 0.5 ? 'light' : 'dark'
   const vars: Record<string, string> = {
+    '--term-bg': colors.background,
+    '--term-fg': colors.foreground,
+    '--term-cursor': colors.cursor,
+    '--term-selection': colors.selection,
+    '--term-dim': mix(colors.background, colors.foreground, 72),
+    '--term-muted': mix(colors.background, colors.foreground, 56),
+    '--term-line': mix(colors.background, colors.foreground, 12),
+    '--term-add-bg': alpha(colors.green, 0.15),
+    '--term-del-bg': alpha(colors.red, 0.13),
     '--ink-000': colors.background,
     '--ink-050': mix(colors.background, colors.foreground, 4),
     '--ink-100': mix(colors.background, colors.foreground, 7),
@@ -159,6 +174,9 @@ export function applyTheme(theme: ThemeSettings): void {
     '--f-editorial': normalizedFontStack(theme.editorialFont, DEFAULT_EDITORIAL_FONT),
     '--f-umd': normalizedFontStack(theme.uiFont, DEFAULT_UI_FONT),
     '--f-term': normalizedFontStack(theme.codeFont, DEFAULT_CODE_FONT),
+  }
+  for (const key of ANSI_KEYS) {
+    vars[`--ansi-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`] = colors[key]
   }
   for (const [name, value] of Object.entries(vars)) root.style.setProperty(name, value)
 }

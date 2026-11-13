@@ -13,8 +13,13 @@ which is distributed under the MIT License.
 
 ## Fonts
 
-Instrument Serif and Monaspace Neon/Xenon are bundled through
-[`fontsource`](https://fontsource.org/). The fonts are distributed under the
+Instrument Serif, Commit Mono, and IBM Plex Sans are bundled through
+[`Fontsource`](https://fontsource.org/). The fonts are distributed under the
 SIL Open Font License 1.1; Fontsource package code is distributed under the MIT
-License. Their license files remain included in the installed packages and
-release dependency bundle.
+License. Font license texts are copied to `public/licenses/` and included in
+`dist/licenses/` by Vite, so both the website and packaged desktop app include
+them without relying on development dependencies.
+
+- [Commit Mono](https://github.com/eigilnikolajsen/commit-mono)
+- [IBM Plex](https://github.com/IBM/plex)
+- [Instrument Serif](https://github.com/Instrument/instrument-serif)

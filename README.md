@@ -112,14 +112,17 @@ characters so the status line remains usable on narrow screens.
 
 Search the bundled iTerm presets, select one, and adjust any of its background,
 foreground, cursor, selection, or 16 ANSI colours. Changes preview immediately.
-New installations start with **Catppuccin Mocha**, **Monaspace Xenon** for
-master-control chrome, **Monaspace Neon** for terminal content, and **Instrument
-Serif** for editorial text. Existing saved choices continue to load normally.
+New installations start with **Catppuccin Mocha**, **IBM Plex Sans** for
+master-control chrome, **Commit Mono** for terminal content, and **Instrument
+Serif** for editorial text. Saved defaults migrate to the new bundled families;
+custom font choices and colours are preserved.
 **Reset preset** restores the selected preset, while **Cancel** or Escape returns
 to the last applied theme. **Apply** saves the palette and separate UI/code font
 families in local browser storage and restores them on the next launch. The
-three defaults are bundled; custom font families must be installed on the
-computer and always fall back to system faces.
+three defaults ship as local font assets in both the website and desktop app,
+with no font CDN or system-font installation required. Custom font families must
+be installed on the computer; generic fallbacks remain a recovery path. Font
+licenses ship in `licenses/` beside the built application assets.
 
 The 533 converted presets come from
 [`mbadolato/iTerm2-Color-Schemes`](https://github.com/mbadolato/iTerm2-Color-Schemes)

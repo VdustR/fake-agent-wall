@@ -16,13 +16,13 @@ importers:
 
   .:
     devDependencies:
+      '@fontsource/commit-mono':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/ibm-plex-sans':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/instrument-serif':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/monaspace-neon':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/monaspace-xenon':
         specifier: ^5.3.0
         version: 5.3.0
       '@sveltejs/vite-plugin-svelte':
@@ -99,14 +99,14 @@ packages:
     engines: {node: '>=14.14'}
     hasBin: true
 
+  '@fontsource/commit-mono@5.3.0':
+    resolution: {integrity: sha512-Bs+zlEWHDgk/cCVWEMJJaA7LbBU3Ixi5Zums+SSwMKdm2N7RJ4P7jCJTwsMHRt5WFiXYB0tu0q9HMfkn0YsLsQ==}
+
+  '@fontsource/ibm-plex-sans@5.3.0':
+    resolution: {integrity: sha512-CbE4CbbEEZJX860XyUiRpsksXIQR8Rp2XDva2VO53NJox9tVNtusrysd2x5YkUEY3ErQ66W1IiiQL8/wihhw5w==}
+
   '@fontsource/instrument-serif@5.3.0':
     resolution: {integrity: sha512-mDiaIg0u67sYV59fie92Wz4sM8UiVlbL7fLxnFPCKkX15DMASEnQTREbaP5S5/3DCcsoAOcQ0sV9E4AeY4QqYQ==}
-
-  '@fontsource/monaspace-neon@5.3.0':
-    resolution: {integrity: sha512-a4B4L4nmW+mW42gDb6JUugy2fA3DC0QKi2yRMXKzuNsN+wHhUvrqgYndIBMds+Evq/cWaMJgd06x14dHuBNxwA==}
-
-  '@fontsource/monaspace-xenon@5.3.0':
-    resolution: {integrity: sha512-f65HlIRnq072ZMGJL2AMCPE1198EMog1i5vko3BrmEn06+Z+Ttvyv6lgXkKlo04oa/E1ObZit1xHHNVFg8mA/Q==}
 
   '@isaacs/fs-minipass@4.0.1':
     resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
@@ -1829,11 +1829,11 @@ snapshots:
       - supports-color
     optional: true
 
+  '@fontsource/commit-mono@5.3.0': {}
+
+  '@fontsource/ibm-plex-sans@5.3.0': {}
+
   '@fontsource/instrument-serif@5.3.0': {}
-
-  '@fontsource/monaspace-neon@5.3.0': {}
-
-  '@fontsource/monaspace-xenon@5.3.0': {}
 
   '@isaacs/fs-minipass@4.0.1':
     dependencies:
