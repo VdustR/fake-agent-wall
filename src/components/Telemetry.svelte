@@ -173,6 +173,7 @@
     .trace { height: 42px; }
     .bridge { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
     .contexts { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px 6px; }
+
   }
   @media (prefers-reduced-motion: reduce) { .track i { transition: none; } }
 </style>

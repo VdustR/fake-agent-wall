@@ -23,7 +23,7 @@
         {#each items as it (it.id)}
           <span class="ev">
             <em class="tnum">{it.slot}</em>
-            <b class="tnum">{it.clock.slice(-2)}s</b>
+            <b class="tnum" title={it.clock} aria-label={`Event time ${it.clock}`}>{it.clock.slice(6)}s</b>
             <span class="repo">{it.repo}</span>
             <span class="txt">{it.text}</span>
           </span>

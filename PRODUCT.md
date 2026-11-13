@@ -19,8 +19,8 @@ something else is being filmed, recorded, or shown to an audience, so the primar
 ## Product Purpose
 
 Show a heterogeneous wall of coding-agent sessions all working at once, convincingly
-enough that a viewer believes a real swarm is running. Everything on screen is
-fabricated. Success = a viewer glances at it and reads "a lot of serious machine work
+enough that a viewer believes a real swarm is running. The sessions and workload instruments are
+fabricated; the local wall clock and event timestamps use real system time. Success = a viewer glances at it and reads "a lot of serious machine work
 is happening right now", then finds internally consistent engineering detail up close.
 
 ## Positioning
@@ -42,7 +42,7 @@ visibly loop within a recording-length window.
 - Desktop-first laptop viewport is the shipping target.
 - Purely client-side. No backend, no network calls at runtime.
 - Must hold a steady frame rate with every panel animating simultaneously.
-- All content is synthetic. Repo names, file paths, diffs, and metrics are props.
+- Repo names, file paths, diffs and workload metrics are synthetic props. The local wall clock and event timestamps use real system time with millisecond display precision.
 
 ## Brand Commitments
 

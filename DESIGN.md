@@ -386,10 +386,10 @@ The ambient wall keeps these viewport-scaled sizes to preserve multiview density
 The deck is a fixed column at `100dvh` with `overflow: hidden` on the body:
 status line, flexible terminal wall, compact Swarm Bus strip, then ticker. Only the wall
 flexes. Telemetry no longer receives an entire mosaic tile: its content determines a
-shallow height (about 72px at 1440px), returning the former panel area to sessions.
+shallow height (about 72px at 1440px; host instruments live in their own tile), returning the former panel area to sessions.
 
 **The wall** is a content-aware mosaic on a fine logical grid. JavaScript measures
-the available container, selects a feasible source capacity, and packs PGM,
+the available container, selects a feasible source capacity, and packs PGM, system status,
 terminal and operations blocks around their preferred pixel sizes and aspect ratios.
 PGM remains the dominant source but has a practical maximum width; large and ultrawide
 viewports add generated agents instead of stretching a fixed source set. The wall
@@ -559,7 +559,7 @@ The top band, and the surface's only tmux element. Three parts, in tmux's own or
 
 - **status-left** — a solid coral `[swarmdeck]` session block at weight 700 on `{colors.on-coral}`, full band height, square.
 - **the window list** — one entry per agent, `{slot}:{label}` (`1:MIGRATE-01`), graded by state: `{colors.txt-hi}` streaming, `{colors.txt-dim}` at rest, `{colors.txt-fnt}` idle, `{colors.hold}` blocked. The on-air source is reverse video on `{colors.live}` and flagged `*`; the cued source is reverse video on `{colors.cue}`; a source blocked on a permission prompt is flagged `!`. The flags are tmux's own: `*` is the current window, `!` is the window with a bell.
-- **status-right** — `N live`, `N think`, `N hold` with each figure tinted by its own lamp, a `│` separator in `{colors.line-hi}`, running token and call totals, another separator, and an amber `HH:MM:SS` clock at weight 700.
+- **status-right** — `N live`, `N think`, `N hold` with each figure tinted by its own lamp, a `│` separator in `{colors.line-hi}`, running token and call totals, another separator, and an amber `HH:mm:ss.SSS` local system clock at weight 700.
 
 The band is `{colors.ink-150}` with a 1px `{colors.line-hi}` bottom edge and
 `overflow: hidden` — the window list truncates rather than wrapping, and drops out
@@ -656,12 +656,74 @@ the fleet exceeds 27 the header explicitly prints the shown range and fleet coun
 Values below 25% use hold amber. Tracks scale horizontally at 300ms and honor reduced
 motion. Narrow viewports move this group to a second row rather than hiding it.
 
+**System status** is an independent mosaic tile with 16 simulated logical CPUs and 32-second fixed-scale histories. Per-core utilization appears in a two-row matrix; aggregate CPU is the arithmetic mean. Its workload instruments are:
+CPU utilization, allocated memory  / 64GiB, used storage  / 2TiB, disk read/write in
+MiB/s, and network receive/transmit in Mb/s. A fictional host has 800MiB/s aggregate
+disk capacity and a 1000Mb/s full-duplex link. Green is read/receive, amber is
+write/transmit. CPU and traffic use linear traces; allocation and storage use stepped
+traces so batch release stays visible. All plots retain observed samples at 4Hz;
+resuming fills only missing simulation samples, bounded to 128 points. Current workload
+changes never redraw the old history. No CSS path morph or extra animation timer.
+
+A single snapshot owns the core and process accounting. Each process has a CPU budget
+in one-core units (100%=one logical CPU); allocation across available cores is bounded
+to 100% each, and processCPUsum/logicalCPUcount equals the aggregate percentage. The
+profile's 16 logical CPUs are fictional, not read from the viewer's hardware. RSS sums
+exclude the retained OS/cache baseline and stay below total used memory. System and
+Processes consume the same 4Hz snapshot. History sampling belongs to the Swarm owner,
+so widget mounts do not create competing clocks or regenerate old observations.
+
+CPU demand evolves continuously between seeded anchors at two time scales, with
+an 850ms ramp between task phases. Worker lanes keep their core preferences across PID
+turnover; slow affinity drift replaces whole-machine reshuffles. The 4Hz samples are
+observations of that continuous workload, not independent random frames. Core bars
+interpolate for the full 250ms sampling interval, with no hold gap. History paths move
+left by one sample over the same interval; old observations keep their shape. Reduced
+motion removes both transitions and scrolling, while actual clock sampling continues.
+All interpolation is CSS transform-only; widgets create no extra animation-frame loop.
+
+Three staggered, seeded jobs move through fetch, compile, test, publish, cleanup and
+idle stages. Each cycle varies stage lengths, working sets and burst intensity. Fetch
+favours network receive plus disk writes; compile/test favour CPU and disk reads;
+publish favours transmit plus reads. Process exit frees working sets in batches;
+workspace cleanup drops temporary volume usage. The OS/cache floor and retained
+artifact storage remain. These are illustrative task lifecycles, never measured OS
+utilization or a claim that every allocator returns memory immediately.
+
+CPU and memory plot full capacity; disk/network plot their printed directional scales.
+Storage displays total usage against 2TiB but its trace has an explicitly labeled fixed
+1.125–1.25TiB range, so small workspace allocation/cleanup remains visible without
+pretending the whole volume fills and empties. No hidden auto-scaling. The tile keeps memory, storage, disk and network in a 2×2 grid; below 240px tile height
+the redundant aggregate CPU history yields while the average and all 16 core meters
+remain. System reserves one mosaic slot. Processes has priority among operations on
+walls with at least five slots; constrained packing yields other operations, then
+Processes, before dropping terminal capacity.
+
+### Processes
+
+An independent top-like operations tile uses PID, state, CPU%, RSS MiB and command
+columns. The header states `1 CPU = 100%`, so a multithreaded worker may exceed 100%
+without contradicting the all-core average. Rows are keyed by PID; numeric values
+update at 4Hz while descending CPU sort refreshes every two seconds. New tasks append
+until the next sort, and terminated PIDs disappear immediately. A measured row fitter
+shows complete rows and prints shown/total task counts, with R/S/D state counts. PID,
+state and numeric cells retain their widths; commands truncate with the full command
+on hover. One ResizeObserver is disconnected on unmount. The tile never adds a timer.
+
+**Real clock.** The status clock is an isolated leaf component with no digit-rolling
+animation. Every visible animation frame samples `Date.now()` directly and formats
+local `HH:mm:ss.SSS`; simulation elapsed time never supplies civil time. Visibility
+restoration and page resume resample immediately; cleanup cancels the frame and removes
+listeners. OS clock/time-zone changes are reflected on the next frame. Millisecond
+digits are display precision, not a promise of a 1ms display refresh or independent
+network time synchronization. Event timestamps use the same real-time formatter.
+
 ### Ticker
 
 The bottom band. A solid coral `SWARM LOG` tag, then a crawl of ten fixed-width event
 cells (`--cw: clamp(230px, 24vw, 400px)`) divided by 1px verticals, masked to dissolve
 into the right edge on an alpha stop. Each cell reads an inverted source-number chip
-(`{colors.umd}` plate, `{colors.ink-000}` ink), a two-digit seconds clock, repo in cue
+(`{colors.umd}` plate, `{colors.ink-000}` ink), the event second and millisecond (full local timestamp on hover), repo in cue
 green, and event text. On every arrival the row steps exactly one cell width
 (`translateX(-1 cell) → 0`, 260ms `cubic-bezier(0.22, 0.7, 0.3, 1)`) instead of
 reflowing — variable-width reflow is what makes simultaneous reporters look like

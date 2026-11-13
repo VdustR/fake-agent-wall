@@ -1,5 +1,6 @@
 <script lang="ts">
   import SessionName from './SessionName.svelte'
+  import ProcessTable from './ProcessTable.svelte'
   import { onMount } from 'svelte'
   import type { OperationsWorld, OpsCardId } from '../lib/operations.svelte'
   import RollingNumber from './RollingNumber.svelte'
@@ -40,7 +41,9 @@
     <span>{world.titleFor(kind)}</span>
   </header>
 
-  {#if kind === 'contributions'}
+  {#if kind === 'processes'}
+    <ProcessTable snapshot={world.swarm.host} />
+  {:else if kind === 'contributions'}
     <div class="matrix" aria-label="Synthetic contribution activity">
       {#each world.contributions as level}
         <i data-level={level}></i>

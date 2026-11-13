@@ -3,6 +3,7 @@
   import { onMount } from 'svelte'
   import type { Swarm } from '../lib/swarm.svelte'
   import RollingNumber from './RollingNumber.svelte'
+  import WallClock from './WallClock.svelte'
 
   interface Props {
     swarm: Swarm
@@ -18,7 +19,6 @@
     return c
   })
 
-  const tc = $derived(swarm.timecode)
   const visibleWindows = $derived.by(() => {
     const count = Math.min(visibleWindowCount, swarm.agents.length)
     if (count >= swarm.agents.length) return swarm.agents.map((agent, index) => ({ agent, index }))
@@ -81,7 +81,7 @@
     <span class="seg"><b><RollingNumber value={(swarm.totalTokens / 1000).toFixed(1)} label={`${Math.round(swarm.totalTokens)} tokens`} />k</b>&#8239;tok</span>
     <span class="seg"><b><RollingNumber value={swarm.totalTools} label={`${swarm.totalTools} tool calls`} /></b>&#8239;calls</span>
     <span class="pipe clock-pipe">│</span>
-    <span class="clock"><RollingNumber value={tc.slice(0, 8)} label={`time ${tc.slice(0, 8)}`} /></span>
+    <span class="clock"><WallClock /></span>
   </div>
 </header>
 
