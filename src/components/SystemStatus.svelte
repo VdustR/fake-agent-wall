@@ -45,7 +45,7 @@
   header b { color: var(--umd); }
   .instruments { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 7px 8px; }
   .cpu-summary { flex: none; display: flex; align-items: baseline; gap: 8px; color: var(--txt-dim); }
-  .cpu-summary b { color: var(--amber); font: 700 clamp(10px, .86vw, 15px)/1.2 var(--f-umd); }
+  .cpu-summary b { color: var(--readout-100); font: 700 clamp(10px, .86vw, 15px)/1.2 var(--f-umd); }
   .cpu-summary small { margin-left: auto; color: var(--txt-fnt); }
   .cores { flex: none; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px 7px; }
   .core { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px; font: 7px/1 var(--f-umd); }

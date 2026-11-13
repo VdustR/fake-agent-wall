@@ -45,6 +45,11 @@
   --done: #6a9bcc;
 
   --amber: #fab319;
+  --readout-050: var(--amber);
+  --readout-100: var(--amber);
+  --readout-150: var(--amber);
+  --plot-primary: var(--cue);
+  --plot-secondary: var(--amber);
   --coral: #d97757;
 
   --add: #a8d166;

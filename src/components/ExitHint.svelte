@@ -144,7 +144,7 @@
     white-space: nowrap;
   }
   .line b {
-    color: var(--amber);
+    color: var(--readout-150);
     font-weight: 700;
   }
 

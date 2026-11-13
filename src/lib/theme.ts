@@ -1,4 +1,5 @@
 import presetData from '../data/colors.json'
+import { INK_STEPS, instrumentColors } from './instrument-colors'
 
 export const ANSI_KEYS = [
   'black',
@@ -148,11 +149,10 @@ export function applyTheme(theme: ThemeSettings): void {
     '--term-line': mix(colors.background, colors.foreground, 12),
     '--term-add-bg': alpha(colors.green, 0.15),
     '--term-del-bg': alpha(colors.red, 0.13),
-    '--ink-000': colors.background,
-    '--ink-050': mix(colors.background, colors.foreground, 4),
-    '--ink-100': mix(colors.background, colors.foreground, 7),
-    '--ink-150': mix(colors.background, colors.foreground, 10),
-    '--ink-200': mix(colors.background, colors.foreground, 14),
+    ...Object.fromEntries(Object.entries(INK_STEPS).map(([step, fraction]) => [
+      `--ink-${step}`, fraction === 0 ? colors.background : mix(colors.background, colors.foreground, fraction * 100),
+    ])),
+    ...instrumentColors(colors),
     '--line': mix(colors.background, colors.foreground, 12),
     '--line-hi': mix(colors.background, colors.foreground, 22),
     '--txt': colors.foreground,

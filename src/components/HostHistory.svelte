@@ -39,8 +39,8 @@
   svg { display: block; width: 100%; height: 22px; overflow: hidden; }
   path { fill: none; stroke-width: 1; vector-effect: non-scaling-stroke; }
   .reference { stroke: var(--line); stroke-width: .5; }
-  .primary { stroke: var(--cue); }
-  .secondary { stroke: var(--amber); }
+  .primary { stroke: var(--plot-primary); }
+  .secondary { stroke: var(--plot-secondary); }
   .moving { transform-box: view-box; animation: advance var(--sample-time) linear; }
   @keyframes advance { from { transform: translateX(var(--sample-step)); } to { transform: translateX(0); } }
   .scale { display: block; color: var(--txt-fnt); text-align: right; white-space: nowrap; font-size: 6px; line-height: 1; letter-spacing: 0; }

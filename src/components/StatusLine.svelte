@@ -200,7 +200,7 @@
     color: var(--line-hi);
   }
   .clock {
-    color: var(--amber);
+    color: var(--readout-150);
     font-weight: 700;
   }
 

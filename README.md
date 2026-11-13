@@ -36,10 +36,14 @@ of simulated activity while preserving the broadcast hierarchy.
 | Real | Invented |
 | --- | --- |
 | Familiar engineering structures: tool calls, result gutters, diffs, todos, task summaries, execution policies and permission prompts | Every repository, branch, file path, diff hunk, test result and benchmark |
-| A consistent agent grammar shared across simulated providers | Every token count, context percentage, call rate and timecode |
+| A consistent agent grammar shared across simulated providers; local system clock and captured event timestamps | Every token count, context percentage, call rate, resource load and session duration |
 
-Nothing on this page measures anything. Do not present a number from it as a
-real metric.
+Workload and resource panels do not measure the host computer. Their values are
+simulated; do not present them as real metrics. The wall clock and event timestamps
+read local system time to milliseconds, bounded by OS accuracy and display refresh.
+
+See the [UI wave inventory and audit](docs/ui-wave-review.md) for the shipped
+design decisions, corrections and verification limits.
 
 ## Installing
 

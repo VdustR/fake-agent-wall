@@ -138,7 +138,7 @@
   .channels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
   .reading { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
   .lb { color: var(--txt-dim); white-space: nowrap; }
-  .reading b { font: 700 clamp(10px, .86vw, 15px)/1.2 var(--f-umd); color: var(--amber); }
+  .reading b { font: 700 clamp(10px, .86vw, 15px)/1.2 var(--f-umd); color: var(--readout-100); }
   .ppm { position: relative; display: block; height: 4px; margin-top: 3px; overflow: hidden; background: var(--ink-050); }
   .fill { position: absolute; inset: 0; background: linear-gradient(90deg, var(--cue) 0 62%, var(--amber) 62% 84%, var(--live) 84%); clip-path: inset(0 calc(100% - var(--v) * 100%) 0 0); }
   .fill.flat { background: var(--cue); }
@@ -147,7 +147,7 @@
   .trace { display: block; width: 100%; height: 34px; overflow: hidden; }
   .rule { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .area { fill: color-mix(in oklab, var(--cue) 12%, transparent); }
-  .signal { fill: none; stroke: var(--cue); stroke-width: 1.2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .signal { fill: none; stroke: var(--plot-primary); stroke-width: 1.2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .now { stroke: var(--txt-dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .contexts { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px 8px; }
   .context { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 2px; padding-bottom: 3px; font: clamp(7px, .54vw, 10px)/1 var(--f-umd); }

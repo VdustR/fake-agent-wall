@@ -104,7 +104,7 @@
   .agent i { width: 5px; height: 5px; background: var(--txt-fnt); }
   .agent i.working { background: var(--cue); }
   .task em { grid-column: 2; grid-row: 1; color: var(--txt-dim); font: 7px/1.2 var(--f-umd); font-style: normal; text-transform: uppercase; }
-  .task em[data-phase='reviewing'], .task em[data-phase='merging'] { color: var(--amber); }
+  .task em[data-phase='reviewing'], .task em[data-phase='merging'] { color: var(--readout-050); }
   .task em[data-phase='fixing'], .task em[data-phase='running'] { color: var(--cue); }
   .matrix { flex: 1; min-height: 0; display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 9px; }
   .matrix i { background: var(--ink-150); }
@@ -120,13 +120,13 @@
   .usage small { margin-top: 2px; color: var(--txt-fnt); font-size: 7px; }
   .usage i { grid-column: 1 / -1; height: 4px; background: var(--ink-200); }
   .usage em { display: block; width: 100%; height: 100%; transform-origin: left; background: var(--cue); transition: transform 600ms cubic-bezier(.2, 0, 0, 1); }
-  .usage b { grid-column: 2; grid-row: 1; color: var(--amber); font: 8px/1.2 var(--f-umd); text-align: right; }
+  .usage b { grid-column: 2; grid-row: 1; color: var(--readout-050); font: 8px/1.2 var(--f-umd); text-align: right; }
   .usage b small { color: var(--txt-fnt); white-space: nowrap; }
   .ledger, .resets, .fleet { flex: 1; min-height: 0; overflow: hidden; padding: 3px 8px; }
   .ledger > div, .resets > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
   .ledger span, .resets span { min-width: 0; color: var(--txt); font: 8px/1.2 var(--f-term); }
   .ledger small, .resets small { display: block; margin-top: 3px; color: var(--txt-fnt); font-size: 7px; }
-  .ledger b, .resets b { color: var(--amber); font: 9px/1.2 var(--f-umd); font-variant-numeric: tabular-nums; }
+  .ledger b, .resets b { color: var(--readout-050); font: 9px/1.2 var(--f-umd); font-variant-numeric: tabular-nums; }
   .ledger footer { display: flex; justify-content: space-between; align-items: end; padding: 7px 0 4px; color: var(--txt-fnt); font: 7px/1.2 var(--f-umd); text-transform: uppercase; }
   .ledger footer strong { color: var(--txt-hi); font: 12px/1.2 var(--f-umd); font-variant-numeric: tabular-nums; }
   .resets > div { grid-template-columns: auto minmax(0, 1fr) auto; }
@@ -140,7 +140,7 @@
   .fleet-session { display: flex; align-items: baseline; }
   .fleet-session > span { flex: none; }
   .fleet small { display: block; margin-top: 3px; color: var(--txt-fnt); font-size: 7px; overflow: hidden; text-overflow: ellipsis; }
-  .fleet b { color: var(--amber); font: 8px/1.2 var(--f-umd); font-variant-numeric: tabular-nums; }
+  .fleet b { color: var(--readout-050); font: 8px/1.2 var(--f-umd); font-variant-numeric: tabular-nums; }
   @media (prefers-reduced-motion: reduce) {
     .agent i.working, .resets i.soon { animation: none; }
     .usage em { transition: none; }

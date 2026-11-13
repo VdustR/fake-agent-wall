@@ -23,3 +23,9 @@ them without relying on development dependencies.
 - [Monaspace](https://github.com/githubnext/monaspace)
 - [Barlow](https://github.com/jpt/barlow)
 - [Cormorant](https://github.com/CatharsisFonts/Cormorant)
+
+## Culori
+
+[Culori](https://culorijs.org/) supplies color interpolation and contrast calculations
+for derived instrument ink. Copyright (c) 2018 Dan Burzo; MIT License. The full
+license ships in `public/licenses/culori.txt` and the built application assets.
