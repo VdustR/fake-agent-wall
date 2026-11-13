@@ -27,10 +27,10 @@
   <header class="head umd-type">
     <span class="tag">pgm</span>
     <span class="src tnum">src {agent.numLabel}</span>
-    <span class="who"><SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /></span>
-    <span class="task">{agent.task}</span>
-    <span class="provider">{agent.provider}</span>
-    <span class="model">{agent.model}</span>
+    <span class="who" title={agent.label}><SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /></span>
+    <span class="task" title={agent.task}>{agent.task}</span>
+    <span class="provider" title={agent.provider}>{agent.provider}</span>
+    <span class="model" title={agent.model}>{agent.model}</span>
     {#if cueing}
       <span class="next cueing">cue src {cueing}</span>
     {:else if nextCutIn > 0}
@@ -62,6 +62,7 @@
 
 <style>
   .pgm {
+    container: program / inline-size;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -87,6 +88,7 @@
     overflow: hidden;
   }
   .tag {
+    flex: none;
     align-self: stretch;
     display: grid;
     place-items: center;
@@ -97,14 +99,20 @@
     letter-spacing: 0.18em;
   }
   .src {
+    flex: none;
     color: var(--umd);
     font-weight: 700;
   }
   .who {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 18ch;
+    overflow: hidden;
     color: var(--txt-hi);
     font-weight: 700;
   }
   .task {
+    min-width: 0;
     color: var(--txt-dim);
     font-family: var(--f-editorial);
     font-size: clamp(10px, 1.25em, 15px);
@@ -117,16 +125,23 @@
     flex: 1;
   }
   .model {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 24ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--coral);
     font-weight: 700;
   }
   .provider {
+    flex: none;
     color: var(--txt-fnt);
     font-weight: 500;
   }
   /* The cue lead is 900ms of green; without a number beside it the signature
      interaction reads once and then reads as decoration. */
   .next {
+    flex: none;
     align-self: stretch;
     display: grid;
     place-items: center;
@@ -233,8 +248,25 @@
     .umd .v:nth-of-type(n + 5) {
       display: none;
     }
-    .task {
+  }
+
+  @container program (max-width: 620px) {
+    .task,
+    .provider {
       display: none;
+    }
+  }
+
+  @container program (max-width: 420px) {
+    .head {
+      gap: 6px;
+      padding-right: 6px;
+    }
+    .tag {
+      padding: 0 8px;
+    }
+    .next {
+      padding: 0 6px;
     }
   }
 </style>
