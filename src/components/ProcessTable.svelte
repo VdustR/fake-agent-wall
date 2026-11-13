@@ -60,11 +60,11 @@
   table { width: 100%; table-layout: fixed; border-collapse: collapse; font: 8px/1.25 var(--f-term); color: var(--txt); }
   col.pid { width: 7ch; } col.state { width: 2ch; } col.cpu { width: 7ch; } col.memory { width: 6ch; }
   th { padding: 3px 3px 4px 0; color: var(--txt-fnt); font-weight: 500; border-bottom: 1px solid var(--line-hi); text-align: right; }
-  th.sort { color: var(--amber); }
+  th.sort { color: var(--readout-050); }
   td { height: 20px; padding: 3px 3px 3px 0; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   td:first-child, th:first-child, td:last-child, th:last-child { text-align: left; }
   td:last-child { padding-left: 7px; }
-  td:nth-child(3) { color: var(--amber); }
+  td:nth-child(3) { color: var(--readout-050); }
   tr[data-state='R'] td:nth-child(2) { color: var(--cue); }
   tr[data-state='D'] td:nth-child(2) { color: var(--hold); }
 </style>

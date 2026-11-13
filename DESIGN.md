@@ -274,7 +274,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - Hard 1px hairlines; corners at 2px or 0.
 - Tally lamps as the primary status channel: red program bus, green preview bus, amber operator-blocked, blue idle.
 - Three typography roles with strict boundaries: Cormorant Garamond for narrative text, Barlow Condensed for chrome, and Monaspace Xenon for transcript body and the one tmux band.
-- No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
+- No display step at all — the largest type on the surface is the program monitor's transcript at 16px; illumination remains reserved for routing and activity signals.
 - Instrument readouts on printed fixed scales: compact throughput tracks with peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
 - Motion separates routing from activity: program changes remain hard cuts; running names carry a left-to-right light, activity signals breathe, numeric readouts roll, and meter lamps release softly.
@@ -528,7 +528,13 @@ Swarmdeck semantic tokens are derived from the iTerm palette rather than stored
 as a second editable palette. Background and foreground generate the graphite,
 hairline, and text ramps with `color-mix(in oklch, ...)`; ANSI red, green, yellow,
 and blue feed program, preview, hold, and idle; cursor feeds Swarmdeck coral; bright
-variants feed wall readouts. Terminal content has a separate `--term-*` and
+variants provide the source hue for instrument readouts. Text uses derived
+`--readout-050/100/150` ink against its actual plate, targeting 4.5:1 contrast;
+history and pressure strokes use `--plot-primary/secondary` against `ink-100`,
+targeting 3:1. Colors already meeting the targets remain unchanged. Culori
+models the same OKLCH surface ramp and blends insufficient signal ink toward
+black or white in OKLab, without editing saved preset colors. Lamps, bands and
+peak caps retain the original signal colors. Terminal content has a separate `--term-*` and
 `--ansi-*` token boundary: background, foreground, cursor, selection, and all 16
 ANSI entries are exported unchanged. Normal output uses foreground; tool bullets
 use ANSI blue, user turns cyan, thinking and permission accents yellow, success
@@ -540,9 +546,10 @@ bright white for the preset foreground. Ink on saturated fills is
 chosen from black or white for legibility. This mapping preserves the wall's
 status grammar while allowing light and dark terminal schemes.
 
-Typography has two independent user values: UI font for tmux/master-control
-chrome and code font for terminal content. Both preview while typing. The default chrome uses bundled Barlow Condensed;
-the default terminal uses bundled Monaspace Xenon. Generic fallback families are
+Typography has three independent user values: editorial font for narrative
+hierarchy, UI font for tmux/master-control chrome, and code font for terminal
+content. All preview while typing. The defaults are bundled Cormorant Garamond,
+Barlow Condensed and Monaspace Xenon, respectively. Generic fallback families are
 recovery paths, rather than the primary visual identity. The panel does not fetch fonts or accept webfont
 markup; a missing local family falls
 through immediately.
