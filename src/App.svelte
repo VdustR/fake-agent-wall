@@ -6,6 +6,7 @@
   import Pgm from './components/Pgm.svelte'
   import StatusLine from './components/StatusLine.svelte'
   import Telemetry from './components/Telemetry.svelte'
+  import SystemStatus from './components/SystemStatus.svelte'
   import ThemePanel from './components/ThemePanel.svelte'
   import Ticker from './components/Ticker.svelte'
   import Tile from './components/Tile.svelte'
@@ -145,6 +146,8 @@
                 nextCutIn={swarm.nextCutIn}
                 cueing={swarm.pst === -1 ? null : (swarm.agents[swarm.pst]?.numLabel ?? null)}
               />
+            {:else if item.type === 'system'}
+              <SystemStatus {swarm} />
             {:else if item.type === 'agent'}
               <Tile agent={item.agent!} {beat} onAir={item.agent!.slot === swarm.pgm} cued={item.agent!.slot === swarm.pst} calm={swarm.reducedMotion} />
             {:else}

@@ -1,7 +1,7 @@
 import type { Swarm } from './swarm.svelte'
 import { packMosaic, targetViewportCapacity, viewportCapacityMetric, violationsFor, type GridRect, type MosaicItem } from './mosaic-layout'
 
-export type OpsCardId = 'board' | 'pulls' | 'contributions' | 'usage' | 'cost' | 'resets' | 'release' | 'fleet'
+export type OpsCardId = 'board' | 'pulls' | 'contributions' | 'usage' | 'cost' | 'resets' | 'release' | 'fleet' | 'processes'
 
 export interface OpsNotice {
   eyebrow: string
@@ -112,6 +112,7 @@ const TASKS = [
 const PHASES = ['queued', 'running', 'fixing', 'reviewing', 'merging'] as const
 
 const CARD_ASPECT: Record<OpsCardId, number> = {
+  processes: 1.3,
   contributions: 3.2,
   board: 0.78,
   pulls: 0.82,
@@ -123,6 +124,7 @@ const CARD_ASPECT: Record<OpsCardId, number> = {
 }
 
 const CARD_ASPECT_RANGE: Record<OpsCardId, readonly [number, number]> = {
+  processes: [.8, 2.5],
   contributions: [2.2, 6],
   board: [0.55, 1.45],
   pulls: [0.55, 1.45],
@@ -134,7 +136,7 @@ const CARD_ASPECT_RANGE: Record<OpsCardId, readonly [number, number]> = {
 }
 
 interface GridItem extends MosaicItem {
-  type: 'pgm' | 'agent' | 'ops'
+  type: 'pgm' | 'system' | 'agent' | 'ops'
   key: string
   preferredAspect: number
   minAspect: number
@@ -182,10 +184,10 @@ export class OperationsWorld {
   }
 
   #activeCardsFor(capacity: number): OpsCardId[] {
-    const count = capacity <= 3 ? 0 : Math.max(1, Math.min(8, Math.floor(capacity / 6)))
+    const count = capacity <= 4 ? 0 : Math.max(1, Math.min(9, Math.floor(capacity / 6) + 1))
     const cycle = CARD_CYCLES[this.layoutEpoch % CARD_CYCLES.length] as OpsCardId[]
     const allKinds = [...cycle, ...Object.keys(CARD_ASPECT).filter(kind => !cycle.includes(kind as OpsCardId)) as OpsCardId[]]
-    return allKinds.slice(0, count)
+    return count ? ['processes', ...allKinds.filter(kind => kind !== 'processes').slice(0, count - 1)] : []
   }
 
   get gridItems(): GridItem[] {
@@ -193,9 +195,9 @@ export class OperationsWorld {
     return this.#itemCache
   }
 
-  #buildGridItems(capacity: number): GridItem[] {
-    const activeCards = this.#activeCardsFor(capacity)
-    const terminalCount = Math.max(1, capacity - activeCards.length - 1)
+  #buildGridItems(capacity: number, cards: 'all' | 'processes' | 'none' = 'all'): GridItem[] {
+    const activeCards = cards === 'none' ? [] : this.#activeCardsFor(capacity).filter(kind => cards === 'all' || kind === 'processes')
+    const terminalCount = Math.max(1, capacity - activeCards.length - 2)
     const offset = this.layoutEpoch % this.swarm.agents.length
     const agents = Array.from({ length: terminalCount }, (_, index) => this.swarm.agents[(offset + index) % this.swarm.agents.length]!)
       .map(agent => ({
@@ -215,7 +217,7 @@ export class OperationsWorld {
         ],
         agent,
       }))
-    const cards = activeCards.map(kind => ({
+    const operationCards = activeCards.map(kind => ({
       type: 'ops' as const,
       key: `ops-${kind}`,
       preferredAspect: CARD_ASPECT[kind],
@@ -224,17 +226,18 @@ export class OperationsWorld {
       weight: kind === 'contributions' ? 1.5 : 1.1,
       preferredWidth: kind === 'contributions' ? 720 : 320,
       preferredHeight: kind === 'contributions' ? 220 : 280,
-      minWidth: 150,
-      minHeight: 120,
+      minWidth: kind === 'processes' ? 300 : 150,
+      minHeight: kind === 'processes' ? 180 : 120,
       kind,
     }))
     const items: GridItem[] = [
       { type: 'pgm', key: 'pgm', preferredAspect: 1.38, preferredWidth: 920, preferredHeight: 660, minAspect: 1.05, maxAspect: 2, weight: 5.5, minWidth: 320, minHeight: 240 },
+      { type: 'system', key: 'system', preferredAspect: 1.4, preferredWidth: 420, preferredHeight: 300, minAspect: .65, maxAspect: 2.5, weight: 1.8, minWidth: 300, minHeight: 190 },
       ...agents.slice(0, Math.min(2, agents.length)),
     ]
     const remainingAgents = agents.slice(2)
-    const agentsPerCard = cards.length ? Math.ceil(agents.length / cards.length) : 0
-    cards.forEach((card, index) => {
+    const agentsPerCard = operationCards.length ? Math.ceil(agents.length / operationCards.length) : 0
+    operationCards.forEach((card, index) => {
       items.push(card)
       items.push(...remainingAgents.slice(index * agentsPerCard, (index + 1) * agentsPerCard))
     })
@@ -260,13 +263,17 @@ export class OperationsWorld {
     this.#placementCacheKey = cacheKey
 
     for (let capacity = this.slotCapacity; capacity >= 3; capacity -= 1) {
-      const items = this.#buildGridItems(capacity)
-      const packed = packMosaic(items, this.viewportWidth, this.viewportHeight)
-      const violations = violationsFor(items, packed.rects, this.viewportWidth, this.viewportHeight)
-      this.#itemCache = items
-      this.#placementCache = packed.rects
-      this.#layoutViolations = violations
-      if (packed.feasible && violations.length === 0) return
+      // Secondary operations yield before terminal capacity when their aspect
+      // constraints cannot fit beside the program and compact instruments.
+      for (const cards of ['all', 'processes', 'none'] as const) {
+        const items = this.#buildGridItems(capacity, cards)
+        const packed = packMosaic(items, this.viewportWidth, this.viewportHeight)
+        const violations = violationsFor(items, packed.rects, this.viewportWidth, this.viewportHeight)
+        this.#itemCache = items
+        this.#placementCache = packed.rects
+        this.#layoutViolations = violations
+        if (packed.feasible && violations.length === 0) return
+      }
     }
   }
 
@@ -334,7 +341,7 @@ export class OperationsWorld {
   }
 
   titleFor(kind: OpsCardId): string {
-    return ({ board: 'Work queue', pulls: 'Pull requests', contributions: 'Contribution activity', usage: 'Provider usage', cost: 'Cost ledger', resets: 'Reset radar', release: 'Release train', fleet: 'Fleet activity' })[kind]
+    return ({ board: 'Work queue', pulls: 'Pull requests', contributions: 'Contribution activity', usage: 'Provider usage', cost: 'Cost ledger', resets: 'Reset radar', release: 'Release train', fleet: 'Fleet activity', processes: 'Processes' })[kind]
   }
 
   tasksFor(kind: OpsCardId, count = 3) {

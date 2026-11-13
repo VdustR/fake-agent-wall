@@ -1,4 +1,6 @@
 import { Agent } from './agent.svelte'
+import { formatLocalTime } from './wall-clock'
+import { hostLoad, hostSnapshot, HOST_HISTORY_SAMPLES, HOST_SAMPLE_MS } from './host-load'
 
 export interface TickerItem {
   id: number
@@ -17,10 +19,12 @@ const CUT_MAX = 15_000
 const CUE_LEAD = 900
 const HISTORY = 90
 
-const pad = (n: number, w = 2) => String(Math.floor(n)).padStart(w, '0')
 
 export class Swarm {
   agents = $state.raw<Agent[]>([])
+  host = $state.raw(hostSnapshot(0, 0))
+  hostHistory = $state.raw(Array.from({ length: HOST_HISTORY_SAMPLES }, (_, index) =>
+    hostLoad((index - HOST_HISTORY_SAMPLES + 1) * HOST_SAMPLE_MS, 0)))
   readonly #seed: number
 
   pgm = $state(0)
@@ -56,9 +60,9 @@ export class Swarm {
   #watchdog = 0
   #prev = 0
   #histAcc = 0
+  #hostFrame = 0
   #tokenWindow: Array<[number, number]> = []
   #toolWindow: Array<[number, number]> = []
-  #startOffset = 0
   #visibleSlots = new Set<number>()
   #backgroundAcc = 0
   #mediaQuery: MediaQueryList | null = null
@@ -67,7 +71,6 @@ export class Swarm {
   constructor(seed = 20260811) {
     this.#seed = seed
     this.ensureAgentCount(INITIAL_AGENT_COUNT)
-    this.#startOffset = 3_000_000 + seed % 900_000
   }
 
   ensureAgentCount(count: number): void {
@@ -91,16 +94,6 @@ export class Swarm {
     this.agents = this.agents.slice(0, target)
     if (this.pgm >= target) this.pgm = 0
     if (this.pst >= target) this.pst = -1
-  }
-
-  /** SMPTE-style running clock for the rail. Fabricated, like everything else. */
-  get timecode() {
-    const ms = this.#startOffset + this.uptimeMs
-    const f = Math.floor((ms % 1000) / 40)
-    const s = Math.floor(ms / 1000) % 60
-    const m = Math.floor(ms / 60_000) % 60
-    const h = Math.floor(ms / 3_600_000) % 24
-    return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`
   }
 
   start() {
@@ -160,6 +153,7 @@ export class Swarm {
     if (tickBackground) this.#backgroundAcc = 0
 
     let running = 0
+    let activity = 0
     let tokens = 0
     let tools = 0
     for (const a of this.agents) {
@@ -167,6 +161,7 @@ export class Swarm {
       if (this.#visibleSlots.has(a.slot)) a.tick(now, dt)
       else if (tickBackground) a.tick(now, backgroundDt)
       if (a.status !== 'done') running += 1
+      if (a.status === 'run') activity += a.level
       tokens += a.lifeTokens
       tools += a.lifeTools
       const seen = this.#lastSeen.get(a.slot) ?? 0
@@ -179,6 +174,16 @@ export class Swarm {
     this.running = running
     this.totalTokens = tokens
     this.totalTools = tools
+    const hostFrame = Math.floor(this.uptimeMs / HOST_SAMPLE_MS)
+    if (hostFrame !== this.#hostFrame) {
+      const first = Math.max(this.#hostFrame + 1, hostFrame - HOST_HISTORY_SAMPLES + 1)
+      const intensity = activity / this.agents.length
+      const added = Array.from({ length: hostFrame - first + 1 }, (_, index) =>
+        hostLoad((first + index) * HOST_SAMPLE_MS, intensity))
+      this.host = hostSnapshot(hostFrame * HOST_SAMPLE_MS, intensity)
+      this.hostHistory = [...this.hostHistory, ...added].slice(-HOST_HISTORY_SAMPLES)
+      this.#hostFrame = hostFrame
+    }
 
     this.#tokenWindow.push([now, tokens])
     this.#toolWindow.push([now, tools])
@@ -242,7 +247,7 @@ export class Swarm {
       slot: a.numLabel,
       repo: a.repo,
       text: ev.text,
-      clock: this.timecode.slice(0, 8),
+      clock: formatLocalTime(Date.now()),
     }
     this.ticker = [item, ...this.ticker].slice(0, 26)
   }

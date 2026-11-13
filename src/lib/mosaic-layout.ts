@@ -1,6 +1,6 @@
 export interface MosaicItem {
   key: string
-  type: 'pgm' | 'agent' | 'ops'
+  type: 'pgm' | 'system' | 'agent' | 'ops'
   preferredAspect: number
   minAspect: number
   maxAspect: number
