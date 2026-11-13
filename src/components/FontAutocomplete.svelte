@@ -115,9 +115,8 @@
               {/if}
             {/each}
           </div>
-          {#if results.length === 0}<p class="font-empty">No suggestions. You can keep typing any font name.</p>{/if}
+          {#if results.length === 0}<p class="font-empty">No matching fonts</p>{/if}
         </div>
-        <p class="font-hint">↑ ↓ to browse · Alt+Home/End for first/last · Esc to close</p>
       </Combobox.Content>
     </Combobox.Positioner>
   </Portal>
@@ -136,5 +135,4 @@
   :global(.font-name) { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .font-source { flex-shrink: 0; color: var(--txt-dim); font-size: 10px; }
   .font-empty { padding: 12px 10px; color: var(--txt-dim); font: 11px/1.5 var(--f-umd); }
-  .font-hint { margin: 0; padding: 8px 10px; border-top: 1px solid var(--line); color: var(--txt-dim); font: 10px/1.4 var(--f-umd); }
 </style>
