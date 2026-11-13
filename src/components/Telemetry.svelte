@@ -155,7 +155,7 @@
   .ch,
   .grat {
     display: grid;
-    grid-template-columns: clamp(64px, 7.5vw, 108px) minmax(0, 1fr) clamp(44px, 5vw, 72px);
+    grid-template-columns: 6.75rem minmax(0, 1fr) 4.5rem;
     align-items: center;
     gap: 10px;
   }
@@ -176,13 +176,13 @@
   }
   .read b {
     color: var(--amber);
-    font-size: clamp(9.5px, 0.86vw, 15px);
+    font-size: var(--type-data);
     line-height: 1;
   }
   .read small {
     margin-top: 2px;
     color: var(--txt-fnt);
-    font-size: clamp(5.5px, 0.4vw, 8px);
+    font-size: var(--type-meta);
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0.06em;

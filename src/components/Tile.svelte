@@ -126,7 +126,7 @@
     grid-template-columns: auto minmax(0, auto) minmax(0, 1fr) 42px auto;
     align-items: center;
     gap: 7px;
-    height: clamp(16px, 1.5vw, 22px);
+    height: 1.75rem;
     padding-right: 6px;
     background: var(--ink-150);
     border-top: 1px solid var(--line);

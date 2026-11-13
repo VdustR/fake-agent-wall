@@ -220,52 +220,53 @@
 </aside>
 
 <style>
-  .theme-panel { position: fixed; z-index: 100; inset: 0 0 0 auto; width: min(460px, 100vw); display: flex; flex-direction: column; color: var(--txt); background: var(--ink-050); border-left: 1px solid var(--line-hi); font-family: var(--f-umd); cursor: default; user-select: text; }
+  .theme-panel { position: fixed; z-index: 100; inset: 0 0 0 auto; width: min(30rem, 100vw); display: flex; flex-direction: column; color: var(--txt); background: var(--ink-050); border-left: 1px solid var(--line-hi); font: var(--type-ui)/1.4 var(--f-umd); cursor: default; user-select: text; }
   header, footer { flex: none; display: flex; align-items: center; justify-content: space-between; background: var(--ink-150); border-color: var(--line-hi); }
-  header { height: 62px; padding: 0 16px 0 20px; border-bottom: 1px solid var(--line-hi); }
-  h1 { font: 600 22px/.95 var(--f-editorial); letter-spacing: -.02em; }
+  header { height: 4.5rem; padding: 0 16px 0 20px; border-bottom: 1px solid var(--line-hi); }
+  h1 { font: 600 1.75rem/1.1 var(--f-editorial); letter-spacing: -.02em; }
   button, input { font: inherit; }
   button { color: inherit; border: 0; }
-  .close { width: 34px; height: 34px; background: transparent; color: var(--txt-dim); font: 24px/1.2 var(--f-term); cursor: pointer; }
+  .close { width: 2.5rem; height: 2.5rem; background: transparent; color: var(--txt-dim); font: 24px/1.2 var(--f-term); cursor: pointer; }
   .close:hover { color: var(--txt-hi); background: var(--ink-200); }
   .panel-body { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: var(--line-hi) var(--ink-050); }
   section { padding: 18px 20px 20px; border-bottom: 1px solid var(--line); }
-  h2 { color: var(--umd); font: 600 15px/1.2 var(--f-editorial); letter-spacing: -.01em; }
-  .field-label { display: block; color: var(--umd); font-size: 10px; line-height: 1.2; letter-spacing: .1em; text-transform: uppercase; }
-  h3 { margin-top: 18px; color: var(--txt-fnt); font-size: 9px; text-transform: uppercase; letter-spacing: .12em; }
+  h2 { color: var(--umd); font: 600 1.25rem/1.2 var(--f-editorial); letter-spacing: -.01em; }
+  .field-label { display: block; color: var(--umd); font-size: var(--type-label); line-height: 1.2; letter-spacing: .1em; text-transform: uppercase; }
+  h3 { margin-top: 18px; color: var(--txt-fnt); font-size: var(--type-label); text-transform: uppercase; letter-spacing: .12em; }
   .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  input[type='search'], .text-field { width: 100%; height: 36px; margin-top: 10px; padding: 0 10px; color: var(--txt-hi); background: var(--ink-000); border: 1px solid var(--line-hi); border-radius: 2px; outline: none; font-family: var(--f-term); }
-  .wall-label-preview { display: block; margin-top: 8px; color: var(--on-coral); background: var(--coral); padding: 7px 10px; font: 700 11px/1.2 var(--f-term); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  input[type='search'], .text-field { width: 100%; height: 2.5rem; margin-top: 10px; padding: 0 10px; color: var(--txt-hi); background: var(--ink-000); border: 1px solid var(--line-hi); border-radius: 2px; outline: none; font: 1rem/1.4 var(--f-term); }
+  .wall-label-preview { display: block; margin-top: 8px; color: var(--on-coral); background: var(--coral); padding: 7px 10px; font: 700 var(--type-label)/1.4 var(--f-term); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   input:focus-visible, button:focus-visible { outline: 1px solid var(--coral); outline-offset: 2px; }
-  .preset-list { height: 178px; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); background: var(--ink-000); scrollbar-color: var(--line-hi) var(--ink-000); }
-  .preset-list button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: var(--txt-dim); background: transparent; border-bottom: 1px solid var(--line); font: 11px/1.2 var(--f-term); text-align: left; cursor: pointer; }
+  .preset-list { height: 12rem; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); background: var(--ink-000); scrollbar-color: var(--line-hi) var(--ink-000); }
+  .preset-list button { width: 100%; min-height: 2.5rem; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: var(--txt-dim); background: transparent; border-bottom: 1px solid var(--line); font: var(--type-ui)/1.4 var(--f-term); text-align: left; cursor: pointer; }
   .preset-list button:hover { color: var(--txt-hi); background: var(--ink-150); }
   .preset-list button.highlighted { color: var(--txt-hi); outline: 1px solid var(--coral); outline-offset: -1px; }
   .preset-list button.active { color: var(--on-coral); background: var(--coral); }
   .preset-list button.active.highlighted { outline-color: var(--on-coral); }
-  .empty-presets { margin: 0; padding: 12px 10px; color: var(--txt-fnt); font: 10px/1.2 var(--f-term); }
+  .empty-presets { margin: 0; padding: 12px 10px; color: var(--txt-fnt); font: var(--type-label)/1.4 var(--f-term); }
   .swatches { display: grid; grid-template-columns: repeat(4, 10px); height: 10px; border: 1px solid color-mix(in oklch, currentColor 30%, transparent); }
   .swatches i { display: block; }
-  .text-button { padding: 4px 0; color: var(--coral); background: transparent; font: 10px/1.2 var(--f-term); cursor: pointer; }
+  .text-button { padding: 4px 0; color: var(--coral); background: transparent; font: var(--type-ui)/1.4 var(--f-umd); cursor: pointer; }
   .color-grid { display: grid; gap: 8px; }
   .primary-colors { grid-template-columns: repeat(2, 1fr); }
-  .color-grid label { color: var(--txt-fnt); font: 9px/1.2 var(--f-term); text-transform: uppercase; }
-  .color-control { height: 32px; margin-top: 6px; display: flex; align-items: center; gap: 8px; background: var(--ink-000); border: 1px solid var(--line); }
-  input[type='color'] { flex: none; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; cursor: pointer; }
-  code { color: var(--txt-dim); font: 10px/1.2 var(--f-term); }
+  .color-grid label { color: var(--txt-fnt); font: var(--type-meta)/1.4 var(--f-term); text-transform: uppercase; }
+  .color-control { height: 2.5rem; margin-top: 6px; display: flex; align-items: center; gap: 8px; background: var(--ink-000); border: 1px solid var(--line); }
+  input[type='color'] { flex: none; width: 2rem; height: 2rem; padding: 0; border: 0; background: transparent; cursor: pointer; }
+  code { color: var(--txt-dim); font: var(--type-label)/1.4 var(--f-term); }
   .ansi-colors { grid-template-columns: repeat(8, 1fr); margin-top: 8px; }
   .ansi-colors label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ansi-colors input { display: block; width: 100%; height: 28px; margin-top: 5px; }
-  .font-field { display: block; margin-top: 14px; color: var(--txt-fnt); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
-  .font-field output { display: block; min-height: 38px; padding: 11px 10px; color: var(--txt-hi); background: var(--ink-100); border: 1px solid var(--line); font-size: 12px; text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden; }
-  .font-field output.editorial-preview { font-size: 15px; line-height: 1.2; }
-  .fallback { margin-top: 10px; color: var(--txt-fnt); font: 9px/1.2 var(--f-term); }
-  footer { min-height: 58px; padding: 0 16px 0 20px; border-top: 1px solid var(--line-hi); }
+  .ansi-colors input { display: block; width: 100%; height: 2rem; margin-top: 5px; }
+  .font-field { display: block; margin-top: 14px; color: var(--txt-fnt); font-size: var(--type-label); text-transform: uppercase; letter-spacing: .06em; }
+  .font-field output { display: block; min-height: 38px; padding: 11px 10px; color: var(--txt-hi); background: var(--ink-100); border: 1px solid var(--line); font-size: var(--type-ui); text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden; }
+  .font-field output.editorial-preview { font-size: 1.25rem; line-height: 1.2; }
+  .fallback { margin-top: 10px; color: var(--txt-fnt); font: var(--type-meta)/1.4 var(--f-term); }
+  footer { min-height: 58px; padding: 12px 20px; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--line-hi); }
   .footer-start { min-width: 0; align-items: center; }
-  .footer-start span { color: var(--txt-fnt); font: 9px/1.2 var(--f-term); }
+  .footer-start span { color: var(--txt-fnt); font: var(--type-meta)/1.4 var(--f-term); }
   .footer-start span.error { color: var(--del); }
   footer div { display: flex; gap: 8px; }
-  footer button { min-width: 82px; height: 32px; padding: 0 14px; border: 1px solid var(--line-hi); text-transform: uppercase; letter-spacing: .08em; font-size: 9px; cursor: pointer; }
+  footer > div:last-child { margin-left: auto; }
+  footer button { min-width: 82px; min-height: 2.5rem; padding: 0 14px; border: 1px solid var(--line-hi); text-transform: uppercase; letter-spacing: .08em; font-size: var(--type-label); cursor: pointer; }
   .secondary { background: var(--ink-100); }
   .restore { min-width: auto; padding: 0; color: var(--txt-dim); background: transparent; border-color: transparent; }
   .restore:hover { color: var(--txt-hi); }

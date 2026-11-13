@@ -89,15 +89,15 @@
     container: terminal / inline-size;
     background: var(--term-bg);
     color: var(--term-fg);
-    font-size: clamp(9px, 0.67vw, 13px);
-    line-height: 1.44;
+    font-size: var(--type-terminal);
+    line-height: 1.5;
   }
   .term ::selection {
     color: var(--term-fg);
     background: var(--term-selection);
   }
   .term.pgm {
-    font-size: clamp(10.5px, 0.84vw, 16px);
+    font-size: var(--type-program);
     line-height: 1.5;
   }
 
