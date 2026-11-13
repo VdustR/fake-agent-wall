@@ -2,9 +2,9 @@
 name: Swarmdeck
 description: A master-control multiviewer for a heterogeneous wall of coding agents, framed by a tmux status line.
 colors:
-  term-bg: "#1e1e2e"
-  term-fg: "#cdd6f4"
-  term-muted: "color-mix(in oklch, #1e1e2e, #cdd6f4 56%)"
+  term-bg: "#282828"
+  term-fg: "#ebdbb2"
+  term-muted: "color-mix(in oklch, #282828, #ebdbb2 56%)"
   ink-000: "#262624"
   ink-050: "color-mix(in oklch, #262624, #e5e4e1 4%)"
   ink-100: "color-mix(in oklch, #262624, #e5e4e1 7%)"
@@ -590,7 +590,7 @@ when the source is held, and the tally state word (`on air` / `live` / `think` /
 
 The transcript field. Bottom-anchored, clipped, on the unmodified preset
 background (`--term-bg`), with the unmodified foreground (`--term-fg`). The frontmatter
-terminal tokens show the default Catppuccin Mocha values; runtime tokens always
+terminal tokens show the default Gruvbox Dark values; runtime tokens always
 follow the active preset or custom colours. Line kinds are
 styled globally in `app.css` rather than scoped in the component, because the kind
 arrives as a runtime value that Svelte's scoped-CSS pruning cannot see statically —

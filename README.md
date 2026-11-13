@@ -112,11 +112,13 @@ characters so the status line remains usable on narrow screens.
 
 Search the bundled iTerm presets, select one, and adjust any of its background,
 foreground, cursor, selection, or 16 ANSI colours. Changes preview immediately.
-New installations start with **Catppuccin Mocha**, **Barlow Condensed** for
+New installations start with **Gruvbox Dark**, **Barlow Condensed** for
 master-control chrome, **Monaspace Xenon** for terminal content, and
 **Cormorant Garamond** for editorial text. Saved defaults migrate to the new
-bundled families;
-custom font choices and colours are preserved.
+bundled families; custom font choices and colours are preserved.
+**Restore defaults** returns to Gruvbox Dark and the bundled font defaults;
+previously saved palettes remain selected until they are explicitly changed or
+reset.
 **Reset preset** restores the selected preset, while **Cancel** or Escape returns
 to the last applied theme. **Apply** saves the palette and separate UI/code font
 families in local browser storage and restores them on the next launch. The
