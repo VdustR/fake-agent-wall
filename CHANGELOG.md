@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.14.0](https://github.com/VdustR/fake-agent-wall/compare/v0.13.8...v0.14.0) (2026-11-13)
+
+
+### Features
+
+* add coherent multi-core system and process telemetry ([#104](https://github.com/VdustR/fake-agent-wall/issues/104)) ([2d9062b](https://github.com/VdustR/fake-agent-wall/commit/2d9062b85dfbbf3b84b35ad754be85616215cb80))
+* add session light sweeps, breathing signals and rolling readouts ([#100](https://github.com/VdustR/fake-agent-wall/issues/100)) ([fc6a276](https://github.com/VdustR/fake-agent-wall/commit/fc6a276ff3a2df2a1442a590b3e186d25a12b20f))
+* complete font stacks without disrupting native editing ([#97](https://github.com/VdustR/fake-agent-wall/issues/97)) ([b41301c](https://github.com/VdustR/fake-agent-wall/commit/b41301c4d88927b644d32065fefc0dd4c65e0921))
+* condense swarm telemetry into an instrument strip ([#103](https://github.com/VdustR/fake-agent-wall/issues/103)) ([4392463](https://github.com/VdustR/fake-agent-wall/commit/43924639b4d1479d2fb340bc418751e288b9c45e))
+* default the wall to Gruvbox Dark ([#96](https://github.com/VdustR/fake-agent-wall/issues/96)) ([69cbaf8](https://github.com/VdustR/fake-agent-wall/commit/69cbaf8ae2c19e3fa1df36a2618b4620185c4aa1))
+* honor terminal palettes and bundle refined typography ([#93](https://github.com/VdustR/fake-agent-wall/issues/93)) ([95849ff](https://github.com/VdustR/fake-agent-wall/commit/95849ff62daef00f4d6423e298c2037e9478a78a))
+* refine the wall typography with Xenon and Cormorant ([#95](https://github.com/VdustR/fake-agent-wall/issues/95)) ([0789218](https://github.com/VdustR/fake-agent-wall/commit/0789218b0e81497bc1ccbf29ba0a1b89bc57cd29))
+
+
+### Bug Fixes
+
+* align session names and label compact token counts ([#101](https://github.com/VdustR/fake-agent-wall/issues/101)) ([08eb717](https://github.com/VdustR/fake-agent-wall/commit/08eb717bb09be766574284dabdfdb450ca83180d))
+* apply link limits to dependent disk traffic ([#107](https://github.com/VdustR/fake-agent-wall/issues/107)) ([9721d9e](https://github.com/VdustR/fake-agent-wall/commit/9721d9e27055b449b3ac3b5622cdb1073c94fbbb))
+* contain program header metadata at narrow widths ([#108](https://github.com/VdustR/fake-agent-wall/issues/108)) ([8154598](https://github.com/VdustR/fake-agent-wall/commit/81545989d656068ea4c22325ff3f4afa9698af19))
+* derive readable instrument ink from terminal palettes ([#110](https://github.com/VdustR/fake-agent-wall/issues/110)) ([153f572](https://github.com/VdustR/fake-agent-wall/commit/153f572af28fc8e2601a0fbe20ff0aefe8979e80))
+* display event timestamps as local clock time ([#109](https://github.com/VdustR/fake-agent-wall/issues/109)) ([76ced80](https://github.com/VdustR/fake-agent-wall/commit/76ced8038053c04e137e782f89b0bf8aa3b4db26))
+* match program tallies by source identity ([#105](https://github.com/VdustR/fake-agent-wall/issues/105)) ([6688a10](https://github.com/VdustR/fake-agent-wall/commit/6688a1042c7e0feddd0e419d9a180f95388382e9))
+* preserve fleet counters across viewport changes ([#106](https://github.com/VdustR/fake-agent-wall/issues/106)) ([6ced8d5](https://github.com/VdustR/fake-agent-wall/commit/6ced8d53ae709e5b2dd7f856ae8994ca7b31974b))
+* restore responsive ambient wall density ([#102](https://github.com/VdustR/fake-agent-wall/issues/102)) ([28ca6a3](https://github.com/VdustR/fake-agent-wall/commit/28ca6a3941675389ba46c57fa60c6f5c0f862533))
+* separate readable terminal and interface type scales ([#99](https://github.com/VdustR/fake-agent-wall/issues/99)) ([c7b9a15](https://github.com/VdustR/fake-agent-wall/commit/c7b9a15d0b88dbe8210a2524e17c20e361f6d458))
+
+
+### Refactoring
+
+* remove redundant interface prose ([#98](https://github.com/VdustR/fake-agent-wall/issues/98)) ([8c203ab](https://github.com/VdustR/fake-agent-wall/commit/8c203abbb198b529c2e4f36ebe7af87927684632))
+
 ## [0.13.8](https://github.com/VdustR/fake-agent-wall/compare/v0.13.7...v0.13.8) (2026-11-02)
 
 
