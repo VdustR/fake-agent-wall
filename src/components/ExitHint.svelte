@@ -138,7 +138,7 @@
     padding: 11px 18px 12px;
   }
   .line {
-    font-size: var(--type-ui);
+    font-size: clamp(10px, 0.86vw, 15px);
     letter-spacing: 0.13em;
     color: var(--txt-hi);
     white-space: nowrap;
