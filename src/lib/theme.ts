@@ -82,7 +82,7 @@ export function settingsFromPreset(preset: ThemePreset): ThemeSettings {
   }
 }
 
-const defaultPreset = presets.find((preset) => preset.id === 'catppuccin-mocha')
+const defaultPreset = presets.find((preset) => preset.id === 'gruvbox-dark')
 if (!defaultPreset) throw new Error('Bundled default theme is missing')
 
 export const defaultTheme = settingsFromPreset(defaultPreset)
