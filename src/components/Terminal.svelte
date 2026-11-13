@@ -46,7 +46,7 @@
       <div class="ln spin">
         <span class="gl">{glyph}</span>
         {agent.verb}…
-        <span class="meta">(<RollingNumber value={secs} />s · ↑ <RollingNumber value={kTok} /> tokens · esc to interrupt)</span>
+        <span class="meta">(<RollingNumber value={secs} />s · ↑ <RollingNumber value={kTok} />k tokens · esc to interrupt)</span>
       </div>
     {/if}
 

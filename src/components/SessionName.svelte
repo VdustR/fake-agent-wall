@@ -4,11 +4,14 @@
 </script>
 
 <span class="session-light" class:running={active} style={`--sweep-delay: -${phase % 3800}ms`}>
-  <span>{text}</span><span class="light" aria-hidden="true">{text}</span>
+  <!-- Preserve a real in-flow baseline while the visible layers handle clipping. -->
+  <span class="anchor" aria-hidden="true">{text}</span><span class="base">{text}</span><span class="light" aria-hidden="true">{text}</span>
 </span>
 
 <style>
-  .session-light { position: relative; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .session-light { position: relative; display: inline-block; max-width: 100%; white-space: nowrap; }
+  .anchor { visibility: hidden; user-select: none; -webkit-user-select: none; }
+  .base { position: absolute; inset: 0; display: block; overflow: hidden; text-overflow: ellipsis; }
   .light { display: none; user-select: none; -webkit-user-select: none; }
   @supports (mask-image: linear-gradient(black, transparent)) {
     .running .light {
