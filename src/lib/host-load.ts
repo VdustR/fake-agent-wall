@@ -88,24 +88,45 @@ function jobLoad(seconds: number, lane: number) {
   return { cpu, memory, storage, read, write, rx, tx, phase, cycle }
 }
 
+interface HostTrafficSource {
+  phase: ReturnType<typeof jobLoad>['phase']
+  read: number
+  write: number
+  rx: number
+  tx: number
+}
+
+/** Link throttling must also throttle the disk work caused by that payload. */
+export function constrainHostTraffic(jobs: readonly HostTrafficSource[]) {
+  const rx = jobs.reduce((sum, job) => sum + job.rx, 0)
+  const tx = jobs.reduce((sum, job) => sum + job.tx, 0)
+  const rxScale = Math.min(1, HOST_PROFILE.networkMbps / Math.max(1, rx))
+  const txScale = Math.min(1, HOST_PROFILE.networkMbps / Math.max(1, tx))
+  const read = jobs.reduce((sum, job) => sum + job.read * (job.phase === 'publish' ? txScale : 1), 0)
+  const write = jobs.reduce((sum, job) => sum + job.write * (job.phase === 'fetch' ? rxScale : 1), 0)
+  const diskScale = Math.min(1, HOST_PROFILE.diskMiBs / Math.max(1, read + write))
+  const diskRead = read * diskScale
+  return {
+    netRx: Math.min(HOST_PROFILE.networkMbps, rx),
+    netTx: Math.min(HOST_PROFILE.networkMbps, tx),
+    diskRead,
+    diskWrite: Math.min(write * diskScale, HOST_PROFILE.diskMiBs - diskRead),
+  }
+}
+
 export function hostLoad(elapsedMs: number, activity: number) {
   // Start in an established workload so initial histories contain real phases.
   const seconds = Math.max(0, elapsedMs / 1000 + 120)
   const busy = Math.max(0, Math.min(1, activity))
   const jobs = [0, 1, 2].map(lane => jobLoad(seconds, lane))
-  const sum = (key: 'cpu' | 'memory' | 'storage' | 'read' | 'write' | 'rx' | 'tx') => jobs.reduce((total, job) => total + job[key], 0)
-  const read = sum('read')
-  const write = sum('write')
-  const diskScale = Math.min(1, HOST_PROFILE.diskMiBs / (read + write))
+  const sum = (key: 'cpu' | 'memory' | 'storage') => jobs.reduce((total, job) => total + job[key], 0)
+  const traffic = constrainHostTraffic(jobs)
   return {
     cpu: Math.min(99, 3 + sum('cpu') * (.75 + busy * .25)),
     memoryGiB: Math.min(62, 8 + sum('memory')),
     // Retained system/artifact data is separate from temporary job workspaces.
     storageGiB: 1184 + 4 * (1 - Math.exp(-seconds / 720)) + sum('storage'),
-    diskRead: read * diskScale,
-    diskWrite: write * diskScale,
-    netRx: Math.min(HOST_PROFILE.networkMbps, sum('rx')),
-    netTx: Math.min(HOST_PROFILE.networkMbps, sum('tx')),
+    ...traffic,
   }
 }
 
