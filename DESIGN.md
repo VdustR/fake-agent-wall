@@ -194,15 +194,15 @@ components:
   telemetry-panel:
     backgroundColor: "{colors.ink-100}"
     rounded: "{rounded.panel}"
-    padding: "8px 12px 7px"
+    padding: "6px 10px"
   telemetry-header:
-    backgroundColor: "{colors.ink-150}"
+    backgroundColor: "{colors.ink-100}"
     textColor: "{colors.umd}"
     typography: "{typography.label}"
-    padding: "5px 12px 6px"
+    padding: "0 0 5px"
   ppm-track:
     backgroundColor: "{colors.ink-050}"
-    height: "clamp(9px, 0.95vw, 15px)"
+    height: "4px"
   ppm-readout:
     textColor: "{colors.amber}"
     typography: "{typography.headline}"
@@ -275,7 +275,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - Tally lamps as the primary status channel: red program bus, green preview bus, amber operator-blocked, blue idle.
 - Three typography roles with strict boundaries: Cormorant Garamond for narrative text, Barlow Condensed for chrome, and Monaspace Xenon for transcript body and the one tmux band.
 - No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
-- Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders.
+- Instrument readouts on printed fixed scales: compact throughput tracks with peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
 - Motion separates routing from activity: program changes remain hard cuts; running names carry a left-to-right light, activity signals breathe, numeric readouts roll, and meter lamps release softly.
 
@@ -287,11 +287,11 @@ signal colour at a time, plus Swarmdeck coral as the single product accent.
 ### Primary
 
 - **Program Red** (`{colors.live}`): the program bus. It says "this source is working", never "this source has failed". Full strength plus an outer lamp glow means on air; a 72% mix into `ink-200` means the source is streaming output; a 40% mix means it is thinking. Also the reverse-video background of the active window in the status line, the `live` count in the right status, the top band of the PPM scale, the default lit segment of every LED ladder, and the hold border and timebase of the exit slate.
-- **Swarmdeck Coral** (`{colors.coral}`): the product accent. Tool-call bullets, the typing cursor, the model name in the PGM header, the permission-prompt frame and its selected option, the output-pressure histogram, the solid `[swarmdeck]` session block at the head of the status line, and the solid `SWARM LOG` tag on the ticker.
+- **Swarmdeck Coral** (`{colors.coral}`): the product accent. Tool-call bullets, the typing cursor, the model name in the PGM header, the permission-prompt frame and its selected option, the solid `[swarmdeck]` session block at the head of the status line, and the solid `SWARM LOG` tag on the ticker.
 
 ### Secondary
 
-- **Cue Green** (`{colors.cue}`): the preview bus, and by extension "nominal". As a tally it marks the source queued for the next cut during the 900ms cue lead — a solid border, a `PREVIEW` badge, a slow breathing border, a green `CUE SRC nn` plate that replaces the countdown in the PGM header, and reverse video on that window in the status line. Outside the tally system it carries Git identity (branch name in the PGM strip, repo name in the ticker) and the in-range band of every meter: the bottom 62% of the PPM scale, the flat `sources live` channel, and the context-remaining bridge.
+- **Cue Green** (`{colors.cue}`): the preview bus, and by extension "nominal". As a tally it marks the source queued for the next cut during the 900ms cue lead — a solid border, a `PREVIEW` badge, a slow breathing border, a green `CUE SRC nn` plate that replaces the countdown in the PGM header, and reverse video on that window in the status line. Outside the tally system it carries Git identity (branch name in the PGM strip, repo name in the ticker) and the in-range band of every meter: the bottom 62% of the PPM scale, the flat `sources live` channel, and the context-remaining tracks and output-pressure trace.
 - **Readout Amber** (`{colors.amber}`): instrument amber for numbers and marks that are being read rather than states that are being watched — the status-line clock, the bus-channel readouts, the 62–84% caution band of the PPM scale, every peak-hold cap, and the `esc` key name inside the exit slate.
 - **Hold Amber** (`{colors.hold}`): the operator-blocked lamp. A source waiting on a permission prompt (tile border, tile meter tone, status-line window ink and `!` flag), and a context bar that has fallen below 25%.
 
@@ -303,11 +303,11 @@ signal colour at a time, plus Swarmdeck coral as the single product accent.
 ### Neutral
 
 - **Plate Black** (`{colors.ink-000}`): the deck and the inside of every monitor. Also the *ink* on any grey plate — see the ink rules below.
-- **Terminal Field** (`{colors.term-bg}`): the exact selected preset background, shared by transcript, terminal status bar, decisions, and permission prompts. The PPM track well and histogram retain the derived `{colors.ink-050}` equipment surface.
-- **Panel Graphite** (`{colors.ink-100}`): telemetry body, the ticker rail, and the printed segment rules inside a PPM track.
-- **Label Graphite** (`{colors.ink-150}`): every UMD strip, header bar, the telemetry title bar, the status line, and the exit slate.
+- **Terminal Field** (`{colors.term-bg}`): the exact selected preset background, shared by transcript, terminal status bar, decisions, and permission prompts. The throughput track wells retain the derived `{colors.ink-050}` equipment surface.
+- **Panel Graphite** (`{colors.ink-100}`): telemetry body, the ticker rail, and the instrument strip.
+- **Label Graphite** (`{colors.ink-150}`): every UMD strip, header bar, the status line, and the exit slate.
 - **Chip Graphite** (`{colors.ink-200}`): the source-number chip, the resting `NEXT CUT` plate, and the mix partner for every dimmed tally colour.
-- **Hairline** (`{colors.line}`) / **Bright Hairline** (`{colors.line-hi}`): internal dividers and structural edges respectively. `line-hi` is also the ink for the registration crosses, the title-safe brackets, the graticule ticks and histogram rules, the status line's bottom edge and its `│` separators, and the exit slate's resting border.
+- **Hairline** (`{colors.line}`) / **Bright Hairline** (`{colors.line-hi}`): internal dividers and structural edges respectively. `line-hi` is also the ink for the registration crosses, the title-safe brackets, the pressure reference rules, the status line's bottom edge and its `│` separators, and the exit slate's resting border.
 - **Terminal Ink** (`{colors.txt}` / `{colors.txt-dim}` / `{colors.txt-fnt}`): the three-step transcript legibility ramp — said text, gutter results, context lines — measured at 12.4 / 10.4 / 7.5 against the panel well. The same three steps grade the status line's window list: bright for a working source, `txt-dim` at rest, `txt-fnt` for idle.
 - **UMD Grey** (`{colors.umd}`): label-strip text, the user-turn line in transcripts, the PPM reference mark, and — as a *plate* — the ticker's source chip and the exit slate's ready tag. Measured at 5.3 against the panel well.
 - **Emphasis White** (`{colors.txt-hi}`): the single brightening step. Agent names, source-number chips, PGM key values, status-line figures and running windows, transcript prose, the prompt question, the exit slate's message.
@@ -383,14 +383,13 @@ The ambient wall keeps these viewport-scaled sizes to preserve multiview density
 
 ## Layout
 
-The deck is a fixed three-band column at `100dvh` with `overflow: hidden` on the body:
-the status line across the top, the wall in the middle taking all remaining height, and
-the ticker across the bottom. Every band is `flex: none` except the wall. The status line
-is `clamp(24px, 2.3vw, 36px)` and the ticker `clamp(26px, 2.6vw, 42px)`, so the chrome
-costs under 80px at a laptop viewport and the wall takes everything else.
+The deck is a fixed column at `100dvh` with `overflow: hidden` on the body:
+status line, flexible terminal wall, compact Swarm Bus strip, then ticker. Only the wall
+flexes. Telemetry no longer receives an entire mosaic tile: its content determines a
+shallow height (about 72px at 1440px), returning the former panel area to sessions.
 
 **The wall** is a content-aware mosaic on a fine logical grid. JavaScript measures
-the available container, selects a feasible source capacity, and packs PGM, telemetry,
+the available container, selects a feasible source capacity, and packs PGM,
 terminal and operations blocks around their preferred pixel sizes and aspect ratios.
 PGM remains the dominant source but has a practical maximum width; large and ultrawide
 viewports add generated agents instead of stretching a fixed source set. The wall
@@ -400,18 +399,17 @@ bottom-right corners at 50% opacity.
 
 **Rhythm.** One spacing token does nearly all the work: `{spacing.gap}` between and
 around every panel. Inside panels the scale is `6px` (tight label rows), `10px` (strip
-padding, header gaps, channel gutters), `12px` (panel padding). The telemetry panel
-adds one structural measure: a `{spacing.scale-gutter}` left inset on the histogram
-reserved for its scale numerals, so a printed number never sits on a bar. Panel heights
-are viewport-scaled clamps rather than fixed pixels, so the whole rack breathes with
-the window instead of reflowing.
+padding, header gaps, channel gutters), `12px` (panel padding). The instrument strip uses compact 6px/10px padding and 16px group separation.
+Panel typography retains the viewport-scaled wall sizes.
 
-**Instrument rows** share one internal grid: `clamp(64px, 7.5vw, 108px)` label,
-flexible track, `clamp(44px, 5vw, 72px)` readout. The graticule is a fourth row on the
-same grid, which is what lets three channels and one printed scale line up as a bridge
-rather than as three separate widgets.
+**Instrument strip.** Three groups share a shallow row: three inline throughput
+channels, a normalized twelve-second pressure trace, and a compact nine-column context
+matrix. Below 900px the matrix moves to a second row. Below 540px rate labels sit over
+their values and context uses three short rows. The strip never expands a chart to fill
+spare mosaic height. PGM width reserves the minimum secondary-column width before
+allocation; when both cannot fit, the wall uses the full-width stacked composition.
 
-**Overlay.** One element sits outside the three bands: the exit slate, `position: fixed`
+**Overlay.** One element sits outside the deck bands: the exit slate, `position: fixed`
 at `left: 50%` and `bottom: clamp(52px, 7vh, 96px)`, `z-index: 40`, `pointer-events: none`.
 It clears the ticker and reads over the lower rows of the wall.
 
@@ -423,8 +421,7 @@ then remove secondary chrome when an allocated block becomes constrained:
 - **≤900px** — the PGM UMD strip drops everything past the branch pair (`t+`, tools, token counters) and the task line disappears from the PGM header.
 - Narrow containers hide lower-priority terminal runtime and mode labels while keeping
   the model and context state visible.
-- Constrained telemetry blocks remove the context bridge and let the output-pressure
-  chart absorb the remaining height.
+- The context matrix stays visible at narrow widths by moving below the throughput and pressure groups.
 
 ### Named Rules
 
@@ -448,9 +445,7 @@ with a 1px colour ring plus a wide soft halo.
 
 There is exactly one recess. The program monitor's screen sits below its rack plate
 (`inset 0 0 0 1px rgb(0 0 0 / 100%), inset 0 3px 9px rgba(0, 0, 0, 0.75)`) — a hard
-black seam plus a top-weighted inner shadow, the way a monitor sits in a cut-out. Two
-lighter inset effects also exist and are wells rather than recesses: the PPM tracks and
-context bridge tracks carry `inset 0 0 0 1px var(--line)` as a printed frame.
+black seam plus a top-weighted inner shadow, the way a monitor sits in a cut-out. The compact instrument tracks use a flat dark well with no inset depth.
 
 There is exactly one neutral lift, and it is not in the rack. The exit slate is a fixed overlay
 above the whole surface, and it carries the build's only neutral drop shadow
@@ -471,7 +466,6 @@ build.
 - **Working bloom** (`inset 0 0 22px color-mix(in oklab, var(--live) 8%, transparent)`): a streaming source; inset, so it reads as heat inside the panel rather than a lift.
 - **Hold lamp** (`0 0 16px color-mix(in oklab, var(--hold) 20%, transparent)`): a source blocked on an operator.
 - **Preview lamp** (`0 0 0 1px color-mix(in oklab, var(--cue) 55%, transparent), 0 0 20px color-mix(in oklab, var(--cue) 28%, transparent)`): the cued source.
-- **Instrument well** (`inset 0 0 0 1px var(--line)`): PPM tracks and context bridge tracks. A printed frame, not depth.
 - **Overlay lift** (`0 10px 40px rgb(0 0 0 / 70%)`): the exit slate, and nothing else on the surface.
 - **Hold ring** (`0 0 0 1px color-mix(in oklab, var(--live) 45%, transparent), 0 10px 40px rgb(0 0 0 / 70%)`): the exit slate while Escape is held.
 
@@ -499,10 +493,8 @@ the plate, both built from 1px linear-gradient strokes rather than borders: 11px
 inset `clamp(6px, 0.8vw, 14px)` inside the program monitor's screen.
 
 Meters are strictly rectangular. LED ladders are `repeat(n, 1fr)` segment grids with a
-1px gap — no rounding, no gradient fill, no partial segment. PPM tracks carry their
-segmentation as a printed `repeating-linear-gradient` every 5% of scale, a 1px
-reference mark that overhangs the track by 2px top and bottom, and a 2px peak-hold cap.
-The graticule prints 1px × 3px ticks with numerals centred beneath them. The exit
+1px gap — no rounding, no gradient fill, no partial segment. Throughput tracks are 4px high with a 1px peak-hold cap; context tracks are 2px high.
+The exit
 slate's timebase is the same family: a 4px flat track with quarter marks, no cap, no radius.
 
 ### Named Rules
@@ -646,24 +638,23 @@ strip.
 
 ### Telemetry — Swarm Bus
 
-A meter bridge, not a stat row. Under a `SWARM BUS · PPM · % OF SCALE` title bar, three
-channels share one printed scale: tokens/min against a 60,000 full-scale reference,
-tool calls/min against 300, and sources live as a fraction of the source count. Each row
-is label, PPM track, amber readout. Below them a graticule prints ticks and numerals at
-0/20/40/60/80/100 on the same grid, and every track carries a reference mark at 70%.
+A shallow instrument strip outside the mosaic. Three inline channels retain the
+fleet-calibrated throughput scales: tokens/min, calls/min and live/total. Amber values
+roll at four updates per second. Full-scale percentages label the short tracks; the
+live channel stays flat green because a fully running fleet is nominal. Throughput
+colour zones remain fixed to the full track and the fill clips back to the reading.
+A 1px peak marker preserves recent maxima.
 
-The scale colours belong to the **track**, not the fill: the fill spans the whole track
-with the full green/amber/red gradient and is clipped back to the reading with
-`clip-path`. Peak-hold caps are 2px amber bars. The `sources live` channel is flagged
-flat and drawn in plain green, because every source working is the nominal state there,
-not an overload.
+**Output pressure** uses the same 90 normalized samples (approximately 12 seconds),
+rendered as a thin green trace with a faint area fill and 25/50/75 reference rules.
+The current percentage and time span share its label row. Its fixed 34px plotting
+height keeps the history subordinate to the transcripts.
 
-Beneath it, an **output pressure** histogram of 90 coral bars — newest three at full
-coral, the rest at a 58% mix — with numbered 25/50/75 rules across it and a reserved
-left gutter for their numerals. Then the **context remaining** bridge: one vertical
-track per visible source, scaling on `transform: scaleY()` at 300ms linear. Tracks are
-scaled rather than resized so their animation stays off the layout path. A track
-below 25% switches to hold amber.
+**Context remaining** is a nine-column matrix of session IDs, rolling percentages
+and 2px horizontal tracks. The first 27 sessions retain the incumbent coverage; when
+the fleet exceeds 27 the header explicitly prints the shown range and fleet count.
+Values below 25% use hold amber. Tracks scale horizontally at 300ms and honor reduced
+motion. Narrow viewports move this group to a second row rather than hiding it.
 
 ### Ticker
 

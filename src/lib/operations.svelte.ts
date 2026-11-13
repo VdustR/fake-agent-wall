@@ -134,7 +134,7 @@ const CARD_ASPECT_RANGE: Record<OpsCardId, readonly [number, number]> = {
 }
 
 interface GridItem extends MosaicItem {
-  type: 'pgm' | 'telemetry' | 'agent' | 'ops'
+  type: 'pgm' | 'agent' | 'ops'
   key: string
   preferredAspect: number
   minAspect: number
@@ -195,7 +195,7 @@ export class OperationsWorld {
 
   #buildGridItems(capacity: number): GridItem[] {
     const activeCards = this.#activeCardsFor(capacity)
-    const terminalCount = Math.max(1, capacity - activeCards.length - 2)
+    const terminalCount = Math.max(1, capacity - activeCards.length - 1)
     const offset = this.layoutEpoch % this.swarm.agents.length
     const agents = Array.from({ length: terminalCount }, (_, index) => this.swarm.agents[(offset + index) % this.swarm.agents.length]!)
       .map(agent => ({
@@ -230,24 +230,6 @@ export class OperationsWorld {
     }))
     const items: GridItem[] = [
       { type: 'pgm', key: 'pgm', preferredAspect: 1.38, preferredWidth: 920, preferredHeight: 660, minAspect: 1.05, maxAspect: 2, weight: 5.5, minWidth: 320, minHeight: 240 },
-      {
-        type: 'telemetry',
-        key: 'telemetry',
-        preferredAspect: 3.2,
-        preferredWidth: 760,
-        preferredHeight: 260,
-        minAspect: 2.4,
-        maxAspect: 5,
-        weight: 2.2,
-        minWidth: 300,
-        minHeight: 145,
-        variants: [
-          { minWidth: 520, minHeight: 330, minAspect: 1.6, maxAspect: 5 },
-          { minWidth: 520, minHeight: 145, minAspect: 2.4, maxAspect: 6 },
-          { minWidth: 300, minHeight: 220, minAspect: 0.65, maxAspect: 1.8 },
-          { minWidth: 300, minHeight: 145, minAspect: 1.8, maxAspect: 6 },
-        ],
-      },
       ...agents.slice(0, Math.min(2, agents.length)),
     ]
     const remainingAgents = agents.slice(2)

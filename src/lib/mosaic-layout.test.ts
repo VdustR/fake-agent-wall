@@ -13,20 +13,8 @@ const pgm: MosaicItem = {
   minWidth: 320, minHeight: 240,
 }
 
-const telemetry: MosaicItem = {
-  key: 'telemetry', type: 'telemetry', preferredAspect: 3.2,
-  preferredWidth: 760, preferredHeight: 260, minAspect: 2.4, maxAspect: 5,
-  weight: 2.2, minWidth: 300, minHeight: 145,
-  variants: [
-    { minWidth: 520, minHeight: 330, minAspect: 1.6, maxAspect: 5 },
-    { minWidth: 520, minHeight: 145, minAspect: 2.4, maxAspect: 6 },
-    { minWidth: 300, minHeight: 220, minAspect: 0.65, maxAspect: 1.8 },
-    { minWidth: 300, minHeight: 145, minAspect: 1.8, maxAspect: 6 },
-  ],
-}
-
 function fixtures(count: number): MosaicItem[] {
-  const agents = Array.from({ length: Math.max(1, count - 2) }, (_, index): MosaicItem => ({
+  const agents = Array.from({ length: Math.max(1, count - 1) }, (_, index): MosaicItem => ({
     key: `agent-${index}`, type: 'agent', preferredAspect: 1.35,
     preferredWidth: 360, preferredHeight: 230, minAspect: 0.75, maxAspect: 2.2,
     weight: 1, minWidth: 300, minHeight: 150,
@@ -35,7 +23,7 @@ function fixtures(count: number): MosaicItem[] {
       { minWidth: 300, minHeight: 150, minAspect: 0.55, maxAspect: 3.5 },
     ],
   }))
-  return [pgm, telemetry, ...agents]
+  return [pgm, ...agents]
 }
 
 function overlaps(a: { row: number; column: number; rows: number; columns: number }, b: typeof a): boolean {
@@ -47,6 +35,7 @@ describe('responsive mosaic', () => {
   it.each([
     [390, 844],
     [567, 786],
+    [758, 860],
     [1024, 768],
     [1440, 900],
     [2560, 900],
