@@ -32,28 +32,30 @@
     align-items: stretch;
   }
   .meter i {
+    --lamp: var(--live);
+    position: relative;
     background: var(--led-off);
-    transition: background 90ms linear;
   }
-  .meter i.on {
-    background: var(--live);
+  .meter[data-tone='amber'] i { --lamp: var(--amber); }
+  .meter[data-tone='cue'] i { --lamp: var(--cue); }
+  .meter[data-tone='coral'] i { --lamp: var(--coral); }
+  .meter i.hot { --lamp: var(--led-hot); }
+  .meter[data-tone='cue'] i.hot { --lamp: var(--amber); }
+  .meter i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--lamp);
+    opacity: 0;
+    transition: opacity 650ms cubic-bezier(.2, .7, .2, 1), background-color 180ms linear;
   }
-  .meter[data-tone='amber'] i.on {
-    background: var(--amber);
+  .meter i.on::after,
+  .meter i.cap::after {
+    opacity: 1;
+    transition-duration: 40ms, 180ms;
   }
-  .meter[data-tone='cue'] i.on {
-    background: var(--cue);
-  }
-  .meter[data-tone='coral'] i.on {
-    background: var(--coral);
-  }
-  .meter i.on.hot {
-    background: var(--led-hot);
-  }
-  .meter[data-tone='cue'] i.on.hot {
-    background: var(--amber);
-  }
-  .meter i.cap {
-    background: var(--amber);
+  .meter i.cap::after { background: var(--amber); }
+  @media (prefers-reduced-motion: reduce) {
+    .meter i::after { transition: none; }
   }
 </style>

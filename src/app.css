@@ -196,3 +196,21 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Shared activity rhythm; the cue border and cursor use the same slow release. */
+.activity-breathe { animation: activity-breathe 2000ms ease-in-out infinite; animation-delay: var(--breath-delay, 0ms); }
+@keyframes activity-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+
+/* Simulation keeps its timebase; hidden documents spend no work on visual interpolation. */
+.deck[data-motion-paused] *,
+.deck[data-motion-paused] *::before,
+.deck[data-motion-paused] *::after {
+  animation-play-state: paused !important;
+  transition-duration: 0s !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-breathe { animation: none; }
+}

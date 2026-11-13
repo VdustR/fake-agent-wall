@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SessionName from './SessionName.svelte'
   import { onMount } from 'svelte'
   import type { Swarm } from '../lib/swarm.svelte'
   import RollingNumber from './RollingNumber.svelte'
@@ -64,7 +65,7 @@
         data-state={item.agent.status}
         title={`${item.agent.slot}:${item.agent.label}`}
       >
-        <span>{item.agent.slot}:{item.agent.label}{item.index === swarm.pgm ? '*' : item.agent.status === 'hold' ? '!' : ''}</span>
+        <span>{item.agent.slot}:<SessionName text={item.agent.label} active={item.agent.status === 'run' || item.agent.status === 'cue'} phase={item.agent.slot * 137} />{item.index === swarm.pgm ? '*' : item.agent.status === 'hold' ? '!' : ''}</span>
       </span>
     {/each}
     {#if visibleWindows.length < swarm.agents.length}
@@ -137,6 +138,8 @@
     color: var(--txt-dim);
   }
   .win > span {
+    display: flex;
+    align-items: baseline;
     min-width: 0;
     overflow: hidden;
     white-space: nowrap;
@@ -160,6 +163,7 @@
     color: var(--txt-fnt);
   }
   /* The current window, in tmux's own idiom: reverse video, not a border. */
+  .win.active, .win.cued { --session-glint: color-mix(in oklch, currentColor 92%, white); }
   .win.active {
     background: var(--live);
     color: var(--on-live);
