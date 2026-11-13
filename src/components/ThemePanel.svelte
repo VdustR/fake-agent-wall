@@ -130,7 +130,6 @@
   <header>
     <div>
       <h1>Wall settings</h1>
-      <p>identity · palette · typography</p>
     </div>
     <button class="close" type="button" onclick={oncancel} aria-label="Close and discard changes">×</button>
   </header>
@@ -140,7 +139,6 @@
       <label class="field-label" for="wall-label">Wall label</label>
       <input id="wall-label" class="text-field" value={draft.wallLabel} maxlength="32" autocomplete="off" spellcheck="false" oninput={(event) => updateWallLabel(event.currentTarget.value)} />
       <output class="wall-label-preview" aria-live="polite">[{draft.wallLabel || 'fake-agent-wall'}]</output>
-      <p class="fallback">Shown in the top-left session block. Brackets are added automatically.</p>
     </section>
 
     <section class="preset-section">
@@ -204,9 +202,8 @@
         <FontAutocomplete label="Terminal font stack" value={draft.codeFont} options={fontOptions} onescape={oncancel} onchange={(family) => updateFont('codeFont', family)} />
         <output style:font-family={draft.codeFont}>● Read(src/App.svelte)</output>
       </div>
-      <p class="fallback">Each value is a complete CSS font-family stack.</p>
       <button class="text-button" type="button" disabled={loadingFonts} onclick={() => systemFontCatalog.load()}>{loadingFonts ? 'Loading fonts…' : 'Load system fonts'}</button>
-      {#if fontStatus || loadingFonts}<p class="fallback" role="status">{fontStatus || 'Waiting for browser font access. Check the permission prompt in your browser.'}</p>{/if}
+      {#if fontStatus || loadingFonts}<p class="fallback" role="status">{fontStatus || 'Allow font access in your browser.'}</p>{/if}
     </section>
   </div>
 
@@ -227,7 +224,6 @@
   header, footer { flex: none; display: flex; align-items: center; justify-content: space-between; background: var(--ink-150); border-color: var(--line-hi); }
   header { height: 62px; padding: 0 16px 0 20px; border-bottom: 1px solid var(--line-hi); }
   h1 { font: 600 22px/.95 var(--f-editorial); letter-spacing: -.02em; }
-  header p { margin-top: 7px; color: var(--txt-fnt); font: 10px/1.2 var(--f-term); }
   button, input { font: inherit; }
   button { color: inherit; border: 0; }
   .close { width: 34px; height: 34px; background: transparent; color: var(--txt-dim); font: 24px/1.2 var(--f-term); cursor: pointer; }

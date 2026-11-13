@@ -27,7 +27,6 @@
 <article class="ops-tile" data-kind={kind} bind:this={tileElement}>
   <header class="umd-type">
     <span>{world.titleFor(kind)}</span>
-    <b>sim · live</b>
   </header>
 
   {#if kind === 'contributions'}
@@ -83,7 +82,6 @@
 <style>
   .ops-tile { height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--ink-050); border: 1.5px solid color-mix(in oklab, var(--coral) 55%, var(--line-hi)); }
   header { flex: none; display: flex; justify-content: space-between; align-items: center; height: clamp(19px, 1.65vw, 25px); padding: 0 7px; color: var(--txt-hi); background: var(--ink-150); border-bottom: 1px solid var(--line); letter-spacing: .08em; }
-  header b { color: var(--coral); }
   .tasks { flex: 1; min-height: 0; overflow: hidden; }
   .task { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 7px; padding: clamp(5px, .55vw, 8px); border-bottom: 1px solid var(--line); }
   .id { grid-column: 1; grid-row: 1; color: var(--coral); font-size: 8px; }
