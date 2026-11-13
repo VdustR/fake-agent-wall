@@ -91,12 +91,12 @@
     display: flex;
     align-items: stretch;
     gap: 0;
-    height: 2.25rem;
+    height: clamp(24px, 2.3vw, 36px);
     background: var(--ink-150);
     border-bottom: 1px solid var(--line-hi);
     /* Terminal register: the body face, not the broadcast label face. */
     font-family: var(--f-term);
-    font-size: var(--type-label);
+    font-size: clamp(9.5px, 0.72vw, 14px);
     line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
