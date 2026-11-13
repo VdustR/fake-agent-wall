@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RollingNumber from './RollingNumber.svelte'
   import type { Agent } from '../lib/agent.svelte'
 
   interface Props {
@@ -16,13 +17,11 @@
   const displayLine = (line: string) => line
 
   const glyph = $derived(calm ? 'O' : GLYPHS[Math.floor(beat / 110) % GLYPHS.length])
-  // Held steady rather than blinking when the viewer asked for less motion.
-  const blink = $derived(calm || Math.floor(beat / 530) % 2 === 0)
   const secs = $derived(Math.floor(agent.sessionMs / 1000) % 600)
   const kTok = $derived(((agent.tokensUp + agent.tokensDown) / 1000).toFixed(1))
 </script>
 
-<div class="term" class:pgm>
+<div class="term" class:pgm style={`--breath-delay: -${agent.slot * 107}ms`}>
   <div class="log">
     {#each agent.lines as l}
       {#if l.k === 'tool'}
@@ -35,11 +34,11 @@
     {#if agent.partial}
       {#if agent.partial.k === 'tool'}
         <div class="ln tool"><b class="bul">●</b>{displayLine(agent.partial.s.slice(1))}<i
-            class="cur"
-            class:on={blink}
+            class="cur activity-breathe"
+            class:still={calm}
           ></i></div>
       {:else}
-        <div class="ln {agent.partial.k}">{displayLine(agent.partial.s)}<i class="cur" class:on={blink}></i></div>
+        <div class="ln {agent.partial.k}">{displayLine(agent.partial.s)}<i class="cur activity-breathe" class:still={calm}></i></div>
       {/if}
     {/if}
 
@@ -47,7 +46,7 @@
       <div class="ln spin">
         <span class="gl">{glyph}</span>
         {agent.verb}…
-        <span class="meta">({secs}s · ↑ {kTok} tokens · esc to interrupt)</span>
+        <span class="meta">(<RollingNumber value={secs} />s · ↑ <RollingNumber value={kTok} /> tokens · esc to interrupt)</span>
       </div>
     {/if}
 
@@ -75,7 +74,7 @@
     <span class="mode">⏵⏵ {agent.executionPolicy}</span>
     <span class="left">
       <span class="runtime">{agent.provider} / {agent.model} ·&nbsp;</span>
-      <span class="context">{Math.round(agent.contextLeft)}% context left</span>
+      <span class="context"><RollingNumber value={Math.round(agent.contextLeft)} />% context left</span>
     </span>
   </div>
 </div>
@@ -122,10 +121,10 @@
     height: 1em;
     margin-left: 0.5px;
     vertical-align: text-bottom;
-    background: transparent;
-  }
-  .cur.on {
     background: var(--term-cursor);
+  }
+  .cur.still {
+    animation: none;
   }
 
   /* Permission requests are distinct from transcript output without borrowing a client skin. */

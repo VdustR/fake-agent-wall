@@ -1,4 +1,6 @@
 <script lang="ts">
+  import RollingNumber from './RollingNumber.svelte'
+  import SessionName from './SessionName.svelte'
   import type { Agent } from '../lib/agent.svelte'
   import Meter from './Meter.svelte'
   import Terminal from './Terminal.svelte'
@@ -25,19 +27,19 @@
   <header class="head umd-type">
     <span class="tag">pgm</span>
     <span class="src tnum">src {agent.numLabel}</span>
-    <span class="who">{agent.label}</span>
+    <span class="who"><SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /></span>
     <span class="task">{agent.task}</span>
     <span class="provider">{agent.provider}</span>
     <span class="model">{agent.model}</span>
     {#if cueing}
       <span class="next cueing">cue src {cueing}</span>
     {:else if nextCutIn > 0}
-      <span class="next tnum">next cut {(nextCutIn / 1000).toFixed(1)}</span>
+      <span class="next tnum"><span>next cut <RollingNumber value={(nextCutIn / 1000).toFixed(1)} duration={80} /></span></span>
     {/if}
   </header>
 
   <div class="screen">
-    <Terminal {agent} {beat} {calm} pgm />
+    {#key agent.slot}<Terminal {agent} {beat} {calm} pgm />{/key}
     <!-- Title-safe brackets, the way a program monitor marks its action area. -->
     <span class="safe" aria-hidden="true"></span>
     {#if flash > 0}
@@ -45,15 +47,17 @@
     {/if}
   </div>
 
+  {#key agent.slot}
   <footer class="umd umd-type">
     <span class="k">repo</span><span class="v repo">{agent.repo}</span>
     <span class="k">branch</span><span class="v br">{agent.branch}</span>
-    <span class="k">t+</span><span class="v tnum">{mmss}</span>
-    <span class="k">tools</span><span class="v tnum">{agent.toolUses}</span>
-    <span class="k">↑</span><span class="v tnum">{(agent.tokensUp / 1000).toFixed(1)}k</span>
-    <span class="k">↓</span><span class="v tnum">{(agent.tokensDown / 1000).toFixed(1)}k</span>
+    <span class="k">t+</span><span class="v tnum"><RollingNumber value={mmss} /></span>
+    <span class="k">tools</span><span class="v tnum"><RollingNumber value={agent.toolUses} /></span>
+    <span class="k">↑</span><span class="v tnum"><RollingNumber value={(agent.tokensUp / 1000).toFixed(1)} />k</span>
+    <span class="k">↓</span><span class="v tnum"><RollingNumber value={(agent.tokensDown / 1000).toFixed(1)} />k</span>
     <span class="lvl"><Meter value={agent.level} peak={agent.levelPeak} segments={16} /></span>
   </footer>
+  {/key}
 </section>
 
 <style>

@@ -273,7 +273,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
 - Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
-- Motion is broadcast motion: hard cuts and instant state changes; easing exists only for meters, the ticker step and the exit timebase.
+- Motion separates routing from activity: program changes remain hard cuts; running names carry a left-to-right light, activity signals breathe, numeric readouts roll, and meter lamps release softly.
 
 ## Colors
 
@@ -287,7 +287,7 @@ signal colour at a time, plus Swarmdeck coral as the single product accent.
 
 ### Secondary
 
-- **Cue Green** (`{colors.cue}`): the preview bus, and by extension "nominal". As a tally it marks the source queued for the next cut during the 900ms cue lead — a solid border, a `PREVIEW` badge, a hard 300ms `steps(1)` blink, a green `CUE SRC nn` plate that replaces the countdown in the PGM header, and reverse video on that window in the status line. Outside the tally system it carries Git identity (branch name in the PGM strip, repo name in the ticker) and the in-range band of every meter: the bottom 62% of the PPM scale, the flat `sources live` channel, and the context-remaining bridge.
+- **Cue Green** (`{colors.cue}`): the preview bus, and by extension "nominal". As a tally it marks the source queued for the next cut during the 900ms cue lead — a solid border, a `PREVIEW` badge, a slow breathing border, a green `CUE SRC nn` plate that replaces the countdown in the PGM header, and reverse video on that window in the status line. Outside the tally system it carries Git identity (branch name in the PGM strip, repo name in the ticker) and the in-range band of every meter: the bottom 62% of the PPM scale, the flat `sources live` channel, and the context-remaining bridge.
 - **Readout Amber** (`{colors.amber}`): instrument amber for numbers and marks that are being read rather than states that are being watched — the status-line clock, the bus-channel readouts, the 62–84% caution band of the PPM scale, every peak-hold cap, and the `esc` key name inside the exit slate.
 - **Hold Amber** (`{colors.hold}`): the operator-blocked lamp. A source waiting on a permission prompt (tile border, tile meter tone, status-line window ink and `!` flag), and a context bar that has fallen below 25%.
 
@@ -603,7 +603,7 @@ tile's own border, resolved by a single `data-tally` attribute:
 - **`cue`** — 40% red mix border, no glow (thinking is quieter than streaming, not a different colour).
 - **`hold`** — solid `{colors.hold}` + hold lamp.
 - **`done`** — 40% `{colors.done}` mix, no glow.
-- **`cued`** (preview, overrides all) — solid `{colors.cue}` + preview lamp + a 300ms `steps(1)` blink and a green `PREVIEW` badge.
+- **`cued`** (preview, overrides all) — solid `{colors.cue}` + preview lamp + a 2200ms breathing border and a green `PREVIEW` badge.
 
 The UMD strip is a 5-column grid: source-number chip (inverted, stretched full height),
 agent name, `repo ▸ branch`, a 9-segment peak-holding meter that switches to amber tone
@@ -625,7 +625,7 @@ tinted band), `todo-done`/`todo-open`, `text`, `user`, `err`, `ok`, `dim`, `spin
 `rule` (a dashed 1px separator with 0.6em breathing room, used to mark a session
 turnover).
 
-A block cursor (0.62em × 1em, preset cursor colour) blinks on the streaming line at a 530ms half-cycle,
+A block cursor (0.62em × 1em, preset cursor colour) breathes on the streaming line over 2000ms,
 and the spinner cycles a restrained `· o O o` sequence at 110ms alongside a faint
 `(Ns · ↑ Nk tokens · esc to interrupt)` meta. The status bar pins the fleet execution
 policy (in ANSI green) against `provider / model · N% context left`.
@@ -641,8 +641,7 @@ Lit segments take the tone prop (`live` default, `amber` for held sources, `cue`
 `coral`), and the top two segments burn at `{colors.led-hot}` as a peak indicator. An
 optional `peak` prop lights a single amber cap segment at the held peak whenever that
 segment sits above the current reading — catch instantly, decay over roughly 2.6
-seconds. Segments cross-fade at 90ms linear: fast enough to look electrical, slow
-enough not to strobe. Used at 16 segments under PGM and 9 segments in each tile UMD
+seconds. Each segment has a static unlit well and an opacity-driven lamp: 40ms attack, 650ms eased release. Retriggering interrupts the release without snapping to dark. Used at 16 segments under PGM and 9 segments in each tile UMD
 strip.
 
 ### Telemetry — Swarm Bus
@@ -688,7 +687,7 @@ wedged page costs the user a hint, never the exit.
 - **Surfacing:** on any pointer movement over 3px, or after four non-modifier keys within 1800ms. It holds for 2600ms and then cuts out. Movement below the 3px threshold, auto-repeat events, modifier chords, and the Theme Panel shortcut are ignored. Opening the Theme Panel clears any partially accumulated key sequence.
 - **Ready:** a `{colors.umd}` plate tag reading `exit` with `{colors.ink-000}` ink, and the line `hold esc to stop` in `{colors.txt-hi}` with `esc` in amber.
 - **Holding:** the tag reads `hold` on solid `{colors.live}`, the border gains a hold ring, the line becomes `keep holding esc to stop`, and a 4px **timebase** fills left-to-right over the 1200ms hold. Quarter marks make duration legible without adding a countdown.
-- **Entrance:** `90ms steps(2)` opacity — a hard cut, like everything else on this wall.
+- **Entrance:** `90ms steps(2)` opacity — a short hard cut that distinguishes the exit affordance.
 - **Reduced motion:** the timebase holds full rather than filling. The hold duration is unchanged; only the animation is removed.
 
 The timebase is the exit affordance's answer to the cut-clock problem: a timed state
@@ -708,9 +707,9 @@ when the page unmounts. A plain browser tab keeps its ordinary pointer behavior.
 
 ### Named Rules
 
-**The Hard-Cut Rule.** State changes are cuts, not transitions. Tally borders move at 120ms linear, the preview blink uses `steps(1)`, the cut flash has no curve at all, the exit slate cuts in on `steps(2)`, and the cursor and spinner are modulo toggles off the frame clock. Easing exists in exactly three places: the meter transitions, the ticker's one-cell step, and the exit timebase's linear fill.
+**The Activity-Motion Rule.** Routing remains a hard cut with the existing 190ms flash. Activity has a separate rhythm: `SessionName` keeps readable base text and moves a masked light over an aria-hidden duplicate from left to right in a 3800ms cycle; slots offset the phase. The cursor and status lamps breathe between 45% and 100% opacity over roughly two seconds, and the preview border breathes over 2200ms. Segmented meters attack in 40ms and fade over 650ms. Structured numeric readouts share place-keyed `RollingNumber` wheels (360ms; countdown 80ms; instrument values 180ms sampled at 4Hz). New entities start with their own values rather than rolling from another source's data. Transcript text, source IDs and fixed scales remain ordinary content. Document visibility pauses CSS loops and removes interpolation; the existing native playback lifecycle still owns when desktop walls are retired.
 
-**The Calm-Variant Rule.** Under `prefers-reduced-motion`, the surface does not stop being a multiviewer; it stops fidgeting. A global rule flattens every CSS animation and transition to 0.001ms, and the components answer for their own content: transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor holds solid; the spinner freezes at `O`; the ticker stops stepping; the exit timebase holds full; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.
+**The Calm-Variant Rule.** Under `prefers-reduced-motion`, the surface does not stop being a multiviewer; it stops fidgeting. A global rule flattens every CSS animation and transition to 0.001ms, and the components answer for their own content: transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor and activity lamps hold solid; session-name light layers disappear; numeric wheels and meter lamps update immediately; the spinner freezes at `O`; the ticker stops stepping; the exit timebase holds full; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.
 
 **The Display-Only Rule.** A component that shows a system affordance never owns it. The exit hint draws the gesture the main process implements and holds no part of the exit path; if the component fails to render, the gesture still works. Any future indicator for a shell-owned capability follows the same split.
 
@@ -751,6 +750,6 @@ when the page unmounts. A plain browser tab keeps its ordinary pointer behavior.
 - **Don't** use the editorial serif for telemetry, terminal output, badges or instrument labels. It is limited to narrative text and settings hierarchy.
 - **Don't** synthesise bold inside a transcript. The 700 weight in the status line is a 10–14px chrome allowance, not a body-text device.
 - **Don't** let a meter auto-fit its scale to the data, and don't paint the gradient onto the fill.
-- **Don't** animate a state change with a fade. Broadcast switches; it does not dissolve.
+- **Don't** dissolve between routed program sources. Keep routing cuts distinct from breathing activity and meter release.
 - **Don't** answer `prefers-reduced-motion` by freezing the surface or dropping panels. Slow the content, hold the indicators, keep the wall.
 - **Don't** let a panel render empty or ship a scrollbar. Both break the object the surface is imitating.

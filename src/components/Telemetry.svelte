@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { untrack } from 'svelte'
+  import RollingNumber from './RollingNumber.svelte'
   import type { Swarm } from '../lib/swarm.svelte'
   import {
     normalizeThroughput,
@@ -56,6 +58,17 @@
       load: `${Math.round(swarm.running / swarm.agents.length * 100)}% live`,
     },
   ])
+  // Bars stay continuous; four digit updates per second remain readable on camera.
+  const readingFrame = $derived(Math.floor(swarm.uptimeMs / 250))
+  let lastReadingFrame = -1
+  let readings = $state<{ read: string; load: string }[]>([])
+  $effect(() => {
+    const frame = readingFrame
+    if (frame === lastReadingFrame) return
+    lastReadingFrame = frame
+    untrack(() => { readings = channels.map(({ read, load }) => ({ read, load })) })
+  })
+
 </script>
 
 <section class="tel">
@@ -66,7 +79,7 @@
 
   <!-- Bus meters on one printed scale, the way a meter bridge is silkscreened. -->
   <div class="bus">
-    {#each channels as c (c.key)}
+    {#each channels as c, index (c.key)}
       <div class="ch">
         <span class="lb umd-type">{c.label}</span>
         <span class="ppm">
@@ -75,7 +88,7 @@
           {#if c.peak > 0.01}<i class="cap" style="--p:{c.peak}"></i>{/if}
           <i class="ref" style="--at:{REF}%"></i>
         </span>
-        <span class="read tnum"><b>{c.read}</b><small>{c.load}</small></span>
+        <span class="read tnum"><b><RollingNumber value={readings[index]?.read ?? c.read} duration={180} /></b><small><RollingNumber value={readings[index]?.load ?? c.load} duration={180} /></small></span>
       </div>
     {/each}
 
@@ -111,7 +124,7 @@
     <div class="cols">
       {#each swarm.agents.slice(0, 27) as a (a.slot)}
         <div class="col">
-          <span class="pc umd-type tnum">{Math.round(a.contextLeft)}</span>
+          <span class="pc umd-type tnum"><RollingNumber value={Math.round(a.contextLeft)} /></span>
           <span class="track"
             ><i style="--h:{a.contextLeft / 100}" data-low={a.contextLeft < 25}></i></span
           >

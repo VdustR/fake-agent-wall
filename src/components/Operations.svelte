@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SessionName from './SessionName.svelte'
   import { onMount } from 'svelte'
   import type { OperationsWorld, OpsCardId } from '../lib/operations.svelte'
   import RollingNumber from './RollingNumber.svelte'
@@ -48,40 +49,40 @@
     <footer class="stats umd-type"><b><RollingNumber value={world.contributionTotal.toLocaleString()} label={`${world.contributionTotal} events`} /></b> events · <b>{world.activeAgent}</b> active</footer>
   {:else if kind === 'usage'}
     <div class="usage">
-      {#each providers as provider}
-        <div><span>{provider.name}<small>{provider.model}</small></span><i><em style:transform={`scaleX(${provider.used / 100})`}></em></i><b><RollingNumber value={`${provider.used}%`} label={`${provider.used} percent used`} /><small>{provider.rpm} rpm · {provider.latency} ms</small></b></div>
+      {#each providers as provider (provider.name)}
+        <div><span>{provider.name}<small>{provider.model}</small></span><i><em style:transform={`scaleX(${provider.used / 100})`}></em></i><b><RollingNumber value={`${provider.used}%`} label={`${provider.used} percent used`} /><small><RollingNumber value={provider.rpm} /> rpm · <RollingNumber value={provider.latency} /> ms</small></b></div>
       {/each}
     </div>
   {:else if kind === 'cost'}
     <div class="ledger">
-      {#each providers as provider}
-        <div><span>{provider.name}<small>{provider.tokens} tokens</small></span><b>{provider.cost}</b></div>
+      {#each providers as provider (provider.name)}
+        <div><span>{provider.name}<small><RollingNumber value={provider.tokens} /> tokens</small></span><b><RollingNumber value={provider.cost} /></b></div>
       {/each}
       <footer><span>projected session</span><strong><RollingNumber value={`$${world.estimatedCost.toFixed(2)}`} label={`${world.estimatedCost.toFixed(2)} dollars`} /></strong></footer>
     </div>
   {:else if kind === 'resets'}
     <div class="resets">
-      {#each providers as provider, index}
-        <div><i class:soon={index === world.epoch % 3}></i><span>{provider.name}<small>{index === world.epoch % 3 ? 'window nearing limit' : 'nominal routing'}</small></span><b>{provider.reset}</b></div>
+      {#each providers as provider, index (provider.name)}
+        <div><i class:soon={index === world.epoch % 3} class:activity-breathe={index === world.epoch % 3}></i><span>{provider.name}<small>{index === world.epoch % 3 ? 'window nearing limit' : 'nominal routing'}</small></span><b><RollingNumber value={provider.reset} /></b></div>
       {/each}
     </div>
   {:else if kind === 'fleet'}
     <div class="fleet">
-      {#each fleetAgents as agent}
+      {#each fleetAgents as agent (agent.slot)}
         <div>
-          <i data-state={agent.status}></i>
-          <span>{agent.numLabel} · {agent.label}<small>{agent.provider} / {agent.model}</small></span>
-          <b>{Math.round(agent.contextLeft)}%</b>
+          <i style={`--breath-delay: -${agent.slot * 107}ms`} data-state={agent.status} class:activity-breathe={agent.status === 'run'}></i>
+          <span>{agent.numLabel} · <SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /><small>{agent.provider} / {agent.model}</small></span>
+          <b><RollingNumber value={Math.round(agent.contextLeft)} />%</b>
         </div>
       {/each}
     </div>
   {:else}
     <div class="tasks">
-      {#each tasks as task (task.id)}
+      {#each tasks as task, index (task.id)}
         <div class="task">
           <span class="id tnum">{task.id}</span>
           <strong>{task.title}</strong>
-          <span class="agent"><i class:working={task.phase !== 'queued'}></i>{task.agent}</span>
+          <span class="agent" style={`--breath-delay: -${index * 280}ms`}><i class:activity-breathe={task.phase !== 'queued'} class:working={task.phase !== 'queued'}></i><SessionName text={task.agent} active={task.phase !== 'queued'} phase={index * 731} /></span>
           <em data-phase={task.phase}>{task.phase}</em>
         </div>
       {/each}
@@ -98,7 +99,7 @@
   .task strong { grid-column: 1 / -1; min-width: 0; color: var(--txt); font: var(--type-ui)/1.3 var(--f-umd); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .agent { grid-column: 1 / -1; display: flex; align-items: center; gap: 5px; color: var(--txt-fnt); font: var(--type-label)/1.3 var(--f-umd); }
   .agent i { width: 5px; height: 5px; background: var(--txt-fnt); }
-  .agent i.working { background: var(--cue); animation: pulse 900ms steps(2) infinite; }
+  .agent i.working { background: var(--cue); }
   .task em { grid-column: 2; grid-row: 1; color: var(--txt-dim); font: var(--type-meta)/1.3 var(--f-umd); font-style: normal; text-transform: uppercase; }
   .task em[data-phase='reviewing'], .task em[data-phase='merging'] { color: var(--amber); }
   .task em[data-phase='fixing'], .task em[data-phase='running'] { color: var(--cue); }
@@ -127,7 +128,7 @@
   .ledger footer strong { color: var(--txt-hi); font: var(--type-data)/1.2 var(--f-umd); font-variant-numeric: tabular-nums; }
   .resets > div { grid-template-columns: auto minmax(0, 1fr) auto; }
   .resets i { width: 6px; height: 6px; background: var(--cue); }
-  .resets i.soon { background: var(--hold); animation: pulse 900ms steps(2) infinite; }
+  .resets i.soon { background: var(--hold); }
   .fleet > div { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px solid var(--line); }
   .fleet i { width: 5px; height: 5px; background: var(--live); }
   .fleet i[data-state='hold'] { background: var(--hold); }
@@ -135,7 +136,6 @@
   .fleet span { min-width: 0; color: var(--txt); font: var(--type-label)/1.3 var(--f-umd); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fleet small { display: block; margin-top: 3px; color: var(--txt-fnt); font-size: var(--type-meta); overflow: hidden; text-overflow: ellipsis; }
   .fleet b { color: var(--amber); font: var(--type-label)/1.3 var(--f-umd); font-variant-numeric: tabular-nums; }
-  @keyframes pulse { 50% { opacity: .35; } }
   @media (prefers-reduced-motion: reduce) {
     .agent i.working, .resets i.soon { animation: none; }
     .usage em { transition: none; }

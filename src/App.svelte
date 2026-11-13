@@ -18,11 +18,15 @@
   const operations = new OperationsWorld(swarm)
   let themeOpen = $state(false)
   let cursorIdle = $state(false)
+  let motionPaused = $state(false)
   let committedTheme = $state<ThemeSettings>()
   let wallLabel = $state('fake-agent-wall')
   let gridElement = $state<HTMLDivElement>()
 
   onMount(() => {
+    const syncMotionVisibility = () => { motionPaused = document.hidden }
+    syncMotionVisibility()
+    document.addEventListener('visibilitychange', syncMotionVisibility)
     const stopPointerIdle = desktop ? observePointerIdle(window, idle => { cursorIdle = idle }) : undefined
     committedTheme = loadTheme()
     wallLabel = normalizeWallLabel(committedTheme.wallLabel)
@@ -68,6 +72,7 @@
     const offClose = window.agentWall?.onThemeClose(close)
 
     return () => {
+      document.removeEventListener('visibilitychange', syncMotionVisibility)
       stopPointerIdle?.()
       swarm.stop()
       operations.stop()
@@ -119,7 +124,7 @@
   })
 </script>
 
-<main class="deck" class:desktop class:cursor-idle={desktop && cursorIdle}>
+<main data-motion-paused={motionPaused || undefined} class="deck" class:desktop class:cursor-idle={desktop && cursorIdle}>
   <StatusLine {swarm} {wallLabel} />
 
     <div class="wall">

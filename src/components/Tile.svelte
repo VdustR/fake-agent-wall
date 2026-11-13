@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SessionName from './SessionName.svelte'
   import type { Agent } from '../lib/agent.svelte'
   import Meter from './Meter.svelte'
   import Terminal from './Terminal.svelte'
@@ -22,7 +23,7 @@
   }
 </script>
 
-<article class="tile" data-tally={onAir ? 'air' : agent.status} class:cued>
+<article style={`--breath-delay: -${agent.slot * 107}ms`} class="tile" data-tally={onAir ? 'air' : agent.status} class:cued>
   <div class="feed">
     <Terminal {agent} {beat} {calm} />
     {#if onAir}<span class="air umd-type">pgm</span>{/if}
@@ -32,7 +33,7 @@
   <!-- UMD: the label strip a multiviewer silkscreens under every source. -->
   <footer class="umd umd-type">
     <span class="src tnum">{agent.numLabel}</span>
-    <span class="name">{agent.label}</span>
+    <span class="name"><SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /></span>
     <span class="repo">{agent.repo}<i>▸</i>{agent.branch}</span>
     <span class="mtr"><Meter
         value={agent.level}
@@ -83,17 +84,20 @@
     box-shadow:
       0 0 0 1px color-mix(in oklab, var(--cue) 55%, transparent),
       0 0 20px color-mix(in oklab, var(--cue) 28%, transparent);
-    animation: cuepulse 300ms steps(1) infinite;
+    border-color: color-mix(in oklch, var(--cue) 40%, var(--ink-200));
   }
-  @keyframes cuepulse {
-    0%,
-    49% {
-      border-color: var(--cue);
-    }
-    50%,
-    100% {
-      border-color: color-mix(in oklab, var(--cue) 40%, var(--ink-200));
-    }
+  .tile.cued::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--cue);
+    border-radius: inherit;
+    pointer-events: none;
+    animation: activity-breathe 2200ms ease-in-out infinite;
+    animation-delay: var(--breath-delay);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tile.cued::after { animation: none; }
   }
 
   .feed {
