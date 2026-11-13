@@ -112,9 +112,10 @@ characters so the status line remains usable on narrow screens.
 
 Search the bundled iTerm presets, select one, and adjust any of its background,
 foreground, cursor, selection, or 16 ANSI colours. Changes preview immediately.
-New installations start with **Catppuccin Mocha**, **IBM Plex Sans** for
-master-control chrome, **Commit Mono** for terminal content, and **Instrument
-Serif** for editorial text. Saved defaults migrate to the new bundled families;
+New installations start with **Catppuccin Mocha**, **Barlow Condensed** for
+master-control chrome, **Monaspace Xenon** for terminal content, and
+**Cormorant Garamond** for editorial text. Saved defaults migrate to the new
+bundled families;
 custom font choices and colours are preserved.
 **Reset preset** restores the selected preset, while **Cancel** or Escape returns
 to the last applied theme. **Apply** saves the palette and separate UI/code font

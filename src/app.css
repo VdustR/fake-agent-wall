@@ -1,11 +1,12 @@
 /* Local font assets ship with both the site and the desktop app. Terminal
    transcripts use regular; the tmux register uses the bundled bold weight. */
-@import '@fontsource/instrument-serif/400.css';
-@import '@fontsource/commit-mono/latin-400.css';
-@import '@fontsource/commit-mono/latin-700.css';
-@import '@fontsource/ibm-plex-sans/latin-400.css';
-@import '@fontsource/ibm-plex-sans/latin-500.css';
-@import '@fontsource/ibm-plex-sans/latin-700.css';
+@import '@fontsource/cormorant-garamond/latin-500.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/monaspace-xenon/latin-400.css';
+@import '@fontsource/monaspace-xenon/latin-700.css';
+@import '@fontsource/barlow-condensed/latin-400.css';
+@import '@fontsource/barlow-condensed/latin-500.css';
+@import '@fontsource/barlow-condensed/latin-700.css';
 
 :root {
   /* Master-control chrome: graphite plate, not neon-on-black. */
@@ -52,9 +53,9 @@
   --del-bg: color-mix(in oklch, #d47563 13%, transparent);
   --selection: #363634;
 
-  --f-editorial: 'Instrument Serif', Charter, Georgia, serif;
-  --f-umd: 'IBM Plex Sans', sans-serif;
-  --f-term: 'Commit Mono', ui-monospace, monospace;
+  --f-editorial: 'Cormorant Garamond', Georgia, serif;
+  --f-umd: 'Barlow Condensed', sans-serif;
+  --f-term: 'Monaspace Xenon', ui-monospace, monospace;
 
   --gap: clamp(5px, 0.5vw, 10px);
   --r: 2px;

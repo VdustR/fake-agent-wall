@@ -2,20 +2,25 @@ import { describe, expect, it } from 'vitest'
 import { cloneTheme, defaultTheme } from './theme'
 
 describe('bundled font defaults', () => {
-  it('upgrades saved Monaspace defaults without changing the palette', () => {
+  it.each([
+    ["'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace", "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace"],
+    ["'IBM Plex Sans', sans-serif", "'Commit Mono', ui-monospace, monospace"],
+  ])('upgrades saved defaults (%s) without changing the palette', (uiFont, codeFont) => {
     const saved = {
       ...defaultTheme,
-      uiFont: "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace",
-      codeFont: "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace",
+      uiFont,
+      codeFont,
+      editorialFont: "'Instrument Serif', Charter, Georgia, serif",
       colors: { ...defaultTheme.colors, background: '#123456' },
     }
 
     const restored = cloneTheme(saved)
 
-    expect(restored.uiFont).toBe("'IBM Plex Sans', sans-serif")
-    expect(restored.codeFont).toBe("'Commit Mono', ui-monospace, monospace")
+    expect(restored.uiFont).toBe("'Barlow Condensed', sans-serif")
+    expect(restored.codeFont).toBe("'Monaspace Xenon', ui-monospace, monospace")
+    expect(restored.editorialFont).toBe("'Cormorant Garamond', Georgia, serif")
     expect(restored.colors).toEqual(saved.colors)
-    expect(saved.uiFont).toContain('Monaspace Xenon')
+    expect(saved.uiFont).toBe(uiFont)
   })
 
   it('preserves custom font choices and editorial text', () => {
