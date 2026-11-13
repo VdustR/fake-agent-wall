@@ -34,33 +34,33 @@ colors:
   del-bg: "color-mix(in oklch, #d47563 13%, transparent)"
 typography:
   editorial:
-    fontFamily: "'Instrument Serif', Charter, Georgia, serif"
-    fontWeight: 400
+    fontFamily: "'Cormorant Garamond', Georgia, serif"
+    fontWeight: 500
     lineHeight: 1.15
   headline:
-    fontFamily: "'IBM Plex Sans', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Barlow Condensed', sans-serif"
     fontSize: "clamp(9.5px, 0.86vw, 15px)"
     fontWeight: 700
     lineHeight: 1
     fontFeature: "tabular-nums"
   status:
-    fontFamily: "'Commit Mono', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Monaspace Xenon', ui-monospace, monospace"
     fontSize: "clamp(9.5px, 0.72vw, 14px)"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "normal"
   body:
-    fontFamily: "'Commit Mono', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Monaspace Xenon', ui-monospace, monospace"
     fontSize: "clamp(9px, 0.67vw, 13px)"
     fontWeight: 400
     lineHeight: 1.44
   body-pgm:
-    fontFamily: "'Commit Mono', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Monaspace Xenon', ui-monospace, monospace"
     fontSize: "clamp(10.5px, 0.84vw, 16px)"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "'IBM Plex Sans', 'SFMono-Regular', ui-monospace, monospace"
+    fontFamily: "'Barlow Condensed', sans-serif"
     fontSize: "clamp(6.5px, 0.46vw, 9.5px)"
     fontWeight: 500
     lineHeight: 1
@@ -251,7 +251,7 @@ not decoration; where the build wants emphasis it changes hue, never weight.
 - Graphite tonal layering (five ink steps) instead of shadow-based elevation, with exactly one recess on the whole surface.
 - Hard 1px hairlines; corners at 2px or 0.
 - Tally lamps as the primary status channel: red program bus, green preview bus, amber operator-blocked, blue idle.
-- Three typography roles with strict boundaries: Instrument Serif for narrative text, IBM Plex Sans for chrome, and Commit Mono for transcript body and the one tmux band.
+- Three typography roles with strict boundaries: Cormorant Garamond for narrative text, Barlow Condensed for chrome, and Monaspace Xenon for transcript body and the one tmux band.
 - No display step at all — the largest type on the surface is the program monitor's transcript at 16px, and nothing glows.
 - Instrument readouts on printed fixed scales: PPM bus meters with graticules, peak-hold caps, segmented LED ladders.
 - One tmux band at the top edge, master control below it.
@@ -318,13 +318,13 @@ Two kinds of filled block exist, and they take different ink.
 
 ## Typography
 
-**Editorial Font:** Instrument Serif (with Charter, Georgia, `serif`)
-**Chrome Font:** IBM Plex Sans (with `sans-serif` recovery)
-**Terminal Font:** Commit Mono (with `ui-monospace`, `monospace` recovery)
+**Editorial Font:** Cormorant Garamond (500 for narrative, 600 for headings; with Georgia, `serif` recovery)
+**Chrome Font:** Barlow Condensed (with `sans-serif` recovery)
+**Terminal Font:** Monaspace Xenon (with `ui-monospace`, `monospace` recovery)
 
-**Character:** Commit Mono supplies restrained, neutral code forms; IBM Plex Sans
-makes equipment labels more compact and distinct from terminal output. Instrument
-Serif retains the narrative and settings hierarchy. All three faces ship locally,
+**Character:** Monaspace Xenon brings mechanical slab serifs to terminal output; Barlow Condensed
+adds compact equipment labels. Cormorant Garamond supplies classical editorial
+contrast at 500 for narrative text and 600 for headings. All three faces ship locally,
 so the default identity does not depend on system fonts or a network font service.
 Ligatures remain disabled so code stays explicit at dense sizes.
 
@@ -340,18 +340,18 @@ client-specific glyph or fallback face.
 
 ### Hierarchy
 
-- **Headline** (IBM Plex Sans 700, `clamp(9.5px, 0.86vw, 15px)`, line-height 1.2, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. Small, because on this panel the bar carries the magnitude and the numeral only confirms it.
-- **Status** (Commit Mono 400, `clamp(9.5px, 0.72vw, 14px)`, line-height 1.2, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This is the only chrome on the surface written in the terminal face, and the only chrome that is not uppercase. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
-- **Body** (Commit Mono 400, `clamp(9px, 0.67vw, 13px)`, line-height 1.44): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`clamp(10.5px, 0.84vw, 16px)`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read. Instrument Serif task copy in the PGM header has a 10px floor because its fine strokes do not survive below that size.
-- **Label** (IBM Plex Sans 500, `clamp(6.5px, 0.46vw, 9.5px)`, `0.1em`, uppercase, line-height 1.2): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `clamp(10px, 0.86vw, 15px)` at `0.13em`), because that plate is read across a room rather than on camera.
+- **Headline** (Barlow Condensed 700, `clamp(9.5px, 0.86vw, 15px)`, line-height 1.2, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. Small, because on this panel the bar carries the magnitude and the numeral only confirms it.
+- **Status** (Monaspace Xenon 400, `clamp(9.5px, 0.72vw, 14px)`, line-height 1.2, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This is the only chrome on the surface written in the terminal face, and the only chrome that is not uppercase. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
+- **Body** (Monaspace Xenon 400, `clamp(9px, 0.67vw, 13px)`, line-height 1.44): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`clamp(10.5px, 0.84vw, 16px)`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read. Cormorant Garamond task copy in the PGM header has a 10px floor because its fine strokes do not survive below that size.
+- **Label** (Barlow Condensed 500, `clamp(6.5px, 0.46vw, 9.5px)`, `0.1em`, uppercase, line-height 1.2): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `clamp(10px, 0.86vw, 15px)` at `0.13em`), because that plate is read across a room rather than on camera.
 
 ### Named Rules
 
-**The Wall-Register Rule.** IBM Plex Sans is the chrome register and Commit Mono is the terminal register. Uppercase and tracked is chrome; a transcript is Commit Mono. Instrument Serif is limited to narrative text such as the PGM task and the settings hierarchy. The single crossing between the two wall registers is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
+**The Wall-Register Rule.** Barlow Condensed is the chrome register and Monaspace Xenon is the terminal register. Uppercase and tracked is chrome; a transcript is Monaspace Xenon. Cormorant Garamond is limited to narrative text such as the PGM task and the settings hierarchy. The single crossing between the two wall registers is the status line, which is chrome written in the terminal face on purpose — see the One-Terminal-Edge Rule.
 
 **The One-Terminal-Edge Rule.** Exactly one band on this surface speaks tmux: the status line across the top. It is the only place the terminal face is used as chrome, the only place chrome is mixed-case and untracked, and the only place `{colors.txt-fnt}`/`{colors.txt-dim}`/`{colors.txt-hi}` grade a *label* rather than a transcript. Everything below it — sources, instruments, the ticker, every plate and badge — is master control. The mixture is deliberate and it is capped at one band. A second tmux element anywhere else makes the surface read as two half-finished worlds instead of a terminal wall mounted in a rack, and a master-control device inside the status line does the same in reverse.
 
-**The Transcript-Weight Rule.** Transcripts use Commit Mono 400 with colour emphasis. The tmux status line uses bundled Commit Mono 700 for active windows and counts. IBM Plex Sans carries 400/500/700 so small equipment labels have real weight contrast. These fonts use local Fontsource assets, and their OFL texts ship in `dist/licenses/`.
+**The Transcript-Weight Rule.** Transcripts use Monaspace Xenon 400 with colour emphasis. The tmux status line uses bundled Monaspace Xenon 700 for active windows and counts. Barlow Condensed carries 400/500/700 so small equipment labels have real weight contrast. These fonts use local Fontsource assets, and their OFL texts ship in `dist/licenses/`.
 
 **The Hanging-Gutter Rule.** Every transcript line carries `padding-left: 3ch; text-indent: -3ch`, so a soft-wrapped line stays under its own gutter instead of resetting to column zero. This is what makes a clipped 9px terminal still parse as a terminal.
 
@@ -525,8 +525,8 @@ chosen from black or white for legibility. This mapping preserves the wall's
 status grammar while allowing light and dark terminal schemes.
 
 Typography has two independent user values: UI font for tmux/master-control
-chrome and code font for terminal content. Both preview while typing. The default chrome uses bundled IBM Plex Sans;
-the default terminal uses bundled Commit Mono. Generic fallback families are
+chrome and code font for terminal content. Both preview while typing. The default chrome uses bundled Barlow Condensed;
+the default terminal uses bundled Monaspace Xenon. Generic fallback families are
 recovery paths, rather than the primary visual identity. The panel does not fetch fonts or accept webfont
 markup; a missing local family falls
 through immediately.
@@ -703,7 +703,7 @@ when the page unmounts. A plain browser tab keeps its ordinary pointer behavior.
 - **Do** resolve every status from one value. Tile border, badge, meter tone, UMD word and status-line window ink all derive from the same `run | cue | hold | done` status, so a source can never display two states.
 - **Do** keep the tmux register to the top band. If new chrome belongs to the wall, write it in the label register; if it belongs to the status line, write it in the terminal face, mixed case, untracked.
 - **Do** use `{spacing.gap}` as the only gutter between panels, and clamp panel heights to the viewport rather than fixing pixels.
-- **Do** put every piece of master-control chrome in the `.umd-type` label register (IBM Plex Sans 500, uppercase, `0.1em`) and every transcript in Commit Mono 400.
+- **Do** put every piece of master-control chrome in the `.umd-type` label register (Barlow Condensed 500, uppercase, `0.1em`) and every transcript in Monaspace Xenon 400.
 - **Do** put `.tnum` on any number that changes on screen.
 - **Do** reach for `{colors.txt-hi}` when something needs to be brighter than `{colors.txt}`, for the matching `on-*` token when text sits on a saturated lamp, and for `{colors.ink-000}` when it sits on a grey plate.
 - **Do** express emphasis inside a transcript with colour. Transcripts use regular weight; the tmux status register also loads a real bold face.

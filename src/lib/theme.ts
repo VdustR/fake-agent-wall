@@ -48,18 +48,23 @@ export const THEME_STORAGE_KEY = 'fake-agent-wall.theme.v3'
 const LEGACY_STORAGE_KEYS = ['fake-agent-wall.theme.v1', 'fake-agent-wall.theme.v2'] as const
 const HEX = /^#[0-9a-f]{6}$/i
 
-const LEGACY_EDITORIAL_FONT = "'Source Serif 4', Charter, Georgia, serif"
+const LEGACY_EDITORIAL_FONTS = new Set([
+  "'Source Serif 4', Charter, Georgia, serif",
+  "'Instrument Serif', Charter, Georgia, serif",
+])
 const LEGACY_UI_FONTS = new Set([
+  "'IBM Plex Sans', sans-serif",
   "'Martian Mono', 'SFMono-Regular', ui-monospace, monospace",
   "'Monaspace Xenon', 'SFMono-Regular', ui-monospace, monospace",
 ])
 const LEGACY_CODE_FONTS = new Set([
+  "'Commit Mono', ui-monospace, monospace",
   "Iosevka, 'SFMono-Regular', ui-monospace, monospace",
   "'Monaspace Neon', 'SFMono-Regular', ui-monospace, monospace",
 ])
-export const DEFAULT_EDITORIAL_FONT = "'Instrument Serif', Charter, Georgia, serif"
-export const DEFAULT_UI_FONT = "'IBM Plex Sans', sans-serif"
-export const DEFAULT_CODE_FONT = "'Commit Mono', ui-monospace, monospace"
+export const DEFAULT_EDITORIAL_FONT = "'Cormorant Garamond', Georgia, serif"
+export const DEFAULT_UI_FONT = "'Barlow Condensed', sans-serif"
+export const DEFAULT_CODE_FONT = "'Monaspace Xenon', ui-monospace, monospace"
 export const DEFAULT_WALL_LABEL = 'fake-agent-wall'
 
 export const presets = presetData.colors as ThemePreset[]
@@ -85,7 +90,7 @@ export const defaultTheme = settingsFromPreset(defaultPreset)
 export function cloneTheme(theme: ThemeSettings): ThemeSettings {
   return {
     ...theme,
-    editorialFont: theme.editorialFont === LEGACY_EDITORIAL_FONT ? DEFAULT_EDITORIAL_FONT : theme.editorialFont,
+    editorialFont: LEGACY_EDITORIAL_FONTS.has(theme.editorialFont) ? DEFAULT_EDITORIAL_FONT : theme.editorialFont,
     uiFont: LEGACY_UI_FONTS.has(theme.uiFont) ? DEFAULT_UI_FONT : theme.uiFont,
     codeFont: LEGACY_CODE_FONTS.has(theme.codeFont) ? DEFAULT_CODE_FONT : theme.codeFont,
     wallLabel: normalizeWallLabel(theme.wallLabel),

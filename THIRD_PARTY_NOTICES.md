@@ -13,13 +13,13 @@ which is distributed under the MIT License.
 
 ## Fonts
 
-Instrument Serif, Commit Mono, and IBM Plex Sans are bundled through
+Monaspace Xenon, Barlow Condensed, and Cormorant Garamond are bundled through
 [`Fontsource`](https://fontsource.org/). The fonts are distributed under the
 SIL Open Font License 1.1; Fontsource package code is distributed under the MIT
 License. Font license texts are copied to `public/licenses/` and included in
 `dist/licenses/` by Vite, so both the website and packaged desktop app include
 them without relying on development dependencies.
 
-- [Commit Mono](https://github.com/eigilnikolajsen/commit-mono)
-- [IBM Plex](https://github.com/IBM/plex)
-- [Instrument Serif](https://github.com/Instrument/instrument-serif)
+- [Monaspace](https://github.com/githubnext/monaspace)
+- [Barlow](https://github.com/jpt/barlow)
+- [Cormorant](https://github.com/CatharsisFonts/Cormorant)

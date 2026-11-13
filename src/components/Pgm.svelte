@@ -104,7 +104,7 @@
     color: var(--txt-dim);
     font-family: var(--f-editorial);
     font-size: clamp(10px, 1.25em, 15px);
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.4;
     text-transform: none;
     letter-spacing: 0;
