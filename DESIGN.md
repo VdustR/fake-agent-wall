@@ -725,7 +725,7 @@ network time synchronization. Event timestamps use the same real-time formatter.
 The bottom band. A solid coral `SWARM LOG` tag, then a crawl of ten fixed-width event
 cells (`--cw: clamp(230px, 24vw, 400px)`) divided by 1px verticals, masked to dissolve
 into the right edge on an alpha stop. Each cell reads an inverted source-number chip
-(`{colors.umd}` plate, `{colors.ink-000}` ink), the event second and millisecond (full local timestamp on hover), repo in cue
+(`{colors.umd}` plate, `{colors.ink-000}` ink), the full local event clock (`HH:mm:ss.SSS`, without a duration suffix), repo in cue
 green, and event text. On every arrival the row steps exactly one cell width
 (`translateX(-1 cell) → 0`, 260ms `cubic-bezier(0.22, 0.7, 0.3, 1)`) instead of
 reflowing — variable-width reflow is what makes simultaneous reporters look like
