@@ -39,7 +39,7 @@
     flex: none;
     display: flex;
     align-items: stretch;
-    height: clamp(26px, 2.6vw, 42px);
+    height: 2.5rem;
     background: var(--ink-100);
     border-top: 1px solid var(--line-hi);
     overflow: hidden;
@@ -88,7 +88,7 @@
     gap: 7px;
     padding: 0 13px;
     border-right: 1px solid var(--line);
-    font-size: clamp(9px, 0.68vw, 13px);
+    font-size: var(--type-label);
     line-height: 1.2;
     align-self: center;
     white-space: nowrap;

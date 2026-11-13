@@ -123,8 +123,8 @@
 </Combobox.RootProvider>
 
 <style>
-  :global(.font-label) { display: block; color: var(--txt-fnt); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
-  :global(.font-input) { width: 100%; height: 36px; margin-top: 10px; padding: 0 10px; color: var(--txt-hi); background: var(--ink-000); border: 1px solid var(--line-hi); border-radius: 2px; outline: none; font: inherit; font-family: var(--f-term); }
+  :global(.font-label) { display: block; color: var(--txt-fnt); font-size: var(--type-label); text-transform: uppercase; letter-spacing: .06em; }
+  :global(.font-input) { width: 100%; height: 2.5rem; margin-top: 10px; padding: 0 10px; color: var(--txt-hi); background: var(--ink-000); border: 1px solid var(--line-hi); border-radius: 2px; outline: none; font: var(--type-ui)/1.4 var(--f-term); }
   :global(.font-input:focus-visible) { outline: 1px solid var(--coral); outline-offset: 2px; }
   :global(.font-positioner) { z-index: 150; }
   :global(.font-options) { background: var(--ink-050); color: var(--txt-hi); border: 1px solid var(--line-hi); border-radius: 2px; font-family: var(--f-umd); }
@@ -132,7 +132,7 @@
   .font-space { position: relative; }
   :global(.font-option) { position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 10px; border-bottom: 1px solid var(--line); cursor: pointer; }
   :global(.font-option[data-highlighted]) { background: var(--ink-200); outline: 1px solid var(--coral); outline-offset: -1px; }
-  :global(.font-name) { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .font-source { flex-shrink: 0; color: var(--txt-dim); font-size: 10px; }
-  .font-empty { padding: 12px 10px; color: var(--txt-dim); font: 11px/1.5 var(--f-umd); }
+  :global(.font-name) { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .font-source { flex-shrink: 0; color: var(--txt-dim); font-size: var(--type-meta); }
+  .font-empty { padding: 12px 10px; color: var(--txt-dim); font: var(--type-ui)/1.5 var(--f-umd); }
 </style>

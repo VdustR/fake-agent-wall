@@ -75,7 +75,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    height: clamp(20px, 1.9vw, 30px);
+    height: 2rem;
     padding-right: 10px;
     background: var(--ink-150);
     border-bottom: 1px solid var(--line-hi);
@@ -103,7 +103,7 @@
   .task {
     color: var(--txt-dim);
     font-family: var(--f-editorial);
-    font-size: clamp(10px, 1.25em, 15px);
+    font-size: 1.125rem;
     font-weight: 500;
     line-height: 1.4;
     text-transform: none;
@@ -186,7 +186,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    height: clamp(19px, 1.8vw, 28px);
+    height: 1.75rem;
     padding: 0 10px;
     background: var(--ink-150);
     border-top: 1px solid var(--line-hi);

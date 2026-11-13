@@ -30,8 +30,8 @@
   .notice > i { background: var(--signal); }
   .notice > div { padding: 8px 11px 9px; }
   .notice span { color: var(--signal); letter-spacing: .12em; }
-  .notice strong { display: block; width: fit-content; max-width: 100%; margin-top: 4px; color: var(--txt-hi); font: 600 15px/1.4 var(--f-editorial); white-space: nowrap; overflow: hidden; animation: typing 620ms steps(28, end) 160ms both; }
-  .notice p { width: fit-content; max-width: 100%; margin-top: 5px; color: var(--txt-dim); font: 9px/1.2 var(--f-term); white-space: nowrap; overflow: hidden; animation: typing 820ms steps(46, end) 650ms both; }
+  .notice strong { display: block; width: fit-content; max-width: 100%; margin-top: 4px; color: var(--txt-hi); font: 600 1.25rem/1.4 var(--f-editorial); white-space: nowrap; overflow: hidden; animation: typing 620ms steps(28, end) 160ms both; }
+  .notice p { width: fit-content; max-width: 100%; margin-top: 5px; color: var(--txt-dim); font: var(--type-meta)/1.4 var(--f-term); white-space: nowrap; overflow: hidden; animation: typing 820ms steps(46, end) 650ms both; }
   @keyframes arrive { from { transform: translateX(18px); clip-path: inset(0 0 0 100%); } to { transform: translateX(0); clip-path: inset(0); } }
   @keyframes typing { from { max-width: 0; } to { max-width: 100%; } }
   @media (prefers-reduced-motion: reduce) { .notice, .notice strong, .notice p { animation: none; } }

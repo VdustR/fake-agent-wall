@@ -57,6 +57,14 @@
   --f-umd: 'Barlow Condensed', sans-serif;
   --f-term: 'Monaspace Xenon', ui-monospace, monospace;
 
+  /* Stable reading roles: viewport changes reflow the wall instead of shrinking type. */
+  --type-terminal: .8125rem;
+  --type-program: 1rem;
+  --type-ui: .875rem;
+  --type-label: .75rem;
+  --type-meta: .6875rem;
+  --type-data: 1.125rem;
+
   --gap: clamp(5px, 0.5vw, 10px);
   --r: 2px;
 
@@ -88,10 +96,10 @@ body {
   overflow: hidden;
 }
 
-/* Broadcast label register: uppercase, tracked, small, never body copy. */
+/* Broadcast label register: uppercase, tracked, compact, never body copy. */
 .umd-type {
   font-family: var(--f-umd);
-  font-size: clamp(6.5px, 0.46vw, 9.5px);
+  font-size: var(--type-label);
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;

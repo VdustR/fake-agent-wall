@@ -39,32 +39,50 @@ typography:
     lineHeight: 1.15
   headline:
     fontFamily: "'Barlow Condensed', sans-serif"
-    fontSize: "clamp(9.5px, 0.86vw, 15px)"
+    fontSize: "1.125rem"
     fontWeight: 700
     lineHeight: 1
     fontFeature: "tabular-nums"
   status:
     fontFamily: "'Monaspace Xenon', ui-monospace, monospace"
-    fontSize: "clamp(9.5px, 0.72vw, 14px)"
+    fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "normal"
   body:
     fontFamily: "'Monaspace Xenon', ui-monospace, monospace"
-    fontSize: "clamp(9px, 0.67vw, 13px)"
+    fontSize: "0.8125rem"
     fontWeight: 400
-    lineHeight: 1.44
+    lineHeight: 1.5
   body-pgm:
     fontFamily: "'Monaspace Xenon', ui-monospace, monospace"
-    fontSize: "clamp(10.5px, 0.84vw, 16px)"
+    fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.5
   label:
     fontFamily: "'Barlow Condensed', sans-serif"
-    fontSize: "clamp(6.5px, 0.46vw, 9.5px)"
+    fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: 1
     letterSpacing: "0.1em"
+  interface-body:
+    fontFamily: "'Barlow Condensed', sans-serif"
+    fontSize: "0.875rem"
+    lineHeight: 1.4
+  metadata:
+    fontFamily: "'Barlow Condensed', sans-serif"
+    fontSize: "0.6875rem"
+    lineHeight: 1.3
+  section-heading:
+    fontFamily: "'Cormorant Garamond', Georgia, serif"
+    fontSize: "1.25rem"
+    fontWeight: 600
+    lineHeight: 1.2
+  panel-heading:
+    fontFamily: "'Cormorant Garamond', Georgia, serif"
+    fontSize: "1.75rem"
+    fontWeight: 600
+    lineHeight: 1.1
 rounded:
   none: "0"
   panel: "2px"
@@ -79,7 +97,7 @@ components:
   status-line:
     backgroundColor: "{colors.ink-150}"
     typography: "{typography.status}"
-    height: "clamp(24px, 2.3vw, 36px)"
+    height: "2.25rem"
   status-session:
     backgroundColor: "{colors.coral}"
     textColor: "{colors.on-coral}"
@@ -340,10 +358,16 @@ client-specific glyph or fallback face.
 
 ### Hierarchy
 
-- **Headline** (Barlow Condensed 700, `clamp(9.5px, 0.86vw, 15px)`, line-height 1.2, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. Small, because on this panel the bar carries the magnitude and the numeral only confirms it.
-- **Status** (Monaspace Xenon 400, `clamp(9.5px, 0.72vw, 14px)`, line-height 1.2, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This is the only chrome on the surface written in the terminal face, and the only chrome that is not uppercase. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
-- **Body** (Monaspace Xenon 400, `clamp(9px, 0.67vw, 13px)`, line-height 1.44): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`clamp(10.5px, 0.84vw, 16px)`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read. Cormorant Garamond task copy in the PGM header has a 10px floor because its fine strokes do not survive below that size.
-- **Label** (Barlow Condensed 500, `clamp(6.5px, 0.46vw, 9.5px)`, `0.1em`, uppercase, line-height 1.2): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `clamp(10px, 0.86vw, 15px)` at `0.13em`), because that plate is read across a room rather than on camera.
+- **Headline** (Barlow Condensed 700, `1.125rem`, line-height 1.2, tabular, amber, right-aligned): the numeric readout at the end of each bus channel. The bar carries magnitude; the larger numeral remains readable as a precise value.
+- **Status** (Monaspace Xenon 400, `0.75rem`, line-height 1.2, no tracking, mixed case): the whole tmux status line — session block, window list, right status, clock. This tmux register retains the terminal face and mixed case. Weight 700 marks the three things that must pop out of it: the active and cued window, the count figures, the clock.
+- **Body** (Monaspace Xenon 400, `0.8125rem`, line-height 1.5): source-tile transcripts. The program monitor uses the larger `body-pgm` step (`1rem`, line-height 1.5) — the only typographic difference between PGM and a tile, and the thing that makes the size hierarchy read. Cormorant Garamond task copy in the PGM header uses 1.125rem so its fine strokes remain legible.
+- **Label** (Barlow Condensed 500, `0.75rem`, `0.1em`, uppercase, line-height 1.2): every piece of master-control chrome — UMD strips, graticule numerals, badges, plates, the ticker tag, the exit slate's tag. Exposed as the `.umd-type` utility class; anything wearing broadcast chrome wears that class. The exit slate is the one place it is scaled up (to `0.875rem` at `0.13em`), because that plate is read across a room rather than on camera.
+
+- **Interface body** (Barlow Condensed, `0.875rem`, line-height 1.4): task names, providers and settings actions. It stays proportional so non-code UI does not inherit terminal density.
+- **Metadata** (Barlow Condensed, `0.6875rem`, line-height 1.3): supporting operational status. Values use tabular numerals; code, CSS stacks and hex colors retain Xenon.
+- **Settings headings** (Cormorant Garamond 600): `1.75rem` for the panel, `1.25rem` for sections. General inputs use `1rem`; font stacks use `0.875rem`.
+
+Reading sizes use `rem`, never viewport-width scaling. Browser zoom and root font preferences enlarge text; the wall reflows and operation cards fit fewer rows rather than reducing type. The program and transcript roles remain separate from the interface and instrument roles.
 
 ### Named Rules
 
