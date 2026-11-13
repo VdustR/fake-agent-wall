@@ -418,7 +418,7 @@ Container dimensions choose the composition first; component and viewport querie
 then remove secondary chrome when an allocated block becomes constrained:
 
 - **≤1180px** — the status line drops the token and call totals, keeping the `live` and `hold` counts and the clock.
-- **≤900px** — the PGM UMD strip drops everything past the branch pair (`t+`, tools, token counters) and the task line disappears from the PGM header.
+- **≤900px** — the PGM UMD strip drops everything past the branch pair (`t+`, tools, token counters) while the PGM header responds to its own container width.
 - Narrow containers hide lower-priority terminal runtime and mode labels while keeping
   the model and context state visible.
 - The context matrix stays visible at narrow widths by moving below the throughput and pressure groups.
@@ -574,6 +574,8 @@ flexing), and model in coral. Its screen is recessed into the plate and holds a 
 transcript step plus title-safe brackets. A UMD strip beneath runs key/value pairs —
 repo, branch (in cue green), elapsed `t+`, tool count, `↑`/`↓` token totals — with a
 16-segment peak-holding level meter pushed right.
+
+The header preserves source and cut/cue identity at every width. Agent and model names shrink with clipped overflow and full-value titles. Below 620px of panel width, task and provider yield; below 420px, gaps and plate padding tighten. These container thresholds preserve the wall's viewport-based type scale.
 
 **The cut clock** closes the header. At rest it is a `{colors.ink-200}` plate reading
 `NEXT CUT 10.5`, counting down in tenths; during the 900ms preview lead it is replaced
