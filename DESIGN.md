@@ -735,8 +735,8 @@ shows complete rows and prints shown/total task counts, with R/S/D state counts.
 state and numeric cells retain their widths; commands truncate with the full command
 on hover. One ResizeObserver is disconnected on unmount. The tile never adds a timer.
 
-**Real clock.** The status clock is an isolated leaf component with no digit-rolling
-animation. Every visible animation frame samples `Date.now()` directly and formats
+**Real clock.** The status clock is an isolated leaf component. Hours, minutes, and seconds
+use 180ms numeric wheels; milliseconds update immediately without interpolation. Every visible animation frame samples `Date.now()` directly and formats
 local `HH:mm:ss.SSS`; simulation elapsed time never supplies civil time. Visibility
 restoration and page resume resample immediately; cleanup cancels the frame and removes
 listeners. OS clock/time-zone changes are reflected on the next frame. Millisecond
@@ -749,11 +749,18 @@ The event feed beside Agent Activity (or below it when the footer wraps). A soli
 cells (`--cw: clamp(230px, 24vw, 400px)`) divided by 1px verticals, masked to dissolve
 into the right edge on an alpha stop. Each cell reads an inverted source-number chip
 (`{colors.umd}` plate, `{colors.ink-000}` ink), the full local event clock (`HH:mm:ss.SSS`, without a duration suffix), repo in cue
-green, and event text. On every arrival the row steps exactly one cell width
-(`translateX(-1 cell) → 0`, 260ms `cubic-bezier(0.22, 0.7, 0.3, 1)`) instead of
-reflowing — variable-width reflow is what makes simultaneous reporters look like
-noise. Fewer, wider cells so each event survives being read at a glance rather than
-truncating to a verb.
+green, and event text. Stable event keys retain existing cells. Each surviving cell
+moves to its actual new position with the shared 320ms interruptible Svelte FLIP
+policy, including batches of simultaneous arrivals. Cells keep opaque panel fills
+so crossing text does not bleed through. Event times remain frozen observations.
+
+### List motion
+
+Provider usage, costs, resets, fleet, tasks, status windows, preset search results,
+and process rows share the same native FLIP policy. Only retained keyed items move;
+initial renders have no staged entrance. Changing reduced-motion preferences cancels
+active animations immediately. Virtualized font options, fixed instrument cells,
+transcript append flow, and mosaic tiles retain their own positioning behavior.
 
 ### Exit Hint (desktop shell only)
 

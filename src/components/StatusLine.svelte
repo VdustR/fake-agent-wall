@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { listFlip, listMotion } from '../lib/list-motion.svelte'
   import SessionName from './SessionName.svelte'
   import { onMount } from 'svelte'
   import type { Swarm } from '../lib/swarm.svelte'
@@ -53,13 +54,14 @@
   left, the window list in the middle with the active one flagged, and the
   right status carrying counts and a clock.
 -->
-<header class="status">
+<header class="status" use:listMotion>
   <span class="session" title={`[${wallLabel}]`}>[<span>{wallLabel}</span>]</span>
 
   <div class="windows" bind:this={windowsElement}>
     {#each visibleWindows as item (item.agent.slot)}
       <span
         class="win"
+        animate:listFlip
         class:active={item.index === swarm.pgm}
         class:cued={item.index === swarm.pst}
         data-state={item.agent.status}

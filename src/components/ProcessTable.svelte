@@ -1,7 +1,6 @@
 <script lang="ts">
+  import { listFlip, listMotion } from '../lib/list-motion.svelte'
   import { onMount, untrack } from 'svelte'
-  import { flip } from 'svelte/animate'
-  import { cubicOut } from 'svelte/easing'
   import { prefersReducedMotion } from 'svelte/motion'
   import { fade } from 'svelte/transition'
   import { HOST_SAMPLE_MS, type HostSnapshot } from '../lib/host-load'
@@ -14,10 +13,6 @@
   let order = $state<number[]>([])
   let lastSort = -1
   let mounted = $state(false)
-  function stopAnimations(target = element) {
-    for (const animation of target?.getAnimations({ subtree: true }) ?? []) animation.cancel()
-  }
-  $effect(() => { if (prefersReducedMotion.current) stopAnimations() })
   $effect.pre(() => {
     const band = Math.floor(snapshot.sampledAtMs / 2000)
     const resort = band !== lastSort
@@ -46,14 +41,14 @@
   })
 </script>
 
-<div class="processes" bind:this={element}>
+<div class="processes" use:listMotion bind:this={element}>
   <div class="summary umd-type"><span><RollingNumber value={rows.length} />/<RollingNumber value={snapshot.processes.length} /> tasks · <RollingNumber value={running} /> R / <RollingNumber value={sleeping} /> S / <RollingNumber value={waiting} /> D</span><span>1 CPU = 100%</span></div>
   <table aria-label="Simulated processes sorted by CPU every two seconds">
     <colgroup><col class="pid" /><col class="source" /><col class="state" /><col class="cpu" /><col class="memory" /><col /></colgroup>
     <thead class="umd-type"><tr><th>PID</th><th>SRC</th><th>S</th><th class="sort">CPU%</th><th>RSS MiB</th><th>command</th></tr></thead>
     <tbody>
       {#each rows as process (process.pid)}
-        <tr animate:flip={{ duration: prefersReducedMotion.current ? 0 : 320, easing: cubicOut }}
+        <tr animate:listFlip
           in:fade={{ duration: !mounted || prefersReducedMotion.current ? 0 : 120 }} data-pid={process.pid} data-state={process.state} data-session={process.sessionSlot} data-tool-run={process.toolRunId} data-tool={process.toolCommand}
           title={process.sessionSlot === undefined ? process.command : process.sessionLabel + ' · ' + process.repo + (process.toolCommand ? ' · ' + process.toolCommand : '')}>
           <td>{process.pid}</td><td>{process.sessionSlot === undefined ? '—' : String(process.sessionSlot).padStart(2, '0')}</td><td>{process.state}</td>

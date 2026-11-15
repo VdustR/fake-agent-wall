@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { listFlip, listMotion } from '../lib/list-motion.svelte'
   import type { Swarm } from '../lib/swarm.svelte'
 
   interface Props {
@@ -7,29 +8,21 @@
   const { swarm }: Props = $props()
 
   const items = $derived(swarm.ticker.slice(0, 10))
-  const head = $derived(items[0]?.id ?? 0)
 </script>
 
-<footer class="ticker">
+<footer class="ticker" use:listMotion={() => swarm.reducedMotion}>
   <span class="tag umd-type">swarm log</span>
   <div class="crawl">
-    <!--
-      Fixed-width cells plus a one-cell step on every arrival. The row advances
-      like a real crawl instead of reflowing, which is what a variable-width
-      list does when nine sources all report at once.
-    -->
-    {#key head}
-      <div class="cells" class:still={swarm.reducedMotion}>
-        {#each items as it (it.id)}
-          <span class="ev">
-            <em class="tnum">{it.slot}</em>
-            <b class="tnum" title={it.clock} aria-label={`Event time ${it.clock}`}>{it.clock}</b>
-            <span class="repo">{it.repo}</span>
-            <span class="txt">{it.text}</span>
-          </span>
-        {/each}
-      </div>
-    {/key}
+    <div class="cells">
+      {#each items as it (it.id)}
+        <span class="ev" animate:listFlip={{ disabled: swarm.reducedMotion }}>
+          <em class="tnum">{it.slot}</em>
+          <b class="tnum" title={it.clock} aria-label={`Event time ${it.clock}`}>{it.clock}</b>
+          <span class="repo">{it.repo}</span>
+          <span class="txt">{it.text}</span>
+        </span>
+      {/each}
+    </div>
   </div>
 </footer>
 
@@ -70,21 +63,10 @@
     grid-auto-columns: var(--cw);
     height: 100%;
     width: max-content;
-    animation: step 260ms cubic-bezier(0.22, 0.7, 0.3, 1);
-  }
-  .cells.still {
-    animation: none;
-  }
-  @keyframes step {
-    from {
-      transform: translateX(calc(var(--cw) * -1));
-    }
-    to {
-      transform: none;
-    }
   }
 
   .ev {
+    background: var(--ink-100);
     display: flex;
     align-items: baseline;
     gap: 7px;
