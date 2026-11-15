@@ -17,21 +17,26 @@ it('shows a decision quickly and retains its selected result for the recent-deci
   expect(block?.at(-1)?.line.s).toContain(block?.at(-1)?.recentDecision?.replace('jev · ', ''))
 })
 
-it('shows Luna finite choices without attributing Jev probabilities or Noul to OpenAI', () => {
+it('shows all four current decision routes with typed probabilities and scores', () => {
   const random = mulberry32(23)
-  const blocks = Array.from({ length: 200 }, () => nextBlock(random, 0, 'orchestration', 'make webhook replay idempotent'))
-    .filter(emits => emits[0]?.line.s.startsWith('● Decide(openai /'))
-
-  expect(blocks.length).toBeGreaterThan(0)
-  for (const block of blocks) {
-    const text = block.map(emit => emit.line.s).join('\n')
-    expect(text).toContain('Decisions API (preview) / luna')
-    expect(text).toContain('choice · next step: inspect replay guard | retry delivery | request review')
-    expect(text).not.toMatch(/noul|p\(yes\)|0\.81|0\.14|0\.05/)
-    expect(block.every(emit => !emit.type && emit.fast)).toBe(true)
-    expect(block[0]?.pause).toBeLessThanOrEqual(500)
-    expect(block.at(-1)?.recentDecision).toBe('luna · inspect replay guard')
-    expect(block.at(-1)?.line.s).toContain('inspect replay guard')
+  const blocks = Array.from({ length: 1200 }, () => nextBlock(random, 0, 'orchestration', 'make webhook replay idempotent'))
+    .filter(emits => emits[0]?.line.s.startsWith('● Decide('))
+  for (const route of ['typesafe / jev', 'openai / Decisions API / luna', 'google / Gemini Decisions API / gemini-decision-1', 'microsoft / Microsoft Foundry / microsoft-decision-1']) {
+    const matched = blocks.filter(block => block[0]!.line.s.includes(route))
+    expect(matched.length, route).toBeGreaterThan(0)
+    for (const block of matched) {
+      const text = block.map(emit => emit.line.s).join('\n')
+      expect(text).not.toContain('(preview)')
+      expect(text).toContain('inspect replay guard 0.81')
+      expect(text).toContain('p(yes)=0.87')
+      expect(text).toContain('score · review priority: 1.05 / 2')
+      expect(text).toContain('confidence=')
+      if (route.startsWith('typesafe')) expect(text).toContain('noul ·')
+      else expect(text).not.toContain('noul ·')
+      expect(block.every(emit => !emit.type && emit.fast)).toBe(true)
+      expect(block[0]?.pause).toBeLessThanOrEqual(500)
+      expect(block.at(-1)?.recentDecision).toContain(' · inspect replay guard')
+    }
   }
 })
 
@@ -69,4 +74,12 @@ it('selects loading output during ordinary validation playback', () => {
   const random = mulberry32(42)
   const blocks = Array.from({ length: 80 }, () => nextBlock(random, 0, 'validation'))
   expect(blocks.some(block => block[0]?.line.s.includes('Bash(ollama pull') || block[0]?.line.s.includes('Bash(docker build') || block[0]?.line.s.includes('Bash(brew install') || block[0]?.line.s.includes('Bash(pnpm vite build'))).toBe(true)
+})
+
+it('distinguishes a negative binary answer from confidence in that answer', () => {
+  const random = mulberry32(23)
+  const blocks = Array.from({ length: 200 }, () => nextBlock(random, 0, 'orchestration', 'close the keyboard trap in the billing modal'))
+    .filter(block => block[0]?.line.s.startsWith('● Decide('))
+  expect(blocks.length).toBeGreaterThan(0)
+  for (const block of blocks) expect(block.map(emit => emit.line.s).join('\n')).toContain('p(yes)=0.06 · confidence=0.94')
 })

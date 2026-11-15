@@ -1,50 +1,55 @@
 # Bounded decision routes
 
-Researched October 1, 2026. [OpenAI's September 29 announcement](https://openai.com/index/devday-2026-recap/)
-describes Decisions API as Luna-powered finite-answer decisions using text or
-image context, in limited preview. It does not publish an endpoint, exact model
-identifier, latency guarantee, probability distribution, or Jev-compatible
-schema. `luna` is a display label, not an asserted API model identifier.
+Researched November 15, 2026. The wall displays synthetic judgments and does
+not call providers, require keys or implement their request schemas.
 
-The wall is a client-side simulation. Adding real API credentials, requests,
-or a backend would change the product scope. This change adds a simulated route.
+| Route | Current official evidence | Display |
+| --- | --- | --- |
+| TypeSafe / `jev` | [Current model reference](https://docs.typesafe.ai/models): Jev 1.14, alias `jev-latest` now points to `jev-1.14.0`; Choice, Score, Noul and Box. | Keep short label, choice probabilities, Noul binary probability and a rubric score. |
+| OpenAI / `luna` | [Decisions API](https://developers.openai.com/api/docs/guides/decisions) is GA, native model `gpt-6-luna`, endpoint `/v1/decisions`; predicates, choices and scores over text, images and JSON. | `Decisions API / luna`, probabilities, generic yes/no and score. Remove the obsolete preview label. |
+| Google / `gemini-decision-1` | [November 11 announcement](https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/) and [model reference](https://aistudio.google.com/docs/models/gemini-decision-1): multimodal input, binary/choice/score judgments, up to 1,000 independent questions. | `Gemini Decisions API / gemini-decision-1`, probabilities, generic yes/no and score. |
+| Microsoft / `microsoft-decision-1` | [October 9 announcement](https://commandline.microsoft.com/microsoft-decision-1-model-foundry/) and [Foundry reference](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-microsoft-decision): text/JSON state and bounded typed numeric judgments. | `Microsoft Foundry / microsoft-decision-1`; lowercase label is display-only, native model is `Microsoft-Decision-1`. |
 
-## Structure
+## Presentation ownership
 
-The existing state, choices, task-specific result, fast transcript delivery, and
-eight-second recent-decision strip work for both routes. A route-level format
-discriminator separates the displayed capabilities:
+Route capabilities describe choice distributions, binary labels and rubric
+scores independently of vendor-specific schemas. Jev retains its familiar
+`noul` line; other routes use generic `yes/no` language. No route is assigned
+another provider's endpoint, SDK syntax, audio support or Box capability.
+OpenRouter/OpenCode aliases are not asserted to be native provider IDs.
 
-- Jev retains its existing choice probabilities and Noul yes probability.
-- OpenAI shows `Decisions API (preview) / luna`, finite choices, and the selected
-  result. It omits probabilities and Noul. The latency is a synthetic scene
-  value, consistent with all other metrics in the wall.
+Each synthetic scene owns structured labels and probabilities. The selected
+result is the highest-probability choice, rather than a duplicated result string.
+Choice/rubric distributions sum to one. Binary `p(yes)` is distinct from
+confidence in the answer: a 0.06 yes probability has 0.94 confidence in no.
+Rubric scores are expected zero-based positions, so a fractional score is valid;
+the visible endpoints define the scale. Rubric confidence is the most likely
+level's probability. These are fictional values, not provider measurements.
 
-The format is a presentation discriminator, not an SDK adapter or wire schema.
-No component, agent lifecycle, or recent-decision structure needs to change.
-Only adding a model name would incorrectly attribute Jev-specific output to
-OpenAI. Endpoint and schema work remains unverified until official API reference
-material is available; the simulation does not depend on it.
+Shared state, task-specific scenes, fast delivery, execution boundaries and the
+eight-second recent-result strip remain unchanged. Extra lines use the same
+fast playback path. Unrelated tasks never receive a decision scene.
+
+## API and workflow boundaries
+
+Google's [guide](https://aistudio.google.com/docs/decisions-api) documents
+`/v1beta/decisions` and `client.decisions.create`. Questions share input but do
+not see one another's answers. Downstream code combines judgments and handles
+confidence thresholds or an out-of-scope option. A decision model does not
+generate a chat response, execute a tool or replace workflow authorization.
+Google's advertised latency describes benchmark conditions, not every maximum
+context or question count; the wall's timing remains an explicitly synthetic
+scene duration. No vendor latency guarantee is introduced.
+
+[Antigravity Orchestrator](https://antigravity.google/docs/models) is a separate
+product mode that hands work between a planner and Hydrogen execution; `/swarm`
+is parallel teamwork. Neither is a new model nor implemented by this refresh.
 
 ## Acceptance
 
-Seeded transcript playback must exercise both routes. Jev must retain its
-probability/Noul lines. Luna must show finite choices without those lines.
-Both routes must select the scene's existing result, complete promptly in
-reduced motion, and preserve the recent-decision lifetime. Unrelated tasks must
-continue to exclude decision scenes. Run lint, Svelte checks, tests, and build.
-
-## Jev release follow-up
-
-Checked October 18, 2026. TypeSafe released
-[Jev 1.14 on October 14](https://typesafe.ai/blog/jev-1-14), with general
-improvements and a focus on multilingual support. The
-[current model reference](https://docs.typesafe.ai/models) lists `jev-preview`
-as `jev-1.14.0` and `jev-latest` as `jev-1.13.0`. The announcement plans to move
-`jev-latest` a week after release; that future alias change is not treated as
-already complete.
-
-Keep the wall's short `jev` label and choice/Noul simulation. Experimental image
-input and long context also support 1.13, while the new `box` question type is
-limited to 1.14. Those capabilities do not add image or bounding-box scenes to
-this refresh, and no real API integration is introduced.
+Seeded playback covers all four routes, normalized distributions, distinct
+negative binary probability/confidence, derived rubric scores and selected
+results. The agent completes promptly with reduced motion and preserves the
+recent-result lifetime. Provider labels remain readable at normal and narrow
+sizes. Run lint, Svelte check, tests and build. SDK compatibility, real API
+responses and account availability are not established by these checks.
