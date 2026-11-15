@@ -1,5 +1,6 @@
 import { constrainHostTraffic, HOST_PROFILE, type HostSnapshot, type SimulatedProcess } from './host-load'
 import { mulberry32 } from './rng'
+import { processWorkers } from './process-topology'
 import type { ToolExecution, ToolProfile } from './tool-workload'
 
 export interface SessionWorkload {
@@ -75,20 +76,6 @@ interface Candidate extends Omit<SimulatedProcess, 'cpu'> {
 interface RunRecord { id: number; launcher?: number; workers: number[] }
 interface Scratch { sizeGiB: number; expiresAt: number }
 
-function workerCommands(run: ToolExecution): string[] {
-  const descriptor = run.descriptor
-  if (!descriptor.shell && descriptor.profile !== 'search') return []
-  if (descriptor.profile === 'rust') return ['rustc --crate-name workspace', 'rustc --crate-name serde', 'rustc --crate-name tokio']
-  if (descriptor.profile === 'go') return ['compile [workspace]', 'compile [dependencies]']
-  if (descriptor.profile === 'docker') return ['buildkit-runc [build stage]']
-  if (descriptor.profile === 'test') {
-    const worker = /playwright/.test(descriptor.command) ? 'node playwright' : /^(cargo|go) test/.test(descriptor.command)
-      ? 'workspace.test' : /pytest/.test(descriptor.command) ? 'python -m pytest' : 'node vitest'
-    return [worker + ' [worker 1]', worker + ' [worker 2]', worker + ' [worker 3]']
-  }
-  return [descriptor.executable]
-}
-
 function needsLauncher(run: ToolExecution): boolean {
   return run.descriptor.shell && /^(?:pnpm|npm|npx|yarn|bun|cargo|go|docker|uv)\s/.test(run.descriptor.command)
 }
@@ -151,7 +138,7 @@ export class SessionHost {
       const active = session.activeTool
       const run = session.status === 'run' && active && active.startedAt <= now ? active : null
       const job = run ? jobResources(run, now, session.slot) : undefined
-      const commands = run ? workerCommands(run) : []
+      const commands = run ? processWorkers(run, session.repo) : []
       const integrated = job && commands.length === 0
       const metadata = {
         sessionSlot: session.slot, sessionLabel: session.label, repo: session.repo,
@@ -183,12 +170,16 @@ export class SessionHost {
           command: run.descriptor.command, state: 'S', rssMiB: 32, demand: .15, ...metadata,
         })
       }
-      commands.forEach((command, index) => {
+      const age = Math.max(0, (now - run.startedAt) / 1000)
+      const weights = commands.map((worker, index) => worker.cpuWeight * (.6 + .8 * noise(age, record.id + index * 997, 1.9 + index * .3)))
+      const totalCpuWeight = weights.reduce((sum, weight) => sum + weight, 0)
+      const totalRssWeight = commands.reduce((sum, worker) => sum + worker.rssWeight, 0)
+      commands.forEach((worker, index) => {
         candidates.push({
           pid: record.workers[index]!, role: 'worker', parentPid: record.launcher ?? parent,
           affinity: parent * 97 + index,
-          command, state: job.state, rssMiB: job.rss / commands.length,
-          demand: Math.min(job.cores * 100 / commands.length, job.cpu / commands.length),
+          command: worker.command, state: job.state, rssMiB: job.rss * worker.rssWeight / totalRssWeight,
+          demand: Math.min(worker.maxCpu, job.cpu * weights[index]! / totalCpuWeight),
           ...metadata,
         })
       })

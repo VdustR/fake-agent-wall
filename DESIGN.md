@@ -735,6 +735,16 @@ shows complete rows and prints shown/total task counts, with R/S/D state counts.
 state and numeric cells retain their widths; commands truncate with the full command
 on hover. One ResizeObserver is disconnected on unmount. The tile never adds a timer.
 
+**Process composition.** Tool-specific topology is separate from shared resource
+allocation. Rust builds show distinct crate compilers; Cargo tests show one
+multithreaded libtest binary; Go builds/tests show package processes; Chromium
+Playwright tests show the local test worker, browser, renderer, and GPU process.
+Other parallel test pools show representative worker processes. These are bounded
+synthetic examples, not a complete OS process tree or an inferred remote server.
+Worker CPU weights vary smoothly within the tool budget, RSS weights differ by
+role, and single-thread test workers remain at or below 100%. PIDs remain stable
+throughout the execution; finishing the tool removes its workers together.
+
 **Real clock.** The status clock is an isolated leaf component. Hours, minutes, and seconds
 use 180ms numeric wheels; milliseconds update immediately without interpolation. Every visible animation frame samples `Date.now()` directly and formats
 local `HH:mm:ss.SSS`; simulation elapsed time never supplies civil time. Visibility
