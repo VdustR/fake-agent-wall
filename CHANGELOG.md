@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.15.0](https://github.com/VdustR/fake-agent-wall/compare/v0.14.0...v0.15.0) (2026-11-15)
+
+
+### Features
+
+* animate wall clock and keyed lists ([#115](https://github.com/VdustR/fake-agent-wall/issues/115)) ([0c17afc](https://github.com/VdustR/fake-agent-wall/commit/0c17afc44db7a9b0e20d4cb7f597acd4c47a7413))
+* diversify session tool process workloads ([#116](https://github.com/VdustR/fake-agent-wall/issues/116)) ([ef794f3](https://github.com/VdustR/fake-agent-wall/commit/ef794f304a45d618aa55bee0c7c7b7a5c9219522))
+* refresh agent models and typed decision routes ([#112](https://github.com/VdustR/fake-agent-wall/issues/112)) ([bb5e771](https://github.com/VdustR/fake-agent-wall/commit/bb5e77147d41a554e1077fe4e2502b284179cc8a))
+* smooth process updates and animate row movement ([#114](https://github.com/VdustR/fake-agent-wall/issues/114)) ([bfabc92](https://github.com/VdustR/fake-agent-wall/commit/bfabc92cbebd3145c4fe24ea408ccc569e8afb57))
+
+
+### Bug Fixes
+
+* align system readout motion with host samples ([#118](https://github.com/VdustR/fake-agent-wall/issues/118)) ([47baad5](https://github.com/VdustR/fake-agent-wall/commit/47baad59df0cad68022fcbe78aea1374d4c50d83))
+* classify parallel test and package wrapper commands ([#117](https://github.com/VdustR/fake-agent-wall/issues/117)) ([f921957](https://github.com/VdustR/fake-agent-wall/commit/f9219573a121f22e6179c9898a29a3154b97f3c1))
+* give heavy tool workloads realistic execution dwell ([#119](https://github.com/VdustR/fake-agent-wall/issues/119)) ([1ad0d6b](https://github.com/VdustR/fake-agent-wall/commit/1ad0d6b583733b39306c30d1e44e3b9af7b8c00f))
+
 ## [0.14.0](https://github.com/VdustR/fake-agent-wall/compare/v0.13.8...v0.14.0) (2026-11-15)
 
 
