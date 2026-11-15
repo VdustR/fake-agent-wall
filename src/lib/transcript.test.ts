@@ -83,3 +83,23 @@ it('distinguishes a negative binary answer from confidence in that answer', () =
   expect(blocks.length).toBeGreaterThan(0)
   for (const block of blocks) expect(block.map(emit => emit.line.s).join('\n')).toContain('p(yes)=0.06 · confidence=0.94')
 })
+
+it('spaces long tool progress on an execution timeline with a bounded long tail', () => {
+  const random = mulberry32(123)
+  const blocks = Array.from({ length: 600 }, () => nextBlock(random, 0, 'validation'))
+  const long = blocks.filter(block => block[0]?.durationMs)
+  expect(long.length).toBeGreaterThan(100)
+  expect(long.some(block => block[0]!.durationMs! > 60000)).toBe(true)
+  expect(long.some(block => block[0]!.durationMs! < 10000)).toBe(true)
+  for (const block of long) {
+    expect(block.filter(emit => emit.tool)).toHaveLength(1)
+    const duration = block[0]!.durationMs!
+    const output = block.slice(1)
+    expect(output.at(-1)!.executionOffsetMs).toBe(duration)
+    expect(output.at(-1)!.toolEnd).toBe(true)
+    expect(output.every((emit, index) => emit.executionOffsetMs! > (output[index - 1]?.executionOffsetMs ?? 0))).toBe(true)
+    const reported = output.map(emit => emit.line.s).join(' ').match(/(?:built in|finished in|Done in|target\(s\) in|Duration)\s+([\d.]+)s/i)
+    if (reported) expect(Number(reported[1])).toBeCloseTo(duration / 1000, 2)
+  }
+  expect(blocks.some(block => block[0]?.tool?.profile === 'lint-parallel' && !block[0].durationMs)).toBe(true)
+})

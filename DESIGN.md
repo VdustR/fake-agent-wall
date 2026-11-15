@@ -746,6 +746,24 @@ Worker CPU weights vary smoothly within the tool budget, RSS weights differ by
 role, and single-thread test workers remain at or below 100%. PIDs remain stable
 throughout the execution; finishing the tool removes its workers together.
 
+**Tool lifetime.** Execution time is authored separately from typing speed and
+inter-line reading pauses. Builds, test suites, checks, installs and publishes use
+bounded warm, ordinary and long-tail durations; occasional Rust/container builds
+can last up to three minutes. These are synthetic pacing choices, not performance
+estimates. Read/search operations, native lint and fast Decisions retain their
+short response paths. Progress is scheduled relative to the committed tool's start;
+the final result cannot appear before its execution deadline, and waiting never
+pre-renders the next result. Reduced motion removes typing without shortening work.
+Historical prefill skips the timeline and creates no live workers.
+
+The same duration drives host phases: downloads use the first 65% before extraction;
+parallel builds transition toward a mostly serial link/export stage after 60%,
+then CPU demand eases through the final 20%. Worker identity survives progress and
+quiet periods; result commit retires it. Many concurrent long jobs can legitimately
+saturate the sixteen-core host; the displayed CPU remains the conserved allocation,
+not a separately capped decorative curve. No additional timer or playback loop is
+introduced.
+
 **Real clock.** The status clock is an isolated leaf component. Hours, minutes, and seconds
 use 180ms numeric wheels; milliseconds update immediately without interpolation. Every visible animation frame samples `Date.now()` directly and formats
 local `HH:mm:ss.SSS`; simulation elapsed time never supplies civil time. Visibility

@@ -87,11 +87,18 @@ function jobResources(run: ToolExecution, now: number, slot: number) {
   const texture = .55 + .45 * noise(age, seed, 2.8)
   const startup = .15 + .85 * smooth(age / .18)
   const batch = run.descriptor.profile === 'test' ? .18 + .82 * smooth((noise(age, seed + 31, 1.7) - .15) / .6) : 1
-  const fetching = run.descriptor.profile === 'install' && age < 1.2
+  const duration = run.durationMs ? run.durationMs / 1000 : undefined
+  const progress = duration ? age / duration : 0
+  const finishing = duration ? 1 - .92 * smooth((progress - .8) / .2) : 1
+  const linking = duration && ['build', 'rust', 'go', 'docker'].includes(run.descriptor.profile)
+    ? smooth((progress - .6) / .2) : 0
+  // Parallel compilation hands off to a mostly serial link/export phase.
+  const cpuBudget = profile.cpu + (Math.min(95, profile.cpu) - profile.cpu) * linking
+  const fetching = run.descriptor.profile === 'install' && age < (duration ? duration * .65 : 1.2)
   const publishing = run.descriptor.profile === 'publish'
   const blocked = !fetching && profile.write > 30 && noise(age, seed + 211, .9) > .94
   const state: SimulatedProcess['state'] = blocked ? 'D' : fetching || publishing || run.descriptor.profile === 'remote' ? 'S' : 'R'
-  const cpu = blocked ? .1 : Math.min(profile.cores * 100, (fetching ? 18 : profile.cpu) * texture * startup * batch)
+  const cpu = blocked ? .1 : Math.min(profile.cores * 100, (fetching ? 18 : cpuBudget) * texture * startup * batch * finishing)
   const rx = fetching ? profile.rx * texture : run.descriptor.profile === 'install' ? .5 : profile.rx * texture
   return {
     cpu,

@@ -20,6 +20,7 @@ import {
 } from './corpus'
 import { chance, int, pick, sample, type Rand } from './rng'
 import { describeTool, type ToolDescriptor } from './tool-workload'
+import { toolRuntimeMs } from './tool-timing'
 
 export type Kind =
   | 'tool'
@@ -48,6 +49,10 @@ export interface Emit {
   type: boolean
   /** Milliseconds of quiet after this line commits. */
   pause: number
+  /** Planned execution duration, set only on the foreground tool bullet. */
+  durationMs?: number
+  /** Earliest output time relative to the committed tool, independent of typing. */
+  executionOffsetMs?: number
   /** Update the previous output row, like a terminal progress indicator. */
   replacePrevious?: boolean
   /** Keep a bounded decision fast even when reduced motion slows ordinary lines. */
@@ -71,8 +76,24 @@ const t = (k: Kind, s: string, type = false, pause = 0): Emit => ({
   line: { k, s }, type, pause, ...(k === 'tool' ? { tool: describeTool(s) } : {}),
 })
 
-function closeToolBlock(emits: Emit[]): Emit[] {
-  if (emits.some(emit => emit.tool) && emits.length) emits[emits.length - 1]!.toolEnd = true
+function closeToolBlock(emits: Emit[], random: Rand): Emit[] {
+  const toolIndex = emits.findIndex(emit => emit.tool)
+  if (toolIndex < 0) return emits
+  emits[emits.length - 1]!.toolEnd = true
+  const tool = emits[toolIndex]!
+  const duration = toolRuntimeMs(tool.tool!, random)
+  if (!duration) return emits
+  tool.durationMs = duration
+  const output = emits.slice(toolIndex + 1)
+  output.forEach((emit, index) => {
+    const fraction = output.length === 1 ? 1 : .04 + .96 * (index / (output.length - 1)) ** 1.2
+    emit.executionOffsetMs = Math.round(duration * fraction)
+    // Synthetic completion summaries should agree with the execution plan.
+    const seconds = (duration / 1000).toFixed(2)
+    emit.line.s = emit.line.s
+      .replace(/((?:built in|finished in|Done in|target\(s\) in|Duration)\s+)[\d.]+s/gi, `$1${seconds}s`)
+      .replace(/(exporting to image.* · )[\d.]+s$/, `$1${seconds}s`)
+  })
   return emits
 }
 
@@ -481,7 +502,7 @@ function makeNextBlock(r: Rand, todoDone: number, flavor: BlockFlavor, task: str
 }
 
 export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'implementation', task = ''): Emit[] {
-  return closeToolBlock(makeNextBlock(r, todoDone, flavor, task))
+  return closeToolBlock(makeNextBlock(r, todoDone, flavor, task), r)
 }
 
 /** The opening request line of a fresh session. */

@@ -56,6 +56,7 @@ export class Agent {
 
   #queue: Emit[] = []
   #chars = 0
+  #linePending = false
   #speed = 0
   #waitUntil = 0
   #phaseUntil = 0
@@ -158,6 +159,7 @@ export class Agent {
   }
 
   #beginLine() {
+    this.#linePending = false
     const e = this.#queue[0]
     if (!e) {
       this.partial = null
@@ -181,7 +183,7 @@ export class Agent {
       this.lifeTools += 1
       this.#eventN += 1
       this.lastEvent = { n: this.#eventN, text: e.line.s.replace(/^● /, '') }
-      this.activeTool = e.tool ? { id: this.#eventN, descriptor: e.tool, startedAt: now } : null
+      this.activeTool = e.tool ? { id: this.#eventN, descriptor: e.tool, startedAt: now, durationMs: e.durationMs } : null
       this.contextLeft = Math.max(6, this.contextLeft - range(this.#r, 0.3, 1.6))
     }
     if (e.toolEnd) this.activeTool = null
@@ -191,7 +193,7 @@ export class Agent {
     this.tokensUp += up
     this.lifeTokens += down + up
 
-    if (this.#queue.length) this.#beginLine()
+    this.#linePending = true
   }
 
   #afterBlock(now: number) {
@@ -263,11 +265,14 @@ export class Agent {
     }
 
     // status === 'run'
-    if (now < this.#waitUntil) {
+    const executionDue = this.activeTool && this.#queue[0]?.executionOffsetMs !== undefined
+      ? this.activeTool.startedAt + this.#queue[0].executionOffsetMs : 0
+    if (now < Math.max(this.#waitUntil, executionDue)) {
       if (!this.#queue.length) this.#afterBlock(now)
       return
     }
 
+    if (this.#linePending) this.#beginLine()
     const head = this.#queue[0]
     if (!head) {
       this.#afterBlock(now)
