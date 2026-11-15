@@ -13,6 +13,14 @@ it.each([
   ['cargo build --release', 'rust'],
   ['pnpm vite build', 'build'],
   ['uv run pytest -q', 'test-single'],
+  ['uv run pytest -n 16', 'test'],
+  ['pytest -n logical', 'test'],
+  ['pytest -n4', 'test'],
+  ['pytest --numprocesses=4', 'test'],
+  ['pytest --numprocesses 2', 'test'],
+  ['pytest -n 0', 'test-single'],
+  ['pytest -n 1', 'test-single'],
+  ['pnpm dlx vitest run', 'test'],
   ['pnpm vitest run', 'test'],
   ["printf 'cargo build'", 'utility'],
 ])('classifies the executed tool, not words inside arguments: %s', (command, profile) => {
@@ -31,4 +39,11 @@ it('attaches execution metadata and a result boundary to every generated tool bl
     expect(block.at(-1)?.toolEnd).toBe(true)
   }
   expect(tools).toBeGreaterThan(100)
+})
+
+it.each([
+  ['pnpm dlx depcheck', 'depcheck'],
+  ['pnpm rolldown -c', 'node rolldown -c'],
+])('preserves the executable after package wrapper normalization: %s', (command, executable) => {
+  expect(describeTool('● Bash(' + command + ')').executable).toBe(executable)
 })
