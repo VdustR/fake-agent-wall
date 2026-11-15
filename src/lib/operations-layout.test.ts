@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest'
 import { OperationsWorld } from './operations.svelte'
 import { Swarm } from './swarm.svelte'
+import { dimensionsFor, packMosaic } from './mosaic-layout'
 
 it('keeps every operations rotation feasible with the host instruments taking vertical space', () => {
   const world = new OperationsWorld(new Swarm())
@@ -22,4 +23,17 @@ it('keeps system status independent and offers a process monitor when the wall h
   expect(world.gridItems.filter(item => item.type === 'system')).toHaveLength(1)
   expect(world.gridItems.some(item => item.type === 'agent')).toBe(true)
   expect(world.layoutViolations).toEqual([])
+})
+
+it('keeps a compact system from consuming a whole spare bay when a smaller placement fits', () => {
+  const width = 625
+  const height = 626
+  const world = new OperationsWorld(new Swarm())
+  world.setViewport(width, height)
+  const items = world.gridItems
+  const system = items.find(item => item.type === 'system')!
+  const packed = packMosaic(items, width, height)
+  const size = dimensionsFor(packed.rects.get(system.key)!, width, height)
+  expect(packed.feasible).toBe(true)
+  expect(size.width * size.height).toBeLessThan((system.preferredWidth! * system.preferredHeight!) * 2)
 })

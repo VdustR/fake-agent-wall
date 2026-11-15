@@ -10,7 +10,7 @@ Every session, task, diff, provider route and metric is simulated.
 [Open the web version](https://vdustr.github.io/fake-agent-wall/) ·
 [Download for macOS, Windows or Linux](https://github.com/VdustR/fake-agent-wall/releases/latest)
 
-![The wall: a program monitor, dynamically packed agent sessions, task and usage panels, and a live swarm bus](docs/wall.png)
+![The wall: a program monitor, dynamically packed agent sessions, task and usage panels, and an agent activity strip](docs/wall.png)
 
 ## Responsive wall
 
@@ -39,7 +39,9 @@ of simulated activity while preserving the broadcast hierarchy.
 | A consistent agent grammar shared across simulated providers; local system clock and captured event timestamps | Every token count, context percentage, call rate, resource load and session duration |
 
 Workload and resource panels do not measure the host computer. Their values are
-simulated; do not present them as real metrics. The wall clock and event timestamps
+simulated; do not present them as real metrics. Process activity follows each
+session’s committed tool calls: local tools spawn simulated workers, results retire
+them, and source IDs identify their sessions. CPU, memory and I/O share that lifecycle. The wall clock and event timestamps
 read local system time to milliseconds, bounded by OS accuracy and display refresh.
 
 See the [UI wave inventory and audit](docs/ui-wave-review.md) for the shipped

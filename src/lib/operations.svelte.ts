@@ -230,9 +230,10 @@ export class OperationsWorld {
       minHeight: kind === 'processes' ? 180 : 120,
       kind,
     }))
+    const systemHeight = this.viewportWidth < 1500 ? 192 : 200
     const items: GridItem[] = [
       { type: 'pgm', key: 'pgm', preferredAspect: 1.38, preferredWidth: 920, preferredHeight: 660, minAspect: 1.05, maxAspect: 2, weight: 5.5, minWidth: 320, minHeight: 240 },
-      { type: 'system', key: 'system', preferredAspect: 1.4, preferredWidth: 420, preferredHeight: 300, minAspect: .65, maxAspect: 2.5, weight: 1.8, minWidth: 300, minHeight: 190 },
+      { type: 'system', key: 'system', preferredAspect: this.viewportWidth < 800 ? 1.65 : 1.05, preferredWidth: 280, preferredHeight: systemHeight, minAspect: .65, maxAspect: 2.6, weight: .8, minWidth: 260, minHeight: systemHeight, compact: true },
       ...agents.slice(0, Math.min(2, agents.length)),
     ]
     const remainingAgents = agents.slice(2)

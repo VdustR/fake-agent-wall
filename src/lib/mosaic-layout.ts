@@ -9,6 +9,8 @@ export interface MosaicItem {
   minHeight: number
   preferredWidth?: number
   preferredHeight?: number
+  /** Prefer a region assignment close to the instrument's content dimensions. */
+  compact?: boolean
   variants?: readonly MosaicVariant[]
 }
 
@@ -234,7 +236,17 @@ function packRegion(
   }
 }
 
-export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportHeight: number): PackedLayout {
+function compactExcess(items: readonly MosaicItem[], layout: PackedLayout, viewportWidth: number, viewportHeight: number): number {
+  return items.reduce((sum, item) => {
+    const rect = layout.rects.get(item.key)
+    if (!rect) return Number.POSITIVE_INFINITY
+    const size = dimensionsFor(rect, viewportWidth, viewportHeight)
+    return sum + Math.max(0, size.width / (item.preferredWidth ?? item.minWidth) - 1)
+      + Math.max(0, size.height / (item.preferredHeight ?? item.minHeight) - 1)
+  }, 0)
+}
+
+function packAtProgramHeight(items: MosaicItem[], viewportWidth: number, viewportHeight: number, requestedRows?: number): PackedLayout {
   const pgm = items.find(item => item.type === 'pgm')
   if (!pgm) return pack(items, GRID_COLUMNS, GRID_ROWS, viewportWidth, viewportHeight)
   const rest = items.filter(item => item !== pgm)
@@ -248,7 +260,7 @@ export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportH
   if (viewportAspect < 0.82 || viewportWidth < pgm.minWidth + sideWidth) {
     pgmColumns = GRID_COLUMNS
     const minRows = Math.ceil(pgm.minHeight / viewportHeight * GRID_ROWS)
-    pgmRows = Math.max(minRows, Math.min(Math.round(GRID_ROWS * 0.52), Math.round(GRID_ROWS * viewportAspect / pgm.preferredAspect)))
+    pgmRows = Math.max(minRows, Math.min(Math.round(GRID_ROWS * 0.52), requestedRows ?? Math.round(GRID_ROWS * viewportAspect / pgm.preferredAspect)))
     regions = [{ row: pgmRows, column: 0, rows: GRID_ROWS - pgmRows, columns: GRID_COLUMNS }]
   } else {
     const widthFraction = Math.sqrt(pgmArea * pgm.preferredAspect / viewportAspect)
@@ -263,7 +275,7 @@ export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportH
     const maxPgmRows = Math.round(GRID_ROWS * 0.73)
     pgmColumns = Math.max(minPgmColumns, Math.min(maxPgmColumns, Math.round(widthFraction * GRID_COLUMNS)))
     const pgmPixelWidth = viewportWidth * pgmColumns / GRID_COLUMNS
-    pgmRows = Math.max(minPgmRows, Math.min(maxPgmRows, Math.round(pgmPixelWidth / pgm.preferredAspect / viewportHeight * GRID_ROWS)))
+    pgmRows = Math.max(minPgmRows, Math.min(maxPgmRows, requestedRows ?? Math.round(pgmPixelWidth / pgm.preferredAspect / viewportHeight * GRID_ROWS)))
     regions = [
       { row: 0, column: pgmColumns, rows: pgmRows, columns: GRID_COLUMNS - pgmColumns },
       { row: pgmRows, column: 0, rows: GRID_ROWS - pgmRows, columns: GRID_COLUMNS },
@@ -271,31 +283,82 @@ export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportH
   }
 
   const pgmRect = { row: 0, column: 0, rows: pgmRows, columns: pgmColumns }
-  const result = new Map<string, GridRect>([[pgm.key, pgmRect]])
+  const programKey = pgm.key
   const totalArea = regions.reduce((sum, region) => sum + region.rows * region.columns, 0)
   const totalRestWeight = rest.reduce((sum, item) => sum + item.weight, 0)
   const targetWeights = regions.map(region => totalRestWeight * region.rows * region.columns / totalArea)
-  const groups = regions.map(() => [] as MosaicItem[])
-  const groupWeights = regions.map(() => 0)
-  for (const item of rest) {
-    let regionIndex = 0
-    for (let index = 1; index < regions.length; index += 1) {
-      const fill = groupWeights[index]! / Math.max(0.01, targetWeights[index]!)
-      const bestFill = groupWeights[regionIndex]! / Math.max(0.01, targetWeights[regionIndex]!)
-      if (fill < bestFill) regionIndex = index
+
+  function place(order: MosaicItem[]): PackedLayout {
+    const result = new Map<string, GridRect>([[programKey, pgmRect]])
+    const groups = regions.map(() => [] as MosaicItem[])
+    const groupWeights = regions.map(() => 0)
+    for (const item of order) {
+      let regionIndex = 0
+      for (let index = 1; index < regions.length; index += 1) {
+        const fill = groupWeights[index]! / Math.max(0.01, targetWeights[index]!)
+        const bestFill = groupWeights[regionIndex]! / Math.max(0.01, targetWeights[regionIndex]!)
+        if (fill < bestFill) regionIndex = index
+      }
+      groups[regionIndex]!.push(item)
+      groupWeights[regionIndex]! += item.weight
     }
-    groups[regionIndex]!.push(item)
-    groupWeights[regionIndex]! += item.weight
+
+    let feasible = true
+    let score = 0
+    regions.forEach((region, index) => {
+      const packed = packRegion(groups[index]!, region, viewportWidth, viewportHeight)
+      feasible &&= packed.feasible
+      score += packed.score
+      for (const [key, rect] of packed.rects) result.set(key, rect)
+    })
+    feasible &&= violationsFor(items, result, viewportWidth, viewportHeight).length === 0
+    return { rects: result, feasible, score }
   }
 
-  let feasible = true
-  let score = 0
-  regions.forEach((region, index) => {
-    const packed = packRegion(groups[index]!, region, viewportWidth, viewportHeight)
-    feasible &&= packed.feasible
-    score += packed.score
-    for (const [key, rect] of packed.rects) result.set(key, rect)
-  })
-  feasible &&= violationsFor(items, result, viewportWidth, viewportHeight).length === 0
-  return { rects: result, feasible, score }
+  const compact = rest.filter(item => item.compact)
+  const baseline = place(rest)
+  if (!compact.length) return baseline
+
+  // Try bounded alternatives before letting an instrument fill an entire bay.
+  const regular = rest.filter(item => !item.compact)
+  const middle = Math.ceil(regular.length / 2)
+  const orders = [
+    [...regular.slice(0, 1), ...compact, ...regular.slice(1)],
+    [...regular.slice(0, middle), ...compact, ...regular.slice(middle)],
+    [...regular, ...compact],
+  ]
+  let best = baseline
+  let bestExcess = compactExcess(compact, best, viewportWidth, viewportHeight)
+  for (const order of orders) {
+    const candidate = place(order)
+    const excess = compactExcess(compact, candidate, viewportWidth, viewportHeight)
+    if ((candidate.feasible && !best.feasible)
+      || (candidate.feasible === best.feasible
+        && (excess < bestExcess || (excess === bestExcess && candidate.score < best.score)))) {
+      best = candidate
+      bestExcess = excess
+    }
+  }
+  return best
+}
+
+export function packMosaic(items: MosaicItem[], viewportWidth: number, viewportHeight: number): PackedLayout {
+  let best = packAtProgramHeight(items, viewportWidth, viewportHeight)
+  const compact = items.filter(item => item.compact)
+  if (!compact.length) return best
+  let bestExcess = compactExcess(compact, best, viewportWidth, viewportHeight)
+  if (best.feasible && bestExcess === 0) return best
+  // Existing program-height bounds can release a short instrument row while
+  // preserving program aspect, source minimums and complete wall coverage.
+  for (const rows of [0, GRID_ROWS]) {
+    const candidate = packAtProgramHeight(items, viewportWidth, viewportHeight, rows)
+    const candidateExcess = compactExcess(compact, candidate, viewportWidth, viewportHeight)
+    if ((candidate.feasible && !best.feasible)
+      || (candidate.feasible === best.feasible
+        && (candidateExcess < bestExcess || (candidateExcess === bestExcess && candidate.score < best.score)))) {
+      best = candidate
+      bestExcess = candidateExcess
+    }
+  }
+  return best
 }

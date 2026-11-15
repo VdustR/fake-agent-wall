@@ -159,8 +159,10 @@
       </div>
     </div>
 
-  <Telemetry {swarm} />
-  <Ticker {swarm} />
+  <div class="activity-rail">
+    <Telemetry {swarm} />
+    <div class="event-feed"><Ticker {swarm} /></div>
+  </div>
   <OpsNotice notice={operations.notice} />
   {#if desktop}<ExitHint />{/if}
   {#if themeOpen && committedTheme}
@@ -202,6 +204,16 @@
     height: 100dvh;
     background: var(--ink-000);
   }
+
+  .activity-rail {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: calc(var(--gap) / 2);
+    padding: 0 calc(var(--gap) * 1.5) calc(var(--gap) / 2);
+  }
+  .event-feed { flex: 1 1 260px; min-width: 0; display: flex; }
 
   .wall {
     position: relative;

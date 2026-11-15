@@ -21,91 +21,74 @@
     {
       key: 'tok',
       label: 'tokens / min',
+      scaleLabel: `Full scale: ${tokenScale.toLocaleString('en-US')} tokens/min`,
       value: normalizeThroughput(swarm.tokensPerMin, tokenScale),
       peak: normalizeThroughput(swarm.peakTokens, tokenScale),
       flat: false,
       read: `${(swarm.tokensPerMin / 1000).toFixed(1)}k`,
-      load: `${Math.round(normalizeThroughput(swarm.tokensPerMin, tokenScale) * 100)}% fs`,
     },
     {
       key: 'tools',
       label: 'calls / min',
+      scaleLabel: `Full scale: ${toolScale.toLocaleString('en-US')} calls/min`,
       value: normalizeThroughput(swarm.toolsPerMin, toolScale),
       peak: normalizeThroughput(swarm.peakTools, toolScale),
       flat: false,
       read: `${Math.round(swarm.toolsPerMin)}`,
-      load: `${Math.round(normalizeThroughput(swarm.toolsPerMin, toolScale) * 100)}% fs`,
     },
     {
       key: 'src',
       label: 'live / total',
+      scaleLabel: 'Active sessions / total sessions',
       value: swarm.running / swarm.agents.length,
       peak: 0,
       // Every source working is the nominal state here, not an overload, so this
       // channel does not run into the red the way a throughput channel does.
       flat: true,
       read: `${swarm.running}/${swarm.agents.length}`,
-      load: `${Math.round(swarm.running / swarm.agents.length * 100)}% live`,
     },
   ])
   // Bars stay continuous; four digit updates per second remain readable on camera.
   const readingFrame = $derived(Math.floor(swarm.uptimeMs / 250))
   let lastReadingFrame = -1
-  let readings = $state<{ read: string; load: string }[]>([])
+  let readings = $state<string[]>([])
   $effect(() => {
     const frame = readingFrame
     if (frame === lastReadingFrame) return
     lastReadingFrame = frame
-    untrack(() => { readings = channels.map(({ read, load }) => ({ read, load })) })
+    untrack(() => { readings = channels.map(({ read }) => read) })
   })
 
   // Keep the original normalized history; its 90 samples span about 12 seconds.
   const trace = $derived(swarm.history.map((value, index) =>
     `${index / Math.max(1, swarm.history.length - 1) * 100},${30 - value * 28}`,
   ).join(' '))
-  const pressure = $derived(Math.round((swarm.history.at(-1) ?? 0) * 100))
-  const contextAgents = $derived(swarm.agents.slice(0, 27))
+  const outputActivity = $derived(Math.round((swarm.history.at(-1) ?? 0) * 100))
 </script>
 
-<section class="tel" aria-label="Synthetic swarm telemetry">
+<section class="tel" aria-label="Synthetic agent activity">
   <div class="bus">
-    <header class="section-label umd-type"><b>swarm bus</b><span>sim</span></header>
+    <header class="section-label umd-type"><b>agent activity</b><span>sim</span></header>
     <div class="channels">
       {#each channels as c, index (c.key)}
-        <div class="ch">
-          <div class="reading"><span class="lb umd-type">{c.label}</span><b class="tnum"><RollingNumber value={readings[index]?.read ?? c.read} duration={180} /></b></div>
+        <div class="ch" title={c.scaleLabel}>
+          <div class="reading"><span class="lb umd-type">{c.label}</span><b class="tnum"><RollingNumber value={readings[index] ?? c.read} duration={180} /></b></div>
           <span class="ppm" aria-hidden="true">
             <i class="fill" class:flat={c.flat} style="--v:{c.value}"></i>
             {#if c.peak > 0.01}<i class="cap" style="--p:{c.peak}"></i>{/if}
           </span>
-          <small class="load umd-type"><RollingNumber value={readings[index]?.load ?? c.load} duration={180} /></small>
         </div>
       {/each}
     </div>
   </div>
 
-  <div class="hist">
-    <header class="section-label umd-type"><span>output pressure</span><span><RollingNumber value={pressure} duration={180} />% · ~12s</span></header>
-    <svg class="trace" viewBox="0 0 100 32" preserveAspectRatio="none" role="img" aria-label="Normalized synthetic output pressure over approximately twelve seconds">
-      {#each [25, 50, 75] as tick}
-        <line class="rule" x1="0" x2="100" y1={30 - tick * .28} y2={30 - tick * .28} />
-      {/each}
-      <polygon class="area" points={`0,32 ${trace} 100,32`} />
+  <div class="hist" title="Output activity · last approximately twelve seconds">
+    <header class="section-label umd-type"><span>output activity</span><span><span class="activity-value"><RollingNumber value={outputActivity} duration={180} /></span>%</span></header>
+    <svg class="trace" viewBox="0 0 100 32" preserveAspectRatio="none" role="img" aria-label="Normalized synthetic output activity over approximately twelve seconds">
+      <line class="rule" x1="0" x2="100" y1="16" y2="16" />
       <polyline class="signal" points={trace} />
       <line class="now" x1="100" x2="100" y1="0" y2="32" />
     </svg>
-  </div>
-
-  <div class="bridge">
-    <header class="section-label umd-type"><span>context remaining</span>{#if swarm.agents.length > 27}<span>01–27 / {swarm.agents.length}</span>{/if}</header>
-    <div class="contexts">
-      {#each contextAgents as a (a.slot)}
-        <div class="context" class:low={a.contextLeft < 25} aria-label={`Session ${a.numLabel}: ${Math.round(a.contextLeft)}% context remaining`}>
-          <span class="id">{a.numLabel}</span><b class="tnum"><RollingNumber value={Math.round(a.contextLeft)} /></b>
-          <span class="track" aria-hidden="true"><i style="--v:{a.contextLeft / 100}"></i></span>
-        </div>
-      {/each}
-    </div>
   </div>
 </section>
 
@@ -113,16 +96,21 @@
   .tel {
     flex: none;
     display: grid;
-    grid-template-columns: minmax(220px, 1fr) minmax(140px, 1fr) clamp(240px, 25vw, 360px);
-    gap: 16px;
-    margin: 0 calc(var(--gap) * 1.5) calc(var(--gap) / 2);
-    padding: 6px 10px;
+    grid-template-columns: minmax(0, max-content) clamp(90px, 12vw, 136px);
+    width: fit-content;
+    max-width: 100%;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 8px;
     background: var(--ink-100);
     border: 1px solid var(--line-hi);
     border-radius: var(--r);
   }
-  .bus, .hist, .bridge { min-width: 0; }
-  .hist, .bridge { border-left: 1px solid var(--line); padding-left: 16px; }
+  .bus, .hist { min-width: 0; }
+  .bus { display: flex; align-items: center; gap: 10px; }
+  .bus > .section-label { flex: none; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0; width: 10ch; }
+  .hist { border-left: 1px solid var(--line); padding-left: 10px; }
+  .hist > .section-label { flex-wrap: wrap; gap: 2px 6px; margin-bottom: 3px; letter-spacing: 0; }
   .section-label {
     display: flex;
     align-items: baseline;
@@ -133,47 +121,26 @@
     line-height: 1.2;
     white-space: nowrap;
   }
-  .section-label b { color: var(--umd); }
+  .section-label b { color: var(--umd); white-space: normal; }
   .section-label > span:last-child:not(:first-child) { color: var(--txt-fnt); }
-  .channels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  .reading { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
-  .lb { color: var(--txt-dim); white-space: nowrap; }
+  .channels { flex: 0 1 auto; width: clamp(150px, 18vw, 260px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .reading { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .lb { color: var(--txt-dim); }
   .reading b { font: 700 clamp(10px, .86vw, 15px)/1.2 var(--f-umd); color: var(--readout-100); }
-  .ppm { position: relative; display: block; height: 4px; margin-top: 3px; overflow: hidden; background: var(--ink-050); }
+  .ppm { position: relative; display: block; height: 3px; margin-top: 3px; overflow: hidden; background: var(--ink-050); }
   .fill { position: absolute; inset: 0; background: linear-gradient(90deg, var(--cue) 0 62%, var(--amber) 62% 84%, var(--live) 84%); clip-path: inset(0 calc(100% - var(--v) * 100%) 0 0); }
   .fill.flat { background: var(--cue); }
   .cap { position: absolute; inset-block: 0; left: calc(var(--p) * 100% - 1px); width: 1px; background: var(--txt-hi); }
-  .load { display: block; margin-top: 3px; color: var(--txt-fnt); }
-  .trace { display: block; width: 100%; height: 34px; overflow: hidden; }
+  .activity-value { display: inline-block; min-width: 3ch; text-align: right; }
+  .trace { display: block; width: 100%; height: 18px; overflow: hidden; }
   .rule { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
-  .area { fill: color-mix(in oklab, var(--cue) 12%, transparent); }
   .signal { fill: none; stroke: var(--plot-primary); stroke-width: 1.2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .now { stroke: var(--txt-dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
-  .contexts { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px 8px; }
-  .context { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 2px; padding-bottom: 3px; font: clamp(7px, .54vw, 10px)/1 var(--f-umd); }
-  .id { color: var(--txt-fnt); }
-  .context b { color: var(--txt); font-weight: 500; }
-  .track { position: absolute; inset: auto 0 0; height: 2px; background: var(--ink-050); overflow: hidden; }
-  .track i { display: block; height: 100%; background: var(--cue); transform: scaleX(var(--v)); transform-origin: left; transition: transform 300ms linear; }
-  .context.low b { color: var(--hold); }
-  .context.low .track i { background: var(--hold); }
-  @media (max-width: 900px) {
-    .tel { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); gap: 8px 12px; }
-    .bridge { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); padding: 5px 0 0; display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; align-items: start; }
-    .bridge .section-label { display: block; white-space: normal; }
-    .bridge .section-label > span { display: block; }
-    .contexts { grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 4px 6px; }
-    .hist { padding-left: 12px; }
-  }
   @media (max-width: 540px) {
-    .tel { padding: 6px 8px; gap: 7px 10px; }
+    .tel { gap: 8px; padding: 4px 6px; }
+    .bus { gap: 8px; }
     .channels { gap: 8px; }
-    .reading { flex-direction: column; gap: 2px; }
-    .hist { padding-left: 10px; }
-    .trace { height: 42px; }
-    .bridge { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
-    .contexts { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px 6px; }
-
+    .lb { white-space: normal; }
+    .hist { padding-left: 8px; }
   }
-  @media (prefers-reduced-motion: reduce) { .track i { transition: none; } }
 </style>

@@ -36,12 +36,14 @@
 <style>
   .ticker {
     --cw: clamp(230px, 24vw, 400px);
-    flex: none;
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: stretch;
-    height: clamp(26px, 2.6vw, 42px);
+    min-height: clamp(26px, 2.6vw, 42px);
     background: var(--ink-100);
-    border-top: 1px solid var(--line-hi);
+    border: 1px solid var(--line-hi);
+    border-radius: var(--r);
     overflow: hidden;
   }
   .tag {
