@@ -129,3 +129,25 @@ it('retains worker identities while their relative load changes smoothly', () =>
   expect(first[0]!.cpu / first[1]!.cpu).not.toBeCloseTo(later[0]!.cpu / later[1]!.cpu, 3)
   expect(later.every(p => p.toolRunId === owner.activeTool!.id && p.sessionSlot === owner.slot)).toBe(true)
 })
+
+it('keeps long downloads network-bound before extraction and reduces CPU in the finishing tail', () => {
+  const download = session(1, 'pnpm install')
+  const install = { ...download, activeTool: { ...download.activeTool!, durationMs: 20000 } }
+  const host = new SessionHost()
+  const fetching = host.sample(5000, 5000, [install])
+  const extracting = host.sample(15000, 15000, [install])
+  expect(fetching.load.netRx).toBeGreaterThan(300)
+  expect(extracting.load.netRx).toBeLessThan(1)
+  expect(extracting.load.cpu).toBeGreaterThan(fetching.load.cpu * 3)
+  expect(extracting.processes.map(p => p.pid)).toEqual(fetching.processes.map(p => p.pid))
+  const build = session(2, 'cargo build')
+  const owner = { ...build, activeTool: { ...build.activeTool!, durationMs: 60000 } }
+  const compile = host.sample(30000, 30000, [owner])
+  const linking = host.sample(48000, 48000, [owner])
+  expect(linking.load.cpu).toBeLessThan(100 / HOST_PROFILE.logicalCpus)
+  const finishing = host.sample(59000, 59000, [owner])
+  expect(finishing.load.cpu).toBeLessThan(compile.load.cpu * .3)
+  budgets(fetching)
+  budgets(extracting)
+  budgets(finishing)
+})

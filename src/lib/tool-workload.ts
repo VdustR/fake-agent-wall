@@ -15,6 +15,8 @@ export interface ToolExecution {
   readonly id: number
   readonly descriptor: ToolDescriptor
   readonly startedAt: number
+  /** Planned synthetic execution time; absent for unpaced/legacy workloads. */
+  readonly durationMs?: number
 }
 
 /** Classify the controlled transcript at its creation boundary, never its DOM. */
