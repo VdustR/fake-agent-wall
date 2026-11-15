@@ -21,7 +21,7 @@
   }
 </script>
 
-<div class="host-history" title="Fixed scale · last 32 seconds">
+<div class="host-history" title={`${scale} · last 32 seconds`}>
   <svg viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
     <path class="reference" d="M0,2H100 M0,12H100 M0,22H100" />
     {#key history}

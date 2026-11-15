@@ -196,7 +196,7 @@
       </div>
       <div class="font-field">
         <FontAutocomplete label="Chrome font stack" value={draft.uiFont} options={fontOptions} onescape={oncancel} onchange={(family) => updateFont('uiFont', family)} />
-        <output style:font-family={draft.uiFont}>SWARM BUS · 012345</output>
+        <output style:font-family={draft.uiFont}>AGENT ACTIVITY · 012345</output>
       </div>
       <div class="font-field">
         <FontAutocomplete label="Terminal font stack" value={draft.codeFont} options={fontOptions} onescape={oncancel} onchange={(family) => updateFont('codeFont', family)} />

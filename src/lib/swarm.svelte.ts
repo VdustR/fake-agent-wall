@@ -1,6 +1,7 @@
 import { Agent } from './agent.svelte'
 import { formatLocalTime } from './wall-clock'
-import { hostLoad, hostSnapshot, HOST_HISTORY_SAMPLES, HOST_SAMPLE_MS } from './host-load'
+import { emptyHostSnapshot, HOST_HISTORY_SAMPLES, HOST_SAMPLE_MS, type HostLoad } from './host-load'
+import { SessionHost } from './session-host'
 
 export interface TickerItem {
   id: number
@@ -22,9 +23,9 @@ const HISTORY = 90
 
 export class Swarm {
   agents = $state.raw<Agent[]>([])
-  host = $state.raw(hostSnapshot(0, 0))
-  hostHistory = $state.raw(Array.from({ length: HOST_HISTORY_SAMPLES }, (_, index) =>
-    hostLoad((index - HOST_HISTORY_SAMPLES + 1) * HOST_SAMPLE_MS, 0)))
+  host = $state.raw(emptyHostSnapshot())
+  hostHistory = $state.raw<HostLoad[]>([])
+  #hostWorld = new SessionHost()
   readonly #seed: number
 
   pgm = $state(0)
@@ -72,6 +73,8 @@ export class Swarm {
   constructor(seed = 20260811) {
     this.#seed = seed
     this.ensureAgentCount(INITIAL_AGENT_COUNT)
+    this.host = this.#hostWorld.sample(0, performance.now(), this.agents)
+    this.hostHistory = Array.from({ length: HOST_HISTORY_SAMPLES }, () => this.host.load)
     // Seed the wall's history once. Later membership changes are not new work.
     this.totalTokens = this.agents.reduce((sum, agent) => sum + agent.lifeTokens, 0)
     this.totalTools = this.agents.reduce((sum, agent) => sum + agent.lifeTools, 0)
@@ -167,7 +170,6 @@ export class Swarm {
     if (tickBackground) this.#backgroundAcc = 0
 
     let running = 0
-    let activity = 0
     let tokens = this.totalTokens
     let tools = this.totalTools
     for (const a of this.agents) {
@@ -175,7 +177,6 @@ export class Swarm {
       if (this.#visibleSlots.has(a.slot)) a.tick(now, dt)
       else if (tickBackground) a.tick(now, backgroundDt)
       if (a.status !== 'done') running += 1
-      if (a.status === 'run') activity += a.level
       const previous = this.#counterSamples.get(a)
       if (previous) {
         // Reset detection happens per producer, before fleet aggregation.
@@ -198,11 +199,12 @@ export class Swarm {
     this.totalTools = tools
     const hostFrame = Math.floor(this.uptimeMs / HOST_SAMPLE_MS)
     if (hostFrame !== this.#hostFrame) {
-      const first = Math.max(this.#hostFrame + 1, hostFrame - HOST_HISTORY_SAMPLES + 1)
-      const intensity = activity / this.agents.length
-      const added = Array.from({ length: hostFrame - first + 1 }, (_, index) =>
-        hostLoad((first + index) * HOST_SAMPLE_MS, intensity))
-      this.host = hostSnapshot(hostFrame * HOST_SAMPLE_MS, intensity)
+      const missing = Math.min(HOST_HISTORY_SAMPLES, hostFrame - this.#hostFrame)
+      const previous = this.host.load
+      this.host = this.#hostWorld.sample(hostFrame * HOST_SAMPLE_MS, now, this.agents)
+      // Unobserved intervals retain the last observation; a new tool never
+      // paints fictional activity into the history before it started.
+      const added = Array.from({ length: missing }, (_, index) => index === missing - 1 ? this.host.load : previous)
       this.hostHistory = [...this.hostHistory, ...added].slice(-HOST_HISTORY_SAMPLES)
       this.#hostFrame = hostFrame
     }

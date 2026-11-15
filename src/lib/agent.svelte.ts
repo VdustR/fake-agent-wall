@@ -2,6 +2,7 @@ import { AGENT_ROLES, BRANCHES, EXECUTION_POLICIES, MODELS, REPOS, TASKS } from 
 import { chance, int, mulberry32, pick, range, type Rand } from './rng'
 import { makePrompt, nextBlock, openingEmits, type BlockFlavor, type Emit, type Line, type Prompt } from './transcript'
 import { SPINNER_VERBS } from './verbs'
+import type { ToolExecution } from './tool-workload'
 
 export type Status = 'run' | 'cue' | 'hold' | 'done'
 
@@ -40,7 +41,7 @@ export class Agent {
   tokensDown = $state(0)
   toolUses = $state(0)
   contextLeft = $state(100)
-  /** 0..1 output pressure, drives the panel's activity meter. */
+  /** 0..1 output activity, drives the panel's activity meter. */
   level = $state(0)
   /** Peak-hold cap for that meter. Catches instantly, falls back slowly. */
   levelPeak = $state(0)
@@ -50,6 +51,7 @@ export class Agent {
   lifeTools = $state(0)
   /** Bumped on every committed tool bullet so the ticker can pick it up. */
   lastEvent = $state<{ n: number; text: string } | null>(null)
+  activeTool = $state.raw<ToolExecution | null>(null)
   recentDecision = $state<{ text: string; until: number } | null>(null)
 
   #queue: Emit[] = []
@@ -118,6 +120,7 @@ export class Agent {
   }
 
   #newSession(now: number) {
+    this.activeTool = null
     const r = this.#r
     this.repo = pick(r, REPOS)
     this.branch = pick(r, BRANCHES)
@@ -178,8 +181,10 @@ export class Agent {
       this.lifeTools += 1
       this.#eventN += 1
       this.lastEvent = { n: this.#eventN, text: e.line.s.replace(/^● /, '') }
+      this.activeTool = e.tool ? { id: this.#eventN, descriptor: e.tool, startedAt: now } : null
       this.contextLeft = Math.max(6, this.contextLeft - range(this.#r, 0.3, 1.6))
     }
+    if (e.toolEnd) this.activeTool = null
     const down = Math.round(e.line.s.length * range(this.#r, 0.6, 1.4)) + 4
     const up = Math.round(range(this.#r, 0, 90))
     this.tokensDown += down
@@ -190,6 +195,7 @@ export class Agent {
   }
 
   #afterBlock(now: number) {
+    this.activeTool = null
     const r = this.#r
     this.#blocksLeft -= 1
 

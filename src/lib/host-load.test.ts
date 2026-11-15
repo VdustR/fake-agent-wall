@@ -1,60 +1,89 @@
 import { expect, it } from 'vitest'
-import { hostLoad, hostSnapshot, HOST_PROFILE } from './host-load'
+import { HOST_PROFILE, type HostSnapshot } from './host-load'
+import { SessionHost, type SessionWorkload } from './session-host'
+import { describeTool } from './tool-workload'
 import { Swarm } from './swarm.svelte'
 
-it('keeps simulated utilization and directional rates within their printed capacities', () => {
-  for (let time = 0; time < 600_000; time += 997) {
-    const load = hostLoad(time, (time % 100) / 100)
-    expect(load.cpu).toBeGreaterThanOrEqual(0)
-    expect(load.cpu).toBeLessThanOrEqual(100)
-    expect(load.memoryGiB).toBeGreaterThan(0)
-    expect(load.memoryGiB).toBeLessThan(HOST_PROFILE.memoryGiB)
-    expect(load.storageGiB).toBeLessThan(HOST_PROFILE.storageGiB)
-    expect(load.diskRead + load.diskWrite).toBeLessThanOrEqual(HOST_PROFILE.diskMiBs)
-    expect(Math.max(load.netRx, load.netTx)).toBeLessThanOrEqual(HOST_PROFILE.networkMbps)
-    expect(Object.values(load).every(Number.isFinite)).toBe(true)
+function session(slot: number, command: string): SessionWorkload {
+  return { slot, label: 'Session ' + slot, repo: 'workspace', status: 'run',
+    activeTool: { id: 1, descriptor: describeTool('● Bash(' + command + ')'), startedAt: 0 } }
+}
+function budgets(snapshot: HostSnapshot) {
+  const { load, cores, processes } = snapshot
+  expect(cores).toHaveLength(HOST_PROFILE.logicalCpus)
+  expect(cores.every(core => core >= 0 && core <= 100 + 1e-8)).toBe(true)
+  const sum = cores.reduce((total, core) => total + core, 0)
+  expect(load.cpu).toBeCloseTo(sum / HOST_PROFILE.logicalCpus, 8)
+  expect(processes.reduce((total, process) => total + process.cpu, 0)).toBeCloseTo(sum, 8)
+  expect(new Set(processes.map(p => p.pid)).size).toBe(processes.length)
+  expect(processes.reduce((total, p) => total + p.rssMiB, 0) / 1024).toBeLessThanOrEqual(load.memoryGiB)
+  expect(load.memoryGiB).toBeLessThan(HOST_PROFILE.memoryGiB)
+  expect(load.storageGiB).toBeLessThan(HOST_PROFILE.storageGiB)
+  expect(load.diskRead + load.diskWrite).toBeLessThanOrEqual(HOST_PROFILE.diskMiBs + 1e-8)
+  expect(Math.max(load.netRx, load.netTx)).toBeLessThanOrEqual(HOST_PROFILE.networkMbps + 1e-8)
+  expect(Object.values(load).every(Number.isFinite)).toBe(true)
+}
+it('distinguishes single-thread checks from parallel compilation', () => {
+  const single = new SessionHost().sample(2000, 2000, [session(1, 'pnpm tsc --noEmit')])
+  const worker = single.processes.find(p => p.role === 'worker')!
+  expect(worker.cpu).toBeGreaterThan(40)
+  expect(worker.cpu).toBeLessThanOrEqual(100)
+  expect(single.cores.filter(core => core > 40)).toHaveLength(1)
+  expect(single.load.cpu).toBeLessThan(8)
+  const parallel = new SessionHost().sample(2000, 2000, [session(1, 'cargo build --release')])
+  expect(parallel.processes.filter(p => p.role === 'worker')).toHaveLength(3)
+  expect(parallel.processes.reduce((sum, p) => sum + p.cpu, 0)).toBeGreaterThan(100)
+  budgets(single)
+  budgets(parallel)
+})
+it('releases tool processes and working sets, retains then cleans scratch, and keeps the parent PID', () => {
+  const host = new SessionHost()
+  const owner: { -readonly [K in keyof SessionWorkload]: SessionWorkload[K] } = session(1, 'cargo build --release')
+  let busy = host.sample(0, 0, [owner])
+  for (let time = 250; time <= 3000; time += 250) busy = host.sample(time, time, [owner])
+  const parent = busy.processes.find(p => p.role === 'agent')!.pid
+  owner.activeTool = null
+  const idle = host.sample(3250, 3250, [owner])
+  expect(idle.processes.some(p => p.role === 'worker' || p.role === 'launcher')).toBe(false)
+  expect(busy.load.memoryGiB - idle.load.memoryGiB).toBeGreaterThan(2)
+  expect(idle.load.storageGiB).toBeGreaterThan(1184)
+  // Preserve object identity across the execution lifecycle.
+  const activeOwner = { ...owner, activeTool: null }
+  const stable = new SessionHost()
+  const first = stable.sample(0, 0, [activeOwner]).processes.find(p => p.role === 'agent')!.pid
+  expect(stable.sample(250, 250, [activeOwner]).processes.find(p => p.role === 'agent')!.pid).toBe(first)
+  expect(stable.sample(500, 500, [{ ...activeOwner }]).processes.find(p => p.role === 'agent')!.pid).not.toBe(first)
+  expect(idle.processes.find(p => p.role === 'agent')!.pid).toBe(parent)
+  expect(host.sample(45000, 45000, []).load.storageGiB).toBe(1184)
+})
+it('does not create workers for held sessions or future tool calls', () => {
+  const owner = session(1, 'pnpm build')
+  expect(new SessionHost().sample(0, 0, [{ ...owner, status: 'hold' }]).processes.some(p => p.role === 'worker')).toBe(false)
+  expect(new SessionHost().sample(0, 0, [{ ...owner, activeTool: { ...owner.activeTool!, startedAt: 1000 } }]).processes.some(p => p.role === 'worker')).toBe(false)
+})
+it('conserves shared CPU, memory and traffic under contention', () => {
+  const commands = ['pnpm tsc --noEmit', 'cargo build', 'pnpm install', 'docker push image', 'pnpm vitest run', 'pnpm oxlint src']
+  const sessions = Array.from({ length: 80 }, (_, slot) => session(slot, commands[slot % commands.length]!))
+  const host = new SessionHost()
+  let saturated = false
+  for (let time = 0; time < 30000; time += 997) {
+    const snapshot = host.sample(time, time, sessions)
+    budgets(snapshot)
+    saturated ||= snapshot.load.cpu > 95
+    expect(snapshot.processes.filter(p => p.command.startsWith('node tsc')).every(p => p.cpu <= 100)).toBe(true)
+  }
+  expect(saturated).toBe(true)
+})
+it('keeps demand and core affinity continuous within the same execution', () => {
+  const host = new SessionHost()
+  const owners = [session(1, 'pnpm tsc --noEmit')]
+  for (let time = 250; time < 120000; time += 997) {
+    const before = host.sample(time - 1, time - 1, owners)
+    const after = host.sample(time + 1, time + 1, owners)
+    expect(Math.abs(after.load.cpu - before.load.cpu)).toBeLessThan(1)
+    expect(Math.max(...after.cores.map((value, core) => Math.abs(value - before.cores[core]!)))).toBeLessThan(2)
   }
 })
-
-it('shows busy/idle CPU, allocation steps, batch release and temporary storage cleanup', () => {
-  const samples = Array.from({ length: 1200 }, (_, i) => hostLoad(i * 250, .7))
-  const cpu = samples.map(s => s.cpu)
-  expect(Math.max(...cpu) - Math.min(...cpu)).toBeGreaterThan(65)
-  const changes = samples.slice(1).map((s, i) => ({
-    memory: s.memoryGiB - samples[i]!.memoryGiB,
-    storage: s.storageGiB - samples[i]!.storageGiB,
-  }))
-  expect(changes.some(s => s.memory > 1)).toBe(true)
-  expect(changes.some(s => s.memory < -4)).toBe(true)
-  expect(changes.some(s => s.storage < -2)).toBe(true)
-  expect(samples.every(s => s.storageGiB >= 1184)).toBe(true)
-  expect(samples.some(s => s.netRx < 15 && s.netTx < 15)).toBe(true)
-  expect(samples.some(s => s.diskRead > 100 && s.netRx < 25)).toBe(true)
-  expect(samples.some(s => s.netRx > 200 && s.netTx < 70)).toBe(true)
-  expect(samples.some(s => s.netTx > 150 && s.netRx < 50)).toBe(true)
-  expect(hostLoad(23_000, .7)).toEqual(hostLoad(23_000, .7))
-})
-
-it('accounts for process CPU on individual logical cores without changing the host average', () => {
-  let multithreaded = false
-  let uneven = false
-  for (let time = 0; time < 120_000; time += 997) {
-    const snapshot = hostSnapshot(time, .7)
-    expect(snapshot.cores).toHaveLength(HOST_PROFILE.logicalCpus)
-    expect(snapshot.cores.every(core => core >= 0 && core <= 100 + 1e-8)).toBe(true)
-    const sum = snapshot.cores.reduce((total, core) => total + core, 0)
-    expect(snapshot.load.cpu).toBeCloseTo(sum / HOST_PROFILE.logicalCpus, 8)
-    expect(snapshot.processes.reduce((total, process) => total + process.cpu, 0)).toBeCloseTo(sum, 8)
-    expect(new Set(snapshot.processes.map(p => p.pid)).size).toBe(snapshot.processes.length)
-    expect(snapshot.processes.reduce((total, p) => total + p.rssMiB, 0) / 1024).toBeLessThanOrEqual(snapshot.load.memoryGiB)
-    multithreaded ||= snapshot.processes.some(p => p.cpu > 100)
-    uneven ||= Math.max(...snapshot.cores) - Math.min(...snapshot.cores) > 20
-    expect(snapshot.load.cpu).toBeCloseTo(hostLoad(time, .7).cpu, 8)
-  }
-  expect(multithreaded).toBe(true)
-  expect(uneven).toBe(true)
-})
-
 it('samples shared core/process state once per quarter second and appends history without rewriting it', () => {
   const swarm = new Swarm()
   const first = swarm.host
@@ -70,14 +99,4 @@ it('samples shared core/process state once per quarter second and appends histor
   expect(swarm.hostHistory).toHaveLength(128)
   expect(swarm.hostHistory.slice(0, -1)).toEqual(history.slice(1))
   expect(swarm.hostHistory.at(-1)!.cpu).toBeCloseTo(swarm.host.load.cpu, 8)
-})
-
-
-it('keeps CPU demand and core affinity continuous across sampling and scheduler boundaries', () => {
-  for (let time = 250; time < 120_000; time += 250) {
-    const before = hostSnapshot(time - 1, .7)
-    const after = hostSnapshot(time + 1, .7)
-    expect(Math.abs(after.load.cpu - before.load.cpu), `CPU at ${time}`).toBeLessThan(1)
-    expect(Math.max(...after.cores.map((value, core) => Math.abs(value - before.cores[core]!))), `cores at ${time}`).toBeLessThan(2)
-  }
 })

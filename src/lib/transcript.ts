@@ -19,6 +19,7 @@ import {
   TODOS,
 } from './corpus'
 import { chance, int, pick, sample, type Rand } from './rng'
+import { describeTool, type ToolDescriptor } from './tool-workload'
 
 export type Kind =
   | 'tool'
@@ -53,6 +54,10 @@ export interface Emit {
   fast?: boolean
   /** A completed decision may remain readable while the transcript continues. */
   recentDecision?: string
+  /** Execution metadata is owned by the producer of the visible tool call. */
+  tool?: ToolDescriptor
+  /** The last result in a foreground tool block closes its execution. */
+  toolEnd?: boolean
 }
 
 export interface Prompt {
@@ -62,7 +67,14 @@ export interface Prompt {
   options: string[]
 }
 
-const t = (k: Kind, s: string, type = false, pause = 0): Emit => ({ line: { k, s }, type, pause })
+const t = (k: Kind, s: string, type = false, pause = 0): Emit => ({
+  line: { k, s }, type, pause, ...(k === 'tool' ? { tool: describeTool(s) } : {}),
+})
+
+function closeToolBlock(emits: Emit[]): Emit[] {
+  if (emits.some(emit => emit.tool) && emits.length) emits[emits.length - 1]!.toolEnd = true
+  return emits
+}
 
 const num = (n: number, w = 5) => String(n).padStart(w, ' ')
 
@@ -447,7 +459,7 @@ const DECK: Array<[Maker, number, BlockFlavor]> = [
   [securityBlock, 2, 'validation'],
 ]
 
-export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'implementation', task = ''): Emit[] {
+function makeNextBlock(r: Rand, todoDone: number, flavor: BlockFlavor, task: string): Emit[] {
   if (chance(r, flavor === 'orchestration' ? 0.2 : 0.07)) return todoBlock(r, todoDone)
   const hasDecisionScene = DECISION_SCENES.some(scene => scene.task === task)
   const weighted = DECK.filter(([make]) => make !== decisionBlock || hasDecisionScene)
@@ -458,6 +470,10 @@ export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'impl
     if (n <= 0) return make(r, task)
   }
   return readBlock(r)
+}
+
+export function nextBlock(r: Rand, todoDone: number, flavor: BlockFlavor = 'implementation', task = ''): Emit[] {
+  return closeToolBlock(makeNextBlock(r, todoDone, flavor, task))
 }
 
 /** The opening request line of a fresh session. */

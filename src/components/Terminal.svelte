@@ -21,7 +21,7 @@
   const kTok = $derived(((agent.tokensUp + agent.tokensDown) / 1000).toFixed(1))
 </script>
 
-<div class="term" class:pgm style={`--breath-delay: -${agent.slot * 107}ms`}>
+<div class="term" class:pgm data-session={agent.slot} data-tool-run={agent.activeTool?.id} data-tool={agent.activeTool?.descriptor.command} style={`--breath-delay: -${agent.slot * 107}ms`}>
   <div class="log">
     {#each agent.lines as l}
       {#if l.k === 'tool'}
