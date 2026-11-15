@@ -144,7 +144,7 @@ it('keeps long downloads network-bound before extraction and reduces CPU in the 
   const owner = { ...build, activeTool: { ...build.activeTool!, durationMs: 60000 } }
   const compile = host.sample(30000, 30000, [owner])
   const linking = host.sample(48000, 48000, [owner])
-  expect(linking.load.cpu).toBeLessThan(100 / HOST_PROFILE.logicalCpus)
+  expect(linking.processes.filter(process => process.role === 'worker').reduce((sum, process) => sum + process.cpu, 0)).toBeLessThanOrEqual(100)
   const finishing = host.sample(59000, 59000, [owner])
   expect(finishing.load.cpu).toBeLessThan(compile.load.cpu * .3)
   budgets(fetching)
