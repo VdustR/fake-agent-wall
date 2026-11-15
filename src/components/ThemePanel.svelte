@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { listFlip, listMotion } from '../lib/list-motion.svelte'
   import { tick } from 'svelte'
   import FontAutocomplete from './FontAutocomplete.svelte'
   import { defaultFontOptions } from '../lib/font-autocomplete'
@@ -126,7 +127,7 @@
   }
 </script>
 
-<aside class="theme-panel" aria-label="Wall settings">
+<aside class="theme-panel" use:listMotion aria-label="Wall settings">
   <header>
     <div>
       <h1>Wall settings</h1>
@@ -146,7 +147,7 @@
       <input bind:this={searchInput} id="preset-search" type="search" value={search} placeholder="Search 534 presets" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="preset-list" aria-expanded="true" aria-activedescendant={visiblePresets.length ? `preset-option-${Math.max(0, visiblePresets.findIndex((preset) => preset.id === highlightedPresetId))}` : undefined} oninput={(event) => updateSearch(event.currentTarget.value)} onkeydown={handlePresetKeydown} />
       <div id="preset-list" class="preset-list" role="listbox" aria-label="Theme presets">
         {#each visiblePresets as preset, index (preset.id)}
-          <button id={`preset-option-${index}`} class:active={preset.id === draft.presetId} class:highlighted={preset.id === highlightedPresetId} type="button" role="option" tabindex="-1" aria-selected={preset.id === draft.presetId} onclick={() => choosePreset(preset)}>
+          <button animate:listFlip id={`preset-option-${index}`} class:active={preset.id === draft.presetId} class:highlighted={preset.id === highlightedPresetId} type="button" role="option" tabindex="-1" aria-selected={preset.id === draft.presetId} onclick={() => choosePreset(preset)}>
             <span>{preset.name}</span>
             <span class="swatches" aria-hidden="true">
               {#each [preset.metadata.background, preset.scheme.red, preset.scheme.green, preset.scheme.blue] as color}

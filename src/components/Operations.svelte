@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { listFlip, listMotion } from '../lib/list-motion.svelte'
   import SessionName from './SessionName.svelte'
   import ProcessTable from './ProcessTable.svelte'
   import { onMount } from 'svelte'
@@ -36,7 +37,7 @@
   })
 </script>
 
-<article class="ops-tile" data-kind={kind} bind:this={tileElement}>
+<article class="ops-tile" use:listMotion data-kind={kind} bind:this={tileElement}>
   <header class="umd-type">
     <span>{world.titleFor(kind)}</span>
   </header>
@@ -53,26 +54,26 @@
   {:else if kind === 'usage'}
     <div class="usage">
       {#each providers as provider (provider.name)}
-        <div><span>{provider.name}<small>{provider.model}</small></span><i><em style:transform={`scaleX(${provider.used / 100})`}></em></i><b><RollingNumber value={`${provider.used}%`} label={`${provider.used} percent used`} /><small><RollingNumber value={provider.rpm} /> rpm · <RollingNumber value={provider.latency} /> ms</small></b></div>
+        <div animate:listFlip><span>{provider.name}<small>{provider.model}</small></span><i><em style:transform={`scaleX(${provider.used / 100})`}></em></i><b><RollingNumber value={`${provider.used}%`} label={`${provider.used} percent used`} /><small><RollingNumber value={provider.rpm} /> rpm · <RollingNumber value={provider.latency} /> ms</small></b></div>
       {/each}
     </div>
   {:else if kind === 'cost'}
     <div class="ledger">
       {#each providers as provider (provider.name)}
-        <div><span>{provider.name}<small><RollingNumber value={provider.tokens} /> tokens</small></span><b><RollingNumber value={provider.cost} /></b></div>
+        <div animate:listFlip><span>{provider.name}<small><RollingNumber value={provider.tokens} /> tokens</small></span><b><RollingNumber value={provider.cost} /></b></div>
       {/each}
       <footer><span>projected session</span><strong><RollingNumber value={`$${world.estimatedCost.toFixed(2)}`} label={`${world.estimatedCost.toFixed(2)} dollars`} /></strong></footer>
     </div>
   {:else if kind === 'resets'}
     <div class="resets">
       {#each providers as provider, index (provider.name)}
-        <div><i class:soon={index === world.epoch % 3} class:activity-breathe={index === world.epoch % 3}></i><span>{provider.name}<small>{index === world.epoch % 3 ? 'window nearing limit' : 'nominal routing'}</small></span><b><RollingNumber value={provider.reset} /></b></div>
+        <div animate:listFlip><i class:soon={index === world.epoch % 3} class:activity-breathe={index === world.epoch % 3}></i><span>{provider.name}<small>{index === world.epoch % 3 ? 'window nearing limit' : 'nominal routing'}</small></span><b><RollingNumber value={provider.reset} /></b></div>
       {/each}
     </div>
   {:else if kind === 'fleet'}
     <div class="fleet">
       {#each fleetAgents as agent (agent.slot)}
-        <div>
+        <div animate:listFlip>
           <i style={`--breath-delay: -${agent.slot * 107}ms`} data-state={agent.status} class:activity-breathe={agent.status === 'run'}></i>
           <span><span class="fleet-session"><span>{agent.numLabel} ·&nbsp;</span><SessionName text={agent.label} active={agent.status === 'run' || agent.status === 'cue'} phase={agent.slot * 137} /></span><small>{agent.provider} / {agent.model}</small></span>
           <b><RollingNumber value={Math.round(agent.contextLeft)} />%</b>
@@ -82,7 +83,7 @@
   {:else}
     <div class="tasks">
       {#each tasks as task, index (task.id)}
-        <div class="task">
+        <div class="task" animate:listFlip>
           <span class="id tnum">{task.id}</span>
           <strong>{task.title}</strong>
           <span class="agent" style={`--breath-delay: -${index * 280}ms`}><i class:activity-breathe={task.phase !== 'queued'} class:working={task.phase !== 'queued'}></i><SessionName text={task.agent} active={task.phase !== 'queued'} phase={index * 731} /></span>
