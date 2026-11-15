@@ -706,7 +706,8 @@ favours receive and writes; publish favours transmit and reads. Tool exit releas
 its working set, while bounded scratch artifacts remain until periodic cleanup.
 These profiles illustrate workloads rather than reproduce an operating system's
 exact process tree or allocator. All resources share physical capacity budgets.
-Core bars interpolate over the 250ms sampling interval. History paths move left by
+Core bars and instrument numeric wheels interpolate linearly over the same full
+250ms sampling interval. History paths move left by
 one sample over that interval; old observations retain their shape. Reduced motion
 removes transitions and scrolling without changing sampling. Unobserved gaps hold
 the previous observation instead of reconstructing fictional past work.
@@ -802,7 +803,7 @@ when the page unmounts. A plain browser tab keeps its ordinary pointer behavior.
 
 ### Named Rules
 
-**The Activity-Motion Rule.** Routing remains a hard cut with the existing 190ms flash. Activity has a separate rhythm: `SessionName` keeps readable base text and moves a masked light over an aria-hidden duplicate from left to right in a 3800ms cycle; slots offset the phase. The cursor and status lamps breathe between 45% and 100% opacity over roughly two seconds, and the preview border breathes over 2200ms. Segmented meters attack in 40ms and fade over 650ms. Structured numeric readouts share place-keyed `RollingNumber` wheels (360ms; countdown 80ms; instrument values 180ms sampled at 4Hz). New entities start with their own values rather than rolling from another source's data. Transcript text, source IDs and fixed scales remain ordinary content. Document visibility pauses CSS loops and removes interpolation; the existing native playback lifecycle still owns when desktop walls are retired.
+**The Activity-Motion Rule.** Routing remains a hard cut with the existing 190ms flash. Activity has a separate rhythm: `SessionName` keeps readable base text and moves a masked light over an aria-hidden duplicate from left to right in a 3800ms cycle; slots offset the phase. The cursor and status lamps breathe between 45% and 100% opacity over roughly two seconds, and the preview border breathes over 2200ms. Segmented meters attack in 40ms and fade over 650ms. Structured numeric readouts share place-keyed `RollingNumber` wheels (360ms; countdown 80ms; host instrument values 250ms linear sampled at 4Hz; civil-clock seconds 180ms, milliseconds immediate). New entities start with their own values rather than rolling from another source's data. Transcript text, source IDs and fixed scales remain ordinary content. Document visibility pauses CSS loops and removes interpolation; the existing native playback lifecycle still owns when desktop walls are retired.
 
 **The Calm-Variant Rule.** Under `prefers-reduced-motion`, the surface does not stop being a multiviewer; it stops fidgeting. A global rule flattens every CSS animation and transition to 0.001ms, and the components answer for their own content: transcript lines land whole instead of typing, held to a 520ms floor so fewer whole lines do not become more motion than typing was; the cursor and activity lamps hold solid; session-name light layers disappear; numeric wheels and meter lamps update immediately; the spinner freezes at `O`; the ticker stops stepping; the exit timebase holds full; and cutting is disabled, which retires the countdown. Every layout, colour and lamp is unchanged.
 

@@ -18,11 +18,11 @@
 <article class="system" aria-label="Simulated system status" style={`--host-sample-time:${HOST_SAMPLE_MS}ms`}>
   <header class="umd-type"><b>system</b><span>sim · {HOST_PROFILE.logicalCpus} vCPU</span></header>
   <div class="instruments">
-    <div class="cpu-summary"><span class="umd-type">CPU avg</span><b class="tnum"><RollingNumber value={`${Math.round(load.cpu)}%`} duration={180} /></b><div class="cpu-history"><HostHistory history={swarm.hostHistory} primary="cpu" max={100} scale="0–100% · all CPUs" /></div><small class="umd-type">32s history</small></div>
+    <div class="cpu-summary"><span class="umd-type">CPU avg</span><b class="tnum"><RollingNumber value={`${Math.round(load.cpu)}%`} duration={HOST_SAMPLE_MS} easing="linear" /></b><div class="cpu-history"><HostHistory history={swarm.hostHistory} primary="cpu" max={100} scale="0–100% · all CPUs" /></div><small class="umd-type">32s history</small></div>
     <div class="cores" aria-label="Logical CPU utilization">
       {#each snapshot.cores as value, core (core)}
         <div class="core" class:hot={value >= 85} title={`CPU ${core}: ${value.toFixed(1)}%`}>
-          <span>{String(core).padStart(2, '0')}</span><b class="tnum"><RollingNumber value={Math.round(value)} duration={180} /></b>
+          <span>{String(core).padStart(2, '0')}</span><b class="tnum"><RollingNumber value={Math.round(value)} duration={HOST_SAMPLE_MS} easing="linear" /></b>
           <i aria-hidden="true"><em style:transform={`scaleY(${value / 100})`}></em></i>
         </div>
       {/each}
@@ -31,7 +31,7 @@
       {#each metrics as metric (metric.key)}
         <div class="metric" data-metric={metric.key}>
           <div class="metric-label umd-type"><span>{metric.label}</span>{#if metric.unit}<small>{metric.unit}</small>{/if}</div>
-          <b class="reading tnum"><RollingNumber value={metric.read} duration={180} /></b>
+          <b class="reading tnum"><RollingNumber value={metric.read} duration={HOST_SAMPLE_MS} easing="linear" /></b>
           <div class="plot"><HostHistory history={swarm.hostHistory} primary={metric.key} secondary={metric.secondary} min={metric.min} max={metric.max} scale={metric.scale} stepped={metric.stepped} /></div>
         </div>
       {/each}
