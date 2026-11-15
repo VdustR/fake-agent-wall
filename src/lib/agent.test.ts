@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest'
 import { Agent } from './agent.svelte'
+import { DECISION_MODELS } from './corpus'
 
 it('completes a decision promptly and keeps its result readable for eight seconds', () => {
   const agent = new Agent(4, 123)
@@ -21,7 +22,7 @@ it('completes a decision promptly and keeps its result readable for eight second
   expect(startedAt, `task=${agent.task} status=${agent.status} lines=${agent.lines.at(-1)?.s}`).not.toBeNull()
   expect(completedAt).not.toBeNull()
   expect(completedAt! - startedAt!).toBeLessThanOrEqual(600)
-  expect(agent.recentDecision?.text).toMatch(/^(jev|luna) · inspect replay guard$/)
+  expect(DECISION_MODELS.some(model => agent.recentDecision?.text === `${model.name} · inspect replay guard`)).toBe(true)
 
   const until = agent.recentDecision!.until
   agent.tick(until - 1, 0)

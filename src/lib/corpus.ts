@@ -179,15 +179,18 @@ export const MODELS = [
   { name: 'opus-5.5', provider: 'anthropic' },
   { name: 'sonnet-5.5', provider: 'anthropic' },
   { name: 'haiku-5.5', provider: 'anthropic' },
-  { name: 'fable-5.1', provider: 'anthropic' },
+  { name: 'fable-5.2', provider: 'anthropic' },
   { name: 'gpt-6-astra', provider: 'openai' },
   { name: 'gpt-6.1-sol', provider: 'openai' },
+  { name: 'gpt-6.1-terra', provider: 'openai' },
   { name: 'gpt-6-luna', provider: 'openai' },
   { name: 'gemini-4-argon', provider: 'google' },
-  { name: 'gemini-3.8-flash', provider: 'google' },
+  { name: 'gemini-4-carbon', provider: 'google' },
+  { name: 'gemini-4-hydrogen', provider: 'google' },
   { name: 'muse-wonder', provider: 'meta' },
   { name: 'muse-wonder-full', provider: 'meta' },
   { name: 'muse-spark-1.3', provider: 'meta' },
+  { name: 'muse-ember', provider: 'meta' },
   { name: 'muse-spark-open', provider: 'meta' },
   { name: 'muse-glimmer', provider: 'meta' },
   { name: 'grok-4.7', provider: 'xai' },
@@ -204,13 +207,28 @@ export const MODELS = [
   { name: 'minimax-m3', provider: 'minimax' },
   { name: 'minimax-m3.1-flash', provider: 'minimax' },
   { name: 'ernie-5.1', provider: 'baidu' },
+  { name: 'ernie-5.5-flash-preview', provider: 'baidu' },
 ] as const
 
-/** Simulated bounded-decision routes; formats describe display capabilities. */
+/** Display capabilities are independent of provider-specific request schemas. */
+interface DecisionRoute {
+  name: string
+  provider: string
+  surface: string | null
+  capabilities: {
+    probabilities: boolean
+    binaryLabel: 'noul' | 'yes/no' | null
+    score: boolean
+  }
+}
+
+/** Synthetic bounded judgments; these labels never initiate provider requests. */
 export const DECISION_MODELS = [
-  { name: 'jev', provider: 'typesafe', format: 'jev', surface: null },
-  { name: 'luna', provider: 'openai', format: 'finite-choice', surface: 'Decisions API (preview)' },
-] as const
+  { name: 'jev', provider: 'typesafe', surface: null, capabilities: { probabilities: true, binaryLabel: 'noul', score: true } },
+  { name: 'luna', provider: 'openai', surface: 'Decisions API', capabilities: { probabilities: true, binaryLabel: 'yes/no', score: true } },
+  { name: 'gemini-decision-1', provider: 'google', surface: 'Gemini Decisions API', capabilities: { probabilities: true, binaryLabel: 'yes/no', score: true } },
+  { name: 'microsoft-decision-1', provider: 'microsoft', surface: 'Microsoft Foundry', capabilities: { probabilities: true, binaryLabel: 'yes/no', score: true } },
+] as const satisfies readonly DecisionRoute[]
 
 /** Synthetic decisions with a fixed state, answer set, and follow-up action. */
 export const DECISION_SCENES = [
@@ -218,60 +236,84 @@ export const DECISION_SCENES = [
     task: 'make webhook replay idempotent',
     state: 'webhook replay failed after a retry',
     question: 'next step',
-    choices: ['inspect replay guard 0.81', 'retry delivery 0.14', 'request review 0.05'],
+    choices: [{ label: 'inspect replay guard', probability: 0.81 }, { label: 'retry delivery', probability: 0.14 }, { label: 'request review', probability: 0.05 }],
     noul: 'duplicate charge risk',
-    yesProbability: '0.87',
-    result: 'inspect replay guard',
+    yesProbability: 0.87,
+    review: [
+      { label: 'routine', probability: 0.10 },
+      { label: 'investigate', probability: 0.75 },
+      { label: 'urgent', probability: 0.15 },
+    ],
     latencyMs: 180,
   },
   {
     task: 'rotate the signing keys without invalidating active sessions',
     state: 'signing-key rotation has active sessions',
     question: 'next step',
-    choices: ['check key overlap 0.76', 'rotate now 0.16', 'request review 0.08'],
+    choices: [{ label: 'check key overlap', probability: 0.76 }, { label: 'rotate now', probability: 0.16 }, { label: 'request review', probability: 0.08 }],
     noul: 'active sessions at risk',
-    yesProbability: '0.91',
-    result: 'check key overlap',
+    yesProbability: 0.91,
+    review: [
+      { label: 'routine', probability: 0.10 },
+      { label: 'investigate', probability: 0.75 },
+      { label: 'urgent', probability: 0.15 },
+    ],
     latencyMs: 240,
   },
   {
     task: 'backfill tests for the jittered scheduler',
     state: 'queue test failed on jittered backoff',
     question: 'next step',
-    choices: ['inspect fake clock 0.72', 'rerun suite 0.19', 'request review 0.09'],
+    choices: [{ label: 'inspect fake clock', probability: 0.72 }, { label: 'rerun suite', probability: 0.19 }, { label: 'request review', probability: 0.09 }],
     noul: 'test setup caused failure',
-    yesProbability: '0.84',
-    result: 'inspect fake clock',
+    yesProbability: 0.84,
+    review: [
+      { label: 'routine', probability: 0.10 },
+      { label: 'investigate', probability: 0.75 },
+      { label: 'urgent', probability: 0.15 },
+    ],
     latencyMs: 310,
   },
   {
     task: 'trace the slow query through the Postgres execution plan',
     state: 'tenant query regressed after a new index',
     question: 'next step',
-    choices: ['inspect query plan 0.78', 'add another index 0.13', 'request review 0.09'],
+    choices: [{ label: 'inspect query plan', probability: 0.78 }, { label: 'add another index', probability: 0.13 }, { label: 'request review', probability: 0.09 }],
     noul: 'planner chose the old index',
-    yesProbability: '0.83',
-    result: 'inspect query plan',
+    yesProbability: 0.83,
+    review: [
+      { label: 'routine', probability: 0.10 },
+      { label: 'investigate', probability: 0.75 },
+      { label: 'urgent', probability: 0.15 },
+    ],
     latencyMs: 210,
   },
   {
     task: 'close the keyboard trap in the billing modal',
     state: 'focus cannot leave the billing modal',
     question: 'next step',
-    choices: ['inspect focus trap 0.79', 'adjust z-index 0.12', 'request review 0.09'],
-    noul: 'keyboard navigation is blocked',
-    yesProbability: '0.94',
-    result: 'inspect focus trap',
+    choices: [{ label: 'inspect focus trap', probability: 0.79 }, { label: 'adjust z-index', probability: 0.12 }, { label: 'request review', probability: 0.09 }],
+    noul: 'keyboard navigation is working',
+    yesProbability: 0.06,
+    review: [
+      { label: 'routine', probability: 0.10 },
+      { label: 'investigate', probability: 0.75 },
+      { label: 'urgent', probability: 0.15 },
+    ],
     latencyMs: 160,
   },
   {
     task: 'audit every unbounded queue in the ingest path',
     state: 'ingest queue grows during downstream retries',
     question: 'next step',
-    choices: ['inspect queue bounds 0.84', 'increase workers 0.10', 'request review 0.06'],
+    choices: [{ label: 'inspect queue bounds', probability: 0.84 }, { label: 'increase workers', probability: 0.10 }, { label: 'request review', probability: 0.06 }],
     noul: 'backpressure is missing',
-    yesProbability: '0.89',
-    result: 'inspect queue bounds',
+    yesProbability: 0.89,
+    review: [
+      { label: 'routine', probability: 0.10 },
+      { label: 'investigate', probability: 0.75 },
+      { label: 'urgent', probability: 0.15 },
+    ],
     latencyMs: 190,
   },
 ] as const

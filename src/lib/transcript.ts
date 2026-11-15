@@ -341,19 +341,27 @@ function taskBlock(r: Rand): Emit[] {
 function decisionBlock(r: Rand, task: string): Emit[] {
   const model = pick(r, DECISION_MODELS)
   const scene = pick(r, DECISION_SCENES.filter(candidate => candidate.task === task))
-  // OpenAI has announced finite answers, but not Jev's probability/Noul wire
-  // format. Keep the shared scene while showing only supported capabilities.
   const route = model.surface ? `${model.surface} / ${model.name}` : model.name
-  const choices = model.format === 'jev'
-    ? scene.choices
-    : scene.choices.map(choice => choice.replace(/ \d+\.\d+$/, ''))
+  const capabilities = model.capabilities
+  const selected = scene.choices.reduce((best, choice) => choice.probability > best.probability ? choice : best)
+  const choices = scene.choices.map(choice => capabilities.probabilities
+    ? `${choice.label} ${choice.probability.toFixed(2)}` : choice.label)
+  const confidence = capabilities.probabilities ? ` · confidence=${selected.probability.toFixed(2)}` : ''
   const emits: Emit[] = [
     t('tool', `● Decide(${model.provider} / ${route} · ${scene.latencyMs}ms)`, false, scene.latencyMs),
     t('dim', `  state: ${scene.state}`),
-    t('gut', `  choice · ${scene.question}: ${choices.join(' | ')}`),
+    t('gut', `  choice · ${scene.question}: ${choices.join(' | ')}${confidence}`),
   ]
-  if (model.format === 'jev') emits.push(t('gut', `  noul · ${scene.noul}: p(yes)=${scene.yesProbability}`))
-  emits.push({ ...t('ok', `  └  ${scene.result}`, false, 120), recentDecision: `${model.name} · ${scene.result}` })
+  if (capabilities.binaryLabel) {
+    const yes = scene.yesProbability
+    emits.push(t('gut', `  ${capabilities.binaryLabel} · ${scene.noul}: p(yes)=${yes.toFixed(2)} · confidence=${Math.max(yes, 1 - yes).toFixed(2)}`))
+  }
+  if (capabilities.score) {
+    const score = scene.review.reduce((sum, level, index) => sum + level.probability * index, 0)
+    const certainty = Math.max(...scene.review.map(level => level.probability))
+    emits.push(t('gut', `  score · review priority: ${score.toFixed(2)} / ${scene.review.length - 1} (${scene.review[0].label} → ${scene.review.at(-1)!.label}) · confidence=${certainty.toFixed(2)}`))
+  }
+  emits.push({ ...t('ok', `  └  ${selected.label}`, false, 120), recentDecision: `${model.name} · ${selected.label}` })
   for (const emit of emits) emit.fast = true
   return emits
 }
