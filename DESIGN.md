@@ -723,7 +723,13 @@ Processes, before dropping terminal capacity.
 An independent top-like operations tile uses PID, session source, state, CPU%, RSS MiB and command
 columns. The header states `1 CPU = 100%`, so a multithreaded worker may exceed 100%
 without contradicting the all-core average. Rows are keyed by PID; numeric values
-update at 4Hz while descending CPU sort refreshes every two seconds. New tasks enter at their current CPU position without reshuffling existing rows,
+update at 4Hz while descending CPU sort refreshes every two seconds. CPU/RSS
+digit transitions run linearly over the full 250ms sample interval. Ordering
+commits before rendering, so a snapshot never paints an intermediate append
+order. PID-keyed rows move with interruptible 320ms Svelte FLIP animations; new
+rows fade in over 120ms, while exited processes leave immediately and survivors
+slide into place. The first render has no staged entrance. Reduced motion
+disables row movement, entrances and digit interpolation. New tasks enter at their current CPU position without reshuffling existing rows,
 and terminated PIDs disappear at the next shared sample. A measured row fitter
 shows complete rows and prints shown/total task counts, with R/S/D state counts. PID,
 state and numeric cells retain their widths; commands truncate with the full command
